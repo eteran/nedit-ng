@@ -59,6 +59,8 @@ if(TARGET_COMPILER_MSVC)
 	target_compile_definitions(nc-ng
 		PUBLIC -D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
 	)
+
+    target_compile_options(nc-ng PRIVATE /W4 /WX)
 endif()
 
 include(GNUInstallDirs)

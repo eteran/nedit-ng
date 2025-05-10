@@ -1,10 +1,12 @@
 
 #include "nedit.h"
-#include "DialogAbout.h"
 #include "Main.h"
 
 #include <QApplication>
+#include <QFontDatabase>
+#include <QIcon>
 #include <QLibraryInfo>
+#include <QPalette>
 #include <QStringList>
 #include <QStyleFactory>
 #include <QTranslator>
@@ -77,14 +79,16 @@ int main(int argc, char *argv[]) {
 
 	qInstallMessageHandler(MessageHandler);
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 #ifdef Q_OS_MACOS
 	QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 	QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
 
 	// NOTE(eteran): for issue #38, grab -geometry <arg> before Qt consumes it!
 	QString geometry;
@@ -101,9 +105,15 @@ int main(int argc, char *argv[]) {
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QStringLiteral("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
 		QApplication::installTranslator(&qtTranslator);
 	}
+#else
+	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QStringLiteral("_"), QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+		QApplication::installTranslator(&qtTranslator);
+	}
+#endif
 
 	QTranslator translator;
 	// look up e.g. :/i18n/nedit-ng_{lang}.qm

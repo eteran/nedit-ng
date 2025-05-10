@@ -4883,7 +4883,7 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 		} else if (n < 0) {
 			paneIndex = panes.size() + n;
 		} else {
-			paneIndex = -1;
+			paneIndex = static_cast<size_t>(-1);
 		}
 	}
 
