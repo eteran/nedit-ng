@@ -12,12 +12,12 @@ HighlightStyleModel::HighlightStyleModel(QObject *parent)
 }
 
 /**
- * @brief
+ * @brief Returns the index of the item at the specified row and column in the model.
  *
- * @param row
- * @param column
- * @param parent
- * @return
+ * @param row The row of the item to retrieve.
+ * @param column The column of the item to retrieve.
+ * @param parent The parent index of the item to retrieve. If the item has no parent, this should be an invalid index.
+ * @return The index of the item at the specified row and column, or an invalid index if the row or column is out of bounds.
  */
 QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &parent) const {
 

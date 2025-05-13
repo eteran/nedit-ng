@@ -27,14 +27,18 @@ std::vector<MenuData> BGMenuData;
 
 namespace {
 
-/*
-** Scan text from "in" to the end of macro input (matching brace),
-** advancing in, and return macro text as function return value.
-**
-** This is kind of wasteful in that it throws away the compiled macro,
-** to be re-generated from the text as needed, but compile time is
-** negligible for most macros.
-*/
+/**
+ * @brief Copy a macro to the end of the input stream.
+ * Scan text from `in` to the end of macro input (matching brace),
+ * advancing `in`, and return macro text as function return value.
+ *
+ * This is kind of wasteful in that it throws away the compiled macro,
+ * to be re-generated from the text as needed, but compile time is
+ * negligible for most macros.
+ *
+ * @param in The input stream to read from.
+ * @return The copied macro.
+ */
 QString CopyMacroToEnd(Input &in) {
 
 	Input input = in;
@@ -113,10 +117,10 @@ QString CopyMacroToEnd(Input &in) {
 }
 
 /**
- * @brief
+ * @brief Creates a string for the menu items in YAML format.
  *
- * @param menuItems
- * @return
+ * @param menuItems The menu items to be written to the YAML file.
+ * @return The YAML string representation of the menu items.
  */
 QString WriteMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 	const QString filename = Settings::MactoMenuFile();
@@ -158,10 +162,10 @@ QString WriteMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief
+ * @brief Creates a string for the menu items in YAML format.
  *
- * @param menuItems
- * @return
+ * @param menuItems The menu items to be written to the YAML file.
+ * @return The YAML string representation of the menu items.
  */
 QString WriteShellMenuYaml(const std::vector<MenuData> &menuItems) {
 	const QString filename = Settings::ShellMenuFile();
@@ -240,10 +244,10 @@ QString WriteShellMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief
+ * @brief Creates a string for the menu items in YAML format.
  *
- * @param menuItems
- * @return
+ * @param menuItems The menu items to be written to the YAML file.
+ * @return The YAML string representation of the menu items.
  */
 QString WriteContextMenuYaml(const std::vector<MenuData> &menuItems) {
 	const QString filename = Settings::ContextMenuFile();
@@ -285,10 +289,11 @@ QString WriteContextMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief
+ * @brief Reads in a menu item from the input stream.
  *
- * @param in
- * @param listType
+ * @param in The input stream to read from.
+ * @param listType The type of command list (Shell, Macro, Context).
+ * @return The menu item read from the input stream, or an empty optional if there was an error.
  */
 std::optional<MenuItem> ReadMenuItem(Input &in, CommandTypes listType) {
 
@@ -418,9 +423,9 @@ std::optional<MenuItem> ReadMenuItem(Input &in, CommandTypes listType) {
 }
 
 /**
- * @brief
+ * @brief Load the macro menu from a YAML file.
  *
- * @param menuItems
+ * @param menuItems Where to store the loaded menu items.
  */
 void LoadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
@@ -472,6 +477,11 @@ void LoadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	}
 }
 
+/**
+ * @brief Load the shell menu from a YAML file.
+ *
+ * @param menuItems Where to store the loaded menu items.
+ */
 void LoadShellMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
@@ -557,9 +567,9 @@ void LoadShellMenuYaml(std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief
+ * @brief Load the context menu from a YAML file.
  *
- * @param menuItems
+ * @param menuItems Where to store the loaded menu items.
  */
 void LoadContextMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
@@ -612,11 +622,11 @@ void LoadContextMenuYaml(std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief
+ * @brief Load menu items from a string.
  *
- * @param inString
- * @param menuItems
- * @param listType
+ * @param inString The input string containing the menu items.
+ * @param menuItems Where to store the loaded menu items.
+ * @param listType The type of command list (Shell, Macro, Context).
  */
 void LoadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
@@ -661,10 +671,10 @@ void LoadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 }
 
 /**
- * @brief
+ * @brief Set the default index for the menu items.
  *
- * @param infoList
- * @param index
+ * @param infoList The list of menu items.
+ * @param index The index of the default item.
  */
 void SetDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 	const QString defaultMenuName = infoList[index].info->umiName;
@@ -681,11 +691,13 @@ void SetDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 	}
 }
 
-/*
-** Cache user menus:
-** Extract language mode related info out of given menu item name string.
-** Store this info in given user menu info structure.
-*/
+/**
+ * @brief Parse the menu item name and extract language mode information.
+ *
+ *
+ * @param menuItemName  The name of the menu item to parse.
+ * @param info          The user menu info structure to store the parsed information.
+ */
 void ParseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
 
 	const int index = menuItemName.indexOf(QLatin1Char('@'));
@@ -723,11 +735,14 @@ void ParseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 	}
 }
 
-/*
-** Cache user menus:
-** Returns the menuItemName stripped of language mode parts
-** (i.e. parts starting with "@").
-*/
+/**
+ * @brief Strips the language mode from the menu item name.
+ * Removes the language mode part from the menu item name, which
+ * is indicated by the presence of an '@' character.
+ *
+ * @param menuItemName The name of the menu item to strip.
+ * @return The stripped menu item name.
+ */
 QString StripLanguageMode(const QString &menuItemName) {
 
 	const int index = menuItemName.indexOf(QLatin1Char('@'));
@@ -738,11 +753,12 @@ QString StripLanguageMode(const QString &menuItemName) {
 	return menuItemName;
 }
 
-/*
-** Cache user menus:
-** Parse a single menu item. Allocate & setup a user menu info element
-** holding extracted info.
-*/
+/**
+ * @brief Parse a menu item record and create a UserMenuInfo object.
+ *
+ * @param item The menu item to parse.
+ * @return The created UserMenuInfo object.
+ */
 std::unique_ptr<UserMenuInfo> ParseMenuItemRecord(const MenuItem &item) {
 
 	auto newInfo = std::make_unique<UserMenuInfo>();
@@ -759,6 +775,12 @@ std::unique_ptr<UserMenuInfo> ParseMenuItemRecord(const MenuItem &item) {
 	return newInfo;
 }
 
+/**
+ * @brief Select the menu based on the command type.
+ *
+ * @param type The command type (Shell, Macro, Context).
+ * @return The selected menu.
+ */
 std::vector<MenuData> &SelectMenu(CommandTypes type) {
 	switch (type) {
 	case CommandTypes::Shell:
@@ -774,6 +796,13 @@ std::vector<MenuData> &SelectMenu(CommandTypes type) {
 
 }
 
+/**
+ * @brief Find a menu item by name and type.
+ *
+ * @param name The name of the menu item to find.
+ * @param type The command type (Shell, Macro, Context).
+ * @return The found menu item, or nullptr if not found.
+ */
 MenuData *FindMenuItem(const QString &name, CommandTypes type) {
 
 	std::vector<MenuData> &menu = SelectMenu(type);
@@ -805,40 +834,46 @@ QString WriteContextMenuCommandsString() {
 	return WriteContextMenuYaml(BGMenuData);
 }
 
-/*
-** Read a string representing shell command menu items, macro menu or
-** background menu and add them to the internal list used for constructing
-** menus
-*/
+/**
+ * @brief Load shell commands from a string.
+ *
+ * @param inString The input string containing the shell commands.
+ */
 void LoadShellCommandsString(const QString &inString) {
 	LoadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
 }
 
+/**
+ * @brief Load macro commands from a string.
+ *
+ * @param inString The input string containing the macro commands.
+ */
 void LoadMacroCommandsString(const QString &inString) {
 	LoadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
 }
 
+/**
+ * @brief Load context menu commands from a string.
+ *
+ * @param inString The input string containing the context menu commands.
+ */
 void LoadContextMenuCommandsString(const QString &inString) {
 	LoadMenuItemString(inString, BGMenuData, CommandTypes::Context);
 }
 
-/*
-** Cache user menus:
-** Setup user menu info after read of macro, shell and background menu
-** string (reason: language mode info from preference string is read *after*
-** user menu preference string was read).
-*/
+/**
+ * @brief Setup user menu information.
+ */
 void SetupUserMenuInfo() {
 	ParseMenuItemList(ShellMenuData);
 	ParseMenuItemList(MacroMenuData);
 	ParseMenuItemList(BGMenuData);
 }
 
-/*
-** Cache user menus:
-** Update user menu info to take into account e.g. change of language modes
-** (i.e. add / move / delete of language modes etc).
-*/
+/**
+ * @brief Update user menu info to take into account changes such as change of language modes.
+ * (ex. add / move / delete of language modes etc).
+ */
 void UpdateUserMenuInfo() {
 	for (auto &item : ShellMenuData) {
 		item.info = nullptr;
@@ -856,11 +891,12 @@ void UpdateUserMenuInfo() {
 	ParseMenuItemList(BGMenuData);
 }
 
-/*
-** Cache user menus:
-** Parse given menu item list and setup a user menu info list for
-** management of user menu.
-*/
+/**
+ * @brief Parse given menu item list and setup a user menu info list for
+ * management of user menu.
+ *
+ * @param itemList The list of menu items to parse.
+ */
 void ParseMenuItemList(std::vector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &

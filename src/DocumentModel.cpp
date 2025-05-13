@@ -12,13 +12,12 @@ DocumentModel::DocumentModel(QObject *parent)
 }
 
 /**
- * @brief Creates an index for a specific row and column in the model.
+ * @brief Returns the index of the item at the specified row and column in the model.
  *
- * @param row The row number for the index.
- * @param column The column number for the index.
- * @param parent The parent index, defaults to an invalid index.
- * @return A QModelIndex representing the specified row and column.
- * If the row or column is out of bounds, an invalid index is returned.
+ * @param row The row of the item to retrieve.
+ * @param column The column of the item to retrieve.
+ * @param parent The parent index of the item to retrieve. If the item has no parent, this should be an invalid index.
+ * @return The index of the item at the specified row and column, or an invalid index if the row or column is out of bounds.
  */
 QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent) const {
 

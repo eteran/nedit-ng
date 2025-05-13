@@ -6,10 +6,13 @@
 #include <QPaintEvent>
 #include <QPainter>
 
+// Uncomment this to enable highlighting of the current line in the line number area.
+// #define ENABLE_HIGHLIGHT
+
 /**
- * @brief
+ * @brief Constructor for LineNumberArea.
  *
- * @param editor
+ * @param area The TextArea object associated with this line number area.
  */
 LineNumberArea::LineNumberArea(TextArea *area)
 	: QWidget(area), area_(area) {
@@ -17,18 +20,20 @@ LineNumberArea::LineNumberArea(TextArea *area)
 }
 
 /**
- * @brief
+ * @brief Returns the size hint for the line number area.
  *
- * @return
+ * @return The size hint for the line number area.
+ * @note The width is determined by the maximum number of digits in the line numbers.
+ *       The height is set to 0, as it will be determined by the parent widget.
  */
 QSize LineNumberArea::sizeHint() const {
 	return QSize(area_->lineNumberAreaWidth(), 0);
 }
 
 /**
- * @brief
+ * @brief Paints the line number area.
  *
- * @param event
+ * @param event The paint event that triggered this function.
  */
 void LineNumberArea::paintEvent(QPaintEvent *event) {
 
@@ -44,13 +49,13 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 	int y        = area_->viewport()->contentsRect().top();
 	int64_t line = area_->getAbsTopLineNum();
 
-#if 0
+#ifdef ENABLE_HIGHLIGHT
 	const TextCursor cursor = area_->cursorPos_;
 #endif
 	for (int visLine = 0; visLine < area_->nVisibleLines_; visLine++) {
 
 		const TextCursor lineStart = area_->lineStarts_[visLine];
-#if 0
+#ifdef ENABLE_HIGHLIGHT
 		if(area_->visibleLineContainsCursor(visLine, cursor)) {
 			painter.fillRect(0, y, width(), lineHeight, Qt::darkCyan);
 		}
@@ -71,27 +76,27 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the context menu event for the line number area.
  *
- * @param event
+ * @param event The context menu event that triggered this function.
  */
 void LineNumberArea::contextMenuEvent(QContextMenuEvent *event) {
 	area_->contextMenuEvent(event);
 }
 
 /**
- * @brief
+ * @brief Handles the wheel event for the line number area.
  *
- * @param event
+ * @param event The wheel event that triggered this function.
  */
 void LineNumberArea::wheelEvent(QWheelEvent *event) {
 	area_->wheelEvent(event);
 }
 
 /**
- * @brief
+ * @brief Handles the mouse double-click event for the line number area.
  *
- * @param event
+ * @param event The mouse event that triggered this function.
  */
 void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
 
@@ -105,9 +110,9 @@ void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the mouse move event for the line number area.
  *
- * @param event
+ * @param event The mouse event that triggered this function.
  */
 void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
@@ -119,9 +124,9 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the mouse press event for the line number area.
  *
- * @param event
+ * @param event The mouse event that triggered this function.
  */
 void LineNumberArea::mousePressEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
@@ -133,9 +138,9 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the mouse release event for the line number area.
  *
- * @param event
+ * @param event The mouse event that triggered this function.
  */
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
