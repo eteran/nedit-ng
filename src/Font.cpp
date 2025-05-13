@@ -32,6 +32,7 @@ QFont fromString(const QString &fontName) {
 	QT_WARNING_POP
 #else
 	font.setHintingPreference(QFont::PreferFullHinting);
+	font.setStyleStrategy(QFont::NoFontMerging);
 #endif
 	return font;
 }

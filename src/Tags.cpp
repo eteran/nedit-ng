@@ -44,22 +44,21 @@ struct CalltipAlias {
 	QString sources;
 };
 
-// Tag File Type
-enum TFT : uint8_t {
-	TFT_CHECK,
-	TFT_ETAGS,
-	TFT_CTAGS
+enum TagFileType : uint8_t {
+	TagFileUnknown,
+	TagFileETags,
+	TagFileCTags
 };
 
-constexpr int MAX_LINE                        = 2048;
-constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
+constexpr int MaxLine                     = 2048;
+constexpr int MaxTagIncludeRecursionLevel = 5;
 
 /* Take this many lines when making a tip from a tag.
    (should probably be a language-dependent option, but...) */
-constexpr int TIP_DEFAULT_LINES = 4;
+constexpr int TipDefaultLines = 4;
 
 // used  in AddRelTagsFile and AddTagsFile
-int16_t tagFileIndex = 0;
+int16_t TagFileIndex = 0;
 
 QMultiHash<QString, Tag> LoadedTags;
 QMultiHash<QString, Tag> LoadedTips;
@@ -111,7 +110,7 @@ QStringList ParseTagSpec(const QString &tagSpec) {
  * @return The processed string with trailing whitespace and newline characters removed.
  */
 QString StripRight(QString s) {
-	static const QRegularExpression re(QLatin1String("\\s*\\n"));
+	static const QRegularExpression re(QStringLiteral("\\s*\\n"));
 	return s.replace(re, QString());
 }
 
@@ -220,7 +219,7 @@ bool DeleteTag(int index) {
  */
 int ScanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
+	static const auto regex = QRegularExpression(QStringLiteral(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 
 	const QRegularExpressionMatch match = regex.match(line);
 	if (!match.hasMatch()) {
@@ -258,7 +257,7 @@ int ScanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		const int posTagREEnd = searchString.lastIndexOf(QLatin1Char(';'));
 
 		if (posTagREEnd == -1 ||
-			searchString.mid(posTagREEnd, 2) != QLatin1String(";\"") ||
+			searchString.mid(posTagREEnd, 2) != QStringLiteral(";\"") ||
 			searchString.startsWith(searchString.right(1))) {
 			//  -> original ctags format = exuberant ctags format 1
 		} else {
@@ -358,7 +357,7 @@ int ScanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		file = line.left(posCOM);
 
 		// check if that's an include file ...
-		if (line.mid(posCOM + 1, 7) == QLatin1String("include")) {
+		if (line.mid(posCOM + 1, 7) == QStringLiteral("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
 				const QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
@@ -382,10 +381,10 @@ int ScanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
  */
 int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
-	int nTagsAdded  = 0;
-	int tagFileType = TFT_CHECK;
+	int nTagsAdded          = 0;
+	TagFileType tagFileType = TagFileUnknown;
 
-	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
+	if (recLevel > MaxTagIncludeRecursionLevel) {
 		return 0;
 	}
 	/* the path of the tags file must be resolved to find the right files:
@@ -403,7 +402,7 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		return 0;
 	}
 
-	const PathInfo tagPathInfo = parseFilename(resolvedTagsFile);
+	const PathInfo tagPathInfo = ParseFilename(resolvedTagsFile);
 
 	QString filename;
 
@@ -420,19 +419,19 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		/* the first character in the file decides if the file is treat as
 		   etags or ctags file.
 		 */
-		if (tagFileType == TFT_CHECK) {
+		if (tagFileType == TagFileUnknown) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 			if (line.startsWith(QChar::FormFeed)) { // <np>
 #else
 			if (line.startsWith(QChar(0x000c))) { // <np>
 #endif
-				tagFileType = TFT_ETAGS;
+				tagFileType = TagFileETags;
 			} else {
-				tagFileType = TFT_CTAGS;
+				tagFileType = TagFileCTags;
 			}
 		}
 
-		if (tagFileType == TFT_CTAGS) {
+		if (tagFileType == TagFileCTags) {
 			nTagsAdded += ScanCTagsLine(line, tagPathInfo.pathname, index);
 		} else {
 			nTagsAdded += ScanETagsLine(line, tagPathInfo.pathname, index, filename, recLevel);
@@ -457,11 +456,11 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 CalltipToken NextTipsFileBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	static const auto comment_regex  = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
-	static const auto version_regex  = QRegularExpression(QLatin1String(R"(^\s*\* version \*\s*$)"));
-	static const auto include_regex  = QRegularExpression(QLatin1String(R"(^\s*\* include \*\s*$)"));
-	static const auto language_regex = QRegularExpression(QLatin1String(R"(^\s*\* language \*\s*$)"));
-	static const auto alias_regex    = QRegularExpression(QLatin1String(R"(^\s*\* alias \*\s*$)"));
+	static const auto comment_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* comment \*\s*$)"));
+	static const auto version_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* version \*\s*$)"));
+	static const auto include_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* include \*\s*$)"));
+	static const auto language_regex = QRegularExpression(QStringLiteral(R"(^\s*\* language \*\s*$)"));
+	static const auto alias_regex    = QRegularExpression(QStringLiteral(R"(^\s*\* alias \*\s*$)"));
 
 	QString line;
 	CalltipToken code;
@@ -661,7 +660,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	size_t langMode = PLAIN_LANGUAGE_MODE;
 	std::vector<CalltipAlias> aliases;
 
-	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
+	if (recLevel > MaxTagIncludeRecursionLevel) {
 		qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",
 				 qPrintable(tipsFile));
 		return 0;
@@ -681,7 +680,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	}
 
 	// Get the path to the tips file
-	const PathInfo tipPathInfo = parseFilename(resolvedTipsFile);
+	const PathInfo tipPathInfo = ParseFilename(resolvedTipsFile);
 
 	QFile file(resolvedTipsFile);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -728,7 +727,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			// Switch to the new language mode if it's valid, else ignore it.
 			const size_t oldLangMode = std::exchange(langMode, Preferences::FindLanguageMode(header));
 
-			if (langMode == PLAIN_LANGUAGE_MODE && header != QLatin1String("Plain")) {
+			if (langMode == PLAIN_LANGUAGE_MODE && header != QStringLiteral("Plain")) {
 
 				qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
 						 qPrintable(tipsFile),
@@ -966,7 +965,7 @@ bool AddRelativeTagsFile(const QString &tagSpec, const QString &windowPath, Sear
 			pathName,
 			timestamp,
 			false,
-			++tagFileIndex,
+			++TagFileIndex,
 			1 // NOTE(eteran): added just so there aren't any uninitialized members
 		};
 
@@ -1033,7 +1032,7 @@ bool AddTagsFile(const QString &tagSpec, SearchMode mode) {
 			pathName,
 			timestamp,
 			false,
-			++tagFileIndex,
+			++TagFileIndex,
 			1};
 
 		FileList->push_front(tag);
@@ -1241,7 +1240,7 @@ bool FakeRegexSearch(std::string_view buffer, const QString &searchString, int64
 
 	// Build the search regex.
 	QString searchSubs;
-	searchSubs.reserve(3 * MAX_LINE + 3);
+	searchSubs.reserve(3 * MaxLine + 3);
 	auto outPtr = std::back_inserter(searchSubs);
 
 	{
@@ -1393,16 +1392,16 @@ void ShowMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 
 			if (!found) {
 				// Just take 4 lines
-				MoveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+				MoveAheadNLines(fileString, endPos, TipDefaultLines);
 				--endPos; // Lose the last \n
 			} else {
 				endPos = searchResult.start;
 			}
 
 		} else { // Mode = TIP_FROM_TAG
-			// 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
+			// 4. Copy TipDefaultLines lines of text to the calltip string
 			endPos = startPos;
-			MoveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+			MoveAheadNLines(fileString, endPos, TipDefaultLines);
 
 			// Make sure not to overrun the fileString with ". . ."
 			if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {

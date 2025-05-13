@@ -4,7 +4,10 @@
 #include "Main.h"
 
 #include <QApplication>
+#include <QFontDatabase>
+#include <QIcon>
 #include <QLibraryInfo>
+#include <QPalette>
 #include <QStringList>
 #include <QStyleFactory>
 #include <QTranslator>
@@ -77,14 +80,16 @@ int main(int argc, char *argv[]) {
 
 	qInstallMessageHandler(MessageHandler);
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 #ifdef Q_OS_MACOS
 	QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 	QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
 
 	// NOTE(eteran): for issue #38, grab -geometry <arg> before Qt consumes it!
 	QString geometry;
@@ -97,17 +102,23 @@ int main(int argc, char *argv[]) {
 	}
 
 	QApplication app(argc, argv);
-	QApplication::setWindowIcon(QIcon(QLatin1String(":/nedit-ng.png")));
+	QApplication::setWindowIcon(QIcon(QStringLiteral(":/nedit-ng.png")));
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
-	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QStringLiteral("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
 		QApplication::installTranslator(&qtTranslator);
 	}
+#else
+	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QStringLiteral("_"), QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+		QApplication::installTranslator(&qtTranslator);
+	}
+#endif
 
 	QTranslator translator;
 	// look up e.g. :/i18n/nedit-ng_{lang}.qm
-	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
+	if (translator.load(QLocale(), QStringLiteral("nedit-ng"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
 		QApplication::installTranslator(&translator);
 	}
 
@@ -115,19 +126,19 @@ int main(int argc, char *argv[]) {
 	// removed it at this point
 	QStringList arguments = QApplication::arguments();
 	if (!geometry.isNull()) {
-		arguments.insert(1, QLatin1String("-geometry"));
+		arguments.insert(1, QStringLiteral("-geometry"));
 		arguments.insert(2, geometry);
 	}
 
 #ifdef Q_OS_MACOS
-	qApp->setStyle(QStyleFactory::create(QLatin1String("fusion")));
+	qApp->setStyle(QStyleFactory::create(QStringLiteral("fusion")));
 #endif
 
 	// Light/Dark icons on all platforms
 	if (qApp->palette().window().color().lightnessF() >= 0.5) {
-		QIcon::setThemeName(QLatin1String("breeze-nedit"));
+		QIcon::setThemeName(QStringLiteral("breeze-nedit"));
 	} else {
-		QIcon::setThemeName(QLatin1String("breeze-dark-nedit"));
+		QIcon::setThemeName(QStringLiteral("breeze-dark-nedit"));
 	}
 
 	// Make all text fields use fixed-width fonts by default

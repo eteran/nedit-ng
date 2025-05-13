@@ -7,6 +7,6 @@
 class QString;
 class Regex;
 
-std::unique_ptr<Regex> make_regex(const QString &re, int flags);
+std::unique_ptr<Regex> MakeRegex(const QString &re, int flags);
 
 #endif

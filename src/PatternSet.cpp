@@ -4,10 +4,10 @@
 // comparisons do NOT include the "languageMode"
 
 /**
- * @brief
+ * @brief Compares two PatternSet objects for inequality.
  *
- * @param rhs
- * @return
+ * @param rhs The PatternSet object to compare against.
+ * @return `true` if the two PatternSet objects are not equal, `false` otherwise.
  */
 bool PatternSet::operator!=(const PatternSet &rhs) const {
 
@@ -27,10 +27,10 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 }
 
 /**
- * @brief
+ * @brief Compares two PatternSet objects for equality.
  *
- * @param rhs
- * @return
+ * @param rhs The PatternSet object to compare against.
+ * @return `true` if the two PatternSet objects are equal, `false` otherwise.
  */
 bool PatternSet::operator==(const PatternSet &rhs) const {
 	return !(*this != rhs);

@@ -7,8 +7,8 @@
 
 class QString;
 
-QString ensure_newline(const QString &string);
-std::string to_upper(std::string_view s);
-std::string to_lower(std::string_view s);
+QString EnsureNewline(const QString &string);
+std::string ToUpper(std::string_view s);
+std::string ToLower(std::string_view s);
 
 #endif

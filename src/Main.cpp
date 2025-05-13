@@ -11,6 +11,7 @@
 #include "Regex.h"
 #include "Settings.h"
 #include "Util/FileSystem.h"
+#include "Util/String.h"
 #include "interpret.h"
 #include "nedit.h"
 #include "parse.h"
@@ -21,7 +22,7 @@
 
 namespace {
 
-constexpr const char cmdLineHelp[] =
+constexpr const char HelpText[] =
 	"Usage: nedit-ng [-read] [-create] [-line n | +n] [-server] [-do command]\n"
 	"                [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
 	"                [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
@@ -39,7 +40,7 @@ constexpr const char cmdLineHelp[] =
  */
 int GetArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
-		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
+		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), HelpText);
 		exit(EXIT_FAILURE);
 	}
 
@@ -106,11 +107,11 @@ Main::Main(const QStringList &args) {
 
 		const QString &arg = args[i];
 
-		if (arg == QLatin1String("--")) {
+		if (arg == QStringLiteral("--")) {
 			break; // treat all remaining arguments as filenames
 		}
 
-		if (arg == QLatin1String("-import")) {
+		if (arg == QStringLiteral("-import")) {
 			i = GetArgumentParameter(args, i);
 			Preferences::ImportPrefFile(args[i]);
 		}
@@ -131,46 +132,46 @@ Main::Main(const QStringList &args) {
 
 	for (int i = 1; i < args.size(); i++) {
 
-		if (opts && args[i] == QLatin1String("--")) {
+		if (opts && args[i] == QStringLiteral("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
 		}
 
-		if (opts && args[i] == QLatin1String("-tags")) {
+		if (opts && args[i] == QStringLiteral("-tags")) {
 			i = GetArgumentParameter(args, i);
 			if (!Tags::AddTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
 			}
 
-		} else if (opts && args[i] == QLatin1String("-do")) {
+		} else if (opts && args[i] == QStringLiteral("-do")) {
 			i = GetArgumentParameter(args, i);
 			if (checkDoMacroArg(args[i])) {
 				toDoCommand = args[i];
 			}
-		} else if (opts && args[i] == QLatin1String("-svrname")) {
+		} else if (opts && args[i] == QStringLiteral("-svrname")) {
 			i = GetArgumentParameter(args, i);
 
 			Settings::serverNameOverride = args[i];
 			IsServer                     = true;
-		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
+		} else if (opts && (args[i] == QStringLiteral("-font") || args[i] == QStringLiteral("-fn"))) {
 			i = GetArgumentParameter(args, i);
 
 			Settings::fontName = args[i];
-		} else if (opts && args[i] == QLatin1String("-wrap")) {
+		} else if (opts && args[i] == QStringLiteral("-wrap")) {
 			Settings::autoWrap = WrapStyle::Continuous;
-		} else if (opts && args[i] == QLatin1String("-nowrap")) {
+		} else if (opts && args[i] == QStringLiteral("-nowrap")) {
 			Settings::autoWrap = WrapStyle::None;
-		} else if (opts && args[i] == QLatin1String("-autowrap")) {
+		} else if (opts && args[i] == QStringLiteral("-autowrap")) {
 			Settings::autoWrap = WrapStyle::Newline;
-		} else if (opts && args[i] == QLatin1String("-autoindent")) {
+		} else if (opts && args[i] == QStringLiteral("-autoindent")) {
 			Settings::autoIndent = IndentStyle::Auto;
-		} else if (opts && args[i] == QLatin1String("-noautoindent")) {
+		} else if (opts && args[i] == QStringLiteral("-noautoindent")) {
 			Settings::autoIndent = IndentStyle::None;
-		} else if (opts && args[i] == QLatin1String("-autosave")) {
+		} else if (opts && args[i] == QStringLiteral("-autosave")) {
 			Settings::autoSave = true;
-		} else if (opts && args[i] == QLatin1String("-noautosave")) {
+		} else if (opts && args[i] == QStringLiteral("-noautosave")) {
 			Settings::autoSave = false;
-		} else if (opts && args[i] == QLatin1String("-rows")) {
+		} else if (opts && args[i] == QStringLiteral("-rows")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -180,7 +181,7 @@ Main::Main(const QStringList &args) {
 			} else {
 				Settings::textRows = n;
 			}
-		} else if (opts && args[i] == QLatin1String("-columns")) {
+		} else if (opts && args[i] == QStringLiteral("-columns")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -190,7 +191,7 @@ Main::Main(const QStringList &args) {
 			} else {
 				Settings::textCols = n;
 			}
-		} else if (opts && args[i] == QLatin1String("-tabs")) {
+		} else if (opts && args[i] == QStringLiteral("-tabs")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -200,19 +201,19 @@ Main::Main(const QStringList &args) {
 			} else {
 				Settings::tabDistance = n;
 			}
-		} else if (opts && args[i] == QLatin1String("-read")) {
+		} else if (opts && args[i] == QStringLiteral("-read")) {
 			editFlags |= PREF_READ_ONLY;
-		} else if (opts && args[i] == QLatin1String("-create")) {
+		} else if (opts && args[i] == QStringLiteral("-create")) {
 			editFlags |= SUPPRESS_CREATE_WARN;
-		} else if (opts && args[i] == QLatin1String("-tabbed")) {
+		} else if (opts && args[i] == QStringLiteral("-tabbed")) {
 			tabbed = 1;
 			group  = 0; // override -group option
-		} else if (opts && args[i] == QLatin1String("-untabbed")) {
+		} else if (opts && args[i] == QStringLiteral("-untabbed")) {
 			tabbed = 0;
 			group  = 0; // override -group option
-		} else if (opts && args[i] == QLatin1String("-group")) {
+		} else if (opts && args[i] == QStringLiteral("-group")) {
 			group = 2; // 2: start new group, 1: in group
-		} else if (opts && args[i] == QLatin1String("-line")) {
+		} else if (opts && args[i] == QStringLiteral("-line")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -230,35 +231,35 @@ Main::Main(const QStringList &args) {
 			} else {
 				gotoLine = true;
 			}
-		} else if (opts && args[i] == QLatin1String("-server")) {
+		} else if (opts && args[i] == QStringLiteral("-server")) {
 			IsServer = true;
-		} else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
+		} else if (opts && (args[i] == QStringLiteral("-iconic") || args[i] == QStringLiteral("-icon"))) {
 			iconic = true;
-		} else if (opts && args[i] == QLatin1String("-noiconic")) {
+		} else if (opts && args[i] == QStringLiteral("-noiconic")) {
 			iconic = false;
-		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
+		} else if (opts && (args[i] == QStringLiteral("-geometry") || args[i] == QStringLiteral("-g"))) {
 			i = GetArgumentParameter(args, i);
 
 			geometry = args[i];
-		} else if (opts && args[i] == QLatin1String("-lm")) {
+		} else if (opts && args[i] == QStringLiteral("-lm")) {
 			i = GetArgumentParameter(args, i);
 
 			langMode = args[i];
-		} else if (opts && args[i] == QLatin1String("-import")) {
+		} else if (opts && args[i] == QStringLiteral("-import")) {
 			i = GetArgumentParameter(args, i); // already processed, skip
-		} else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
+		} else if (opts && (args[i] == QStringLiteral("-V") || args[i] == QStringLiteral("-version"))) {
 			const QString infoString = DialogAbout::createInfoString();
 			printf("%s", qPrintable(infoString));
 			exit(EXIT_SUCCESS);
-		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
-			fprintf(stderr, "%s", cmdLineHelp);
+		} else if (opts && (args[i] == QStringLiteral("-h") || args[i] == QStringLiteral("-help"))) {
+			fprintf(stderr, "%s", HelpText);
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i].startsWith(QLatin1Char('-')))) {
-			fprintf(stderr, "nedit: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
+			fprintf(stderr, "nedit: Unrecognized option %s\n%s", qPrintable(args[i]), HelpText);
 			exit(EXIT_FAILURE);
 		} else {
 
-			const PathInfo fi = parseFilename(args[i]);
+			const PathInfo fi = ParseFilename(args[i]);
 
 			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
@@ -325,7 +326,7 @@ Main::Main(const QStringList &args) {
 				}
 
 				if (!toDoCommand.isNull()) {
-					document->doMacro(toDoCommand, QLatin1String("-do macro"));
+					document->doMacro(toDoCommand, QStringLiteral("-do macro"));
 					toDoCommand = QString();
 				}
 			}
@@ -345,17 +346,17 @@ Main::Main(const QStringList &args) {
 		lastFile->raiseDocument();
 	}
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 
 	// If no file to edit was specified, open a window to edit "Untitled"
 	if (!fileSpecified) {
 		DocumentWidget *document = MainWindow::editNewFile(nullptr, geometry, iconic, langMode);
 
 		document->readMacroInitFile();
-		MainWindow::checkCloseEnableState();
+		MainWindow::updateCloseEnableState();
 
 		if (!toDoCommand.isNull()) {
-			document->doMacro(toDoCommand, QLatin1String("-do macro"));
+			document->doMacro(toDoCommand, QStringLiteral("-do macro"));
 		}
 	}
 
@@ -381,10 +382,10 @@ bool Main::checkDoMacroArg(const QString &macro) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	const QString macroString = macro + QLatin1Char('\n');
+	const QString macroString = EnsureNewline(macro);
 
 	// Do a test parse
-	if (!isMacroValid(macroString, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(macroString, &errMsg, &stoppedAt)) {
 		Preferences::ReportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
 		return false;
 	}
