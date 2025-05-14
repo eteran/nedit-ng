@@ -482,13 +482,13 @@ std::error_code ReadSearchArgs(Arguments arguments, Direction *SearchDirection, 
 			return ec;
 		}
 
-		if (argStr == QLatin1String("wrap")) {
+		if (argStr == QStringLiteral("wrap")) {
 			*wrap = WrapMode::Wrap;
-		} else if (argStr == QLatin1String("nowrap")) {
+		} else if (argStr == QStringLiteral("nowrap")) {
 			*wrap = WrapMode::NoWrap;
-		} else if (argStr == QLatin1String("backward")) {
+		} else if (argStr == QStringLiteral("backward")) {
 			*SearchDirection = Direction::Backward;
-		} else if (argStr == QLatin1String("forward")) {
+		} else if (argStr == QStringLiteral("forward")) {
 			*SearchDirection = Direction::Forward;
 		} else if (!StringToSearchType(argStr, searchType)) {
 			return MacroErrorCode::UnrecognizedArgument;
@@ -513,11 +513,11 @@ Direction SearchDirection(Arguments arguments, size_t index) {
 			return Direction::Forward;
 		}
 
-		if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("forward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Forward;
 		}
 
-		if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("backward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Backward;
 		}
 	}
@@ -541,11 +541,11 @@ bool SearchKeepDialogs(Arguments arguments, size_t index) {
 			return Preferences::GetPrefKeepSearchDlogs();
 		}
 
-		if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("keep"), Qt::CaseInsensitive) == 0) {
 			return true;
 		}
 
-		if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("nokeep"), Qt::CaseInsensitive) == 0) {
 			return false;
 		}
 	}
@@ -569,11 +569,11 @@ WrapMode SearchWrap(Arguments arguments, size_t index) {
 			return Preferences::GetPrefSearchWraps();
 		}
 
-		if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("wrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::Wrap;
 		}
 
-		if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0) {
+		if (arg.compare(QStringLiteral("nowrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::NoWrap;
 		}
 	}
@@ -803,7 +803,7 @@ std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataVal
 std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	int count;
-	QString unitsString = QLatin1String("line");
+	QString unitsString = QStringLiteral("line");
 	switch (arguments.size()) {
 	case 2:
 		if (const std::error_code ec = ReadArguments(arguments, 0, &count, &unitsString)) {
@@ -820,9 +820,9 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 	}
 
 	TextArea::ScrollUnit units;
-	if (unitsString.startsWith(QLatin1String("page"))) {
+	if (unitsString.startsWith(QStringLiteral("page"))) {
 		units = TextArea::ScrollUnit::Pages;
-	} else if (unitsString.startsWith(QLatin1String("line"))) {
+	} else if (unitsString.startsWith(QStringLiteral("line"))) {
 		units = TextArea::ScrollUnit::Lines;
 	} else {
 		return MacroErrorCode::InvalidArgument;
@@ -841,7 +841,7 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	int count;
-	QString unitsString = QLatin1String("line");
+	QString unitsString = QStringLiteral("line");
 	switch (arguments.size()) {
 	case 2:
 		if (const std::error_code ec = ReadArguments(arguments, 0, &count, &unitsString)) {
@@ -858,9 +858,9 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 	}
 
 	TextArea::ScrollUnit units;
-	if (unitsString.startsWith(QLatin1String("page"))) {
+	if (unitsString.startsWith(QStringLiteral("page"))) {
 		units = TextArea::ScrollUnit::Pages;
-	} else if (unitsString.startsWith(QLatin1String("line"))) {
+	} else if (unitsString.startsWith(QStringLiteral("line"))) {
 		units = TextArea::ScrollUnit::Lines;
 	} else {
 		return MacroErrorCode::InvalidArgument;
@@ -1000,7 +1000,7 @@ std::error_code saveAsMS(DocumentWidget *document, Arguments arguments, DataValu
 			return ec;
 		}
 
-		if (string.compare(QLatin1String("wrapped"), Qt::CaseInsensitive) == 0) {
+		if (string.compare(QStringLiteral("wrapped"), Qt::CaseInsensitive) == 0) {
 			wrapped = true;
 		}
 	}
@@ -1180,7 +1180,7 @@ std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments, DataVa
 			return ec;
 		}
 
-		if (argument.compare(QLatin1String("extend"), Qt::CaseInsensitive) == 0) {
+		if (argument.compare(QStringLiteral("extend"), Qt::CaseInsensitive) == 0) {
 			extend = true;
 		}
 	}
@@ -1211,7 +1211,7 @@ std::error_code gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, 
 			return ec;
 		}
 
-		if (argument.compare(QLatin1String("extend"), Qt::CaseInsensitive) == 0) {
+		if (argument.compare(QStringLiteral("extend"), Qt::CaseInsensitive) == 0) {
 			extend = true;
 		}
 	}
@@ -1263,9 +1263,9 @@ std::error_code repeatMacroMS(DocumentWidget *document, Arguments arguments, Dat
 	}
 
 	int how;
-	if (howString.compare(QLatin1String("in_selection"), Qt::CaseInsensitive) == 0) {
+	if (howString.compare(QStringLiteral("in_selection"), Qt::CaseInsensitive) == 0) {
 		how = REPEAT_IN_SEL;
-	} else if (howString.compare(QLatin1String("to_end"), Qt::CaseInsensitive) == 0) {
+	} else if (howString.compare(QStringLiteral("to_end"), Qt::CaseInsensitive) == 0) {
 		how = REPEAT_TO_END;
 	} else {
 		bool ok;
@@ -1309,11 +1309,11 @@ std::error_code setAutoIndentMS(DocumentWidget *document, Arguments arguments, D
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (string == QLatin1String("off")) {
+	if (string == QStringLiteral("off")) {
 		document->setAutoIndent(IndentStyle::None);
-	} else if (string == QLatin1String("on")) {
+	} else if (string == QStringLiteral("on")) {
 		document->setAutoIndent(IndentStyle::Auto);
-	} else if (string == QLatin1String("smart")) {
+	} else if (string == QStringLiteral("smart")) {
 		document->setAutoIndent(IndentStyle::Smart);
 	} else {
 		qWarning("NEdit: set_auto_indent invalid argument");
@@ -1386,11 +1386,11 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 			return ec;
 		}
 
-		if (arg == QLatin1String("off")) {
+		if (arg == QStringLiteral("off")) {
 			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("delimiter")) {
+		} else if (arg == QStringLiteral("delimiter")) {
 			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else if (arg == QLatin1String("range")) {
+		} else if (arg == QStringLiteral("range")) {
 			document->setShowMatching(ShowMatchingStyle::Range);
 		}
 		/* For backward compatibility with pre-5.2 versions, we also
@@ -1398,9 +1398,9 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 		   It is quite unlikely, though, that anyone ever used this
 		   action procedure via the macro language or a key binding,
 		   so this can probably be left out safely. */
-		else if (arg == QLatin1String("0")) {
+		else if (arg == QStringLiteral("0")) {
 			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("1")) {
+		} else if (arg == QStringLiteral("1")) {
 			document->setShowMatching(ShowMatchingStyle::Delimiter);
 		} else {
 			qWarning("NEdit: Invalid argument for set_show_matching");
@@ -1471,11 +1471,11 @@ std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, Dat
 			return ec;
 		}
 
-		if (arg == QLatin1String("none")) {
+		if (arg == QStringLiteral("none")) {
 			document->setAutoWrap(WrapStyle::None);
-		} else if (arg == QLatin1String("auto")) {
+		} else if (arg == QStringLiteral("auto")) {
 			document->setAutoWrap(WrapStyle::Newline);
-		} else if (arg == QLatin1String("continuous")) {
+		} else if (arg == QStringLiteral("continuous")) {
 			document->setAutoWrap(WrapStyle::Continuous);
 		} else {
 			qWarning("NEdit: set_wrap_text invalid argument");
@@ -1524,7 +1524,7 @@ std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataVa
 			return ec;
 		}
 
-		if (arg2.compare(QLatin1String("continued"), Qt::CaseInsensitive) == 0) {
+		if (arg2.compare(QStringLiteral("continued"), Qt::CaseInsensitive) == 0) {
 			continued = true;
 		}
 	}
@@ -1711,11 +1711,11 @@ std::error_code focusWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 	std::vector<DocumentWidget *>::iterator it;
 
-	if (string == QLatin1String("last")) {
+	if (string == QStringLiteral("last")) {
 
 		it = std::find(documents.begin(), documents.end(), DocumentWidget::LastCreated);
 
-	} else if (string == QLatin1String("next")) {
+	} else if (string == QStringLiteral("next")) {
 
 		it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
 			return doc == document;
@@ -1900,7 +1900,7 @@ std::error_code getSelectionMS(DocumentWidget *document, Arguments arguments, Da
 
 		QString text = document->getAnySelection(ErrorSound::Beep);
 		if (text.isNull()) {
-			text = QLatin1String("");
+			text = QStringLiteral("");
 		}
 
 		// Return the text as an allocated string
@@ -2335,7 +2335,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 
 		if (!StringToSearchType(argStr, &searchType)) {
 			// It's not a search type.  is it "copy"?
-			if (argStr == QLatin1String("copy")) {
+			if (argStr == QStringLiteral("copy")) {
 				force = true;
 			} else {
 				return MacroErrorCode::UnrecognizedArgument;
@@ -2888,8 +2888,8 @@ std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, Data
 */
 std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	QString title = QLatin1String("Choose Filename");
-	QString mode  = QLatin1String("exist");
+	QString title = QStringLiteral("Choose Filename");
+	QString mode  = QStringLiteral("exist");
 	QString defaultPath;
 	QString defaultFilter;
 	QString defaultName;
@@ -2932,7 +2932,7 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 		return ec;
 	}
 
-	if ((mode != QLatin1String("exist")) != 0 && (mode != QLatin1String("new"))) {
+	if ((mode != QStringLiteral("exist")) != 0 && (mode != QStringLiteral("new"))) {
 		return MacroErrorCode::InvalidMode;
 	}
 
@@ -2943,11 +2943,11 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 
 	//  Set default filter
 	if (defaultFilter.isEmpty()) {
-		defaultFilter = QLatin1String("*");
+		defaultFilter = QStringLiteral("*");
 	}
 
 	QString filename;
-	if (mode == QLatin1String("exist")) {
+	if (mode == QStringLiteral("exist")) {
 		// NOTE(eteran); filters probably don't work quite the same with Qt's dialog
 		QStringList filenames = MainWindow::promptForExistingFiles(nullptr, defaultPath, title, QFileDialog::ExistingFile, defaultFilter, defaultName);
 		if (!filenames.isEmpty()) {
@@ -3078,9 +3078,9 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 			return ec;
 		}
 
-		if (argStr == QLatin1String("case")) {
+		if (argStr == QStringLiteral("case")) {
 			considerCase = true;
-		} else if (argStr == QLatin1String("nocase")) {
+		} else if (argStr == QStringLiteral("nocase")) {
 			considerCase = false;
 		} else {
 			return MacroErrorCode::UnrecognizedArgument;
@@ -3266,7 +3266,7 @@ std::error_code setBacklightStringMS(DocumentWidget *document, Arguments argumen
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	if (backlightString == QLatin1String("default")) {
+	if (backlightString == QStringLiteral("default")) {
 		backlightString = Preferences::GetPrefBacklightCharTypes();
 	}
 
@@ -3285,7 +3285,7 @@ std::error_code backlightStringMV(DocumentWidget *document, Arguments arguments,
 	QString backlightString = document->backlightCharTypes();
 
 	if (backlightString.isNull() || !document->backlightChars()) {
-		backlightString = QLatin1String("");
+		backlightString = QStringLiteral("");
 	}
 
 	*result = make_value(backlightString);
@@ -3710,7 +3710,7 @@ std::error_code languageModeMV(DocumentWidget *document, Arguments arguments, Da
 	QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 
 	if (lmName.isNull()) {
-		lmName = QLatin1String("Plain");
+		lmName = QStringLiteral("Plain");
 	}
 
 	*result = make_value(lmName);
@@ -4746,11 +4746,11 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 
 		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-		if (index == QLatin1String("last")) {
+		if (index == QStringLiteral("last")) {
 			document = *documents.rbegin();
-		} else if (index == QLatin1String("first")) {
+		} else if (index == QStringLiteral("first")) {
 			document = *documents.begin();
-		} else if (index == QLatin1String("next")) {
+		} else if (index == QStringLiteral("next")) {
 			auto it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
 				return doc == document;
 			});
@@ -4763,7 +4763,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 				document = *it;
 			}
 
-		} else if (index == QLatin1String("previous")) {
+		} else if (index == QStringLiteral("previous")) {
 			auto it = std::find_if(documents.rbegin(), documents.rend(), [document](DocumentWidget *doc) {
 				return doc == document;
 			});
@@ -4817,9 +4817,9 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 			return ec;
 		}
 
-		if (argument == QLatin1String("focus")) {
+		if (argument == QStringLiteral("focus")) {
 			focus = true;
-		} else if (argument == QLatin1String("nofocus")) {
+		} else if (argument == QStringLiteral("nofocus")) {
 			focus = false;
 		} else {
 			return MacroErrorCode::InvalidArgument;
@@ -4863,13 +4863,13 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 		return ec;
 	}
 
-	if (index == QLatin1String("first")) {
+	if (index == QStringLiteral("first")) {
 		paneIndex = 0;
-	} else if (index == QLatin1String("last")) {
+	} else if (index == QStringLiteral("last")) {
 		paneIndex = panes.size() - 1;
-	} else if (index == QLatin1String("next")) {
+	} else if (index == QStringLiteral("next")) {
 		paneIndex = (paneIndex + 1) % panes.size();
-	} else if (index == QLatin1String("previous")) {
+	} else if (index == QStringLiteral("previous")) {
 		paneIndex = (paneIndex - 1) % panes.size();
 	} else {
 		bool ok     = false;
@@ -4883,7 +4883,7 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 		} else if (n < 0) {
 			paneIndex = panes.size() + n;
 		} else {
-			paneIndex = -1;
+			paneIndex = static_cast<size_t>(-1);
 		}
 	}
 
@@ -5223,28 +5223,28 @@ void RegisterMacroSubroutines() {
 	   to the appropriate c routines to do the work */
 	for (const SubRoutine &routine : MacroSubrs) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	for (const SubRoutine &routine : SpecialVars) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolProcValue, subrPtr);
 	}
 
 	for (const SubRoutine &routine : MenuMacroSubrNames) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	for (const SubRoutine &routine : TextAreaSubrNames) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	/* Define global variables used for return values, remember their
 	   locations so they can be set without a LookupSymbol call */
 	for (unsigned int i = 0; i < ReturnGlobalNamesCount; i++) {
-		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, make_value());
+		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], SymbolGlobal, make_value());
 	}
 }
 
@@ -5299,12 +5299,12 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 		}
 
 		// look for define keyword, and compile and store defined routines
-		static const QRegularExpression defineRE(QLatin1String("define[ \t]"));
+		static const QRegularExpression defineRE(QStringLiteral("define[ \t]"));
 		if (in.match(defineRE)) {
 			in.skipWhitespace();
 
 			QString routineName;
-			static const QRegularExpression identRE(QLatin1String("[A-Za-z0-9_]+"));
+			static const QRegularExpression identRE(QStringLiteral("[A-Za-z0-9_]+"));
 			if (!in.match(identRE, &routineName)) {
 				if (errPos) {
 					*errPos = in.index();
@@ -5314,7 +5314,7 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*in.string(),
 					in.index(),
 					errIn,
-					QLatin1String("expected identifier"));
+					QStringLiteral("expected identifier"));
 			}
 
 			in.skipWhitespaceNL();
@@ -5328,14 +5328,14 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*in.string(),
 					in.index(),
 					errIn,
-					QLatin1String("expected '{'"));
+					QStringLiteral("expected '{'"));
 			}
 
 			const QString code = in.mid();
 
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
 			if (!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;
@@ -5352,16 +5352,16 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			if (runDocument) {
 				if (Symbol *const sym = LookupSymbolEx(routineName)) {
 
-					if (sym->type == MACRO_FUNCTION_SYM) {
+					if (sym->type == SymbolMacroFunc) {
 						delete to_program(sym->value);
 					} else {
-						sym->type = MACRO_FUNCTION_SYM;
+						sym->type = SymbolMacroFunc;
 					}
 
 					sym->value = make_value(prog);
 				} else {
 					const DataValue subrPtr = make_value(prog);
-					InstallSymbolEx(routineName, MACRO_FUNCTION_SYM, subrPtr);
+					InstallSymbolEx(routineName, SymbolMacroFunc, subrPtr);
 				}
 			}
 
@@ -5376,7 +5376,7 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			const QString code = in.mid();
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
 			if (!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;

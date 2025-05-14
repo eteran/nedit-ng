@@ -50,7 +50,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	}
 
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
-	static const QRegularExpression rx(QLatin1String("[\\sA-Za-z0-9_+$#-]+"));
+	static const QRegularExpression rx(QStringLiteral("[\\sA-Za-z0-9_+$#-]+"));
 	ui.editName->setValidator(new QRegularExpressionValidator(rx, this));
 
 	// 0-100
@@ -265,7 +265,7 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 	const QString recognitionExpr = ui.editRegex->text();
 	if (!recognitionExpr.isEmpty()) {
 		try {
-			auto compiledRE = make_regex(recognitionExpr, RE_DEFAULT_STANDARD);
+			auto compiledRE = MakeRegex(recognitionExpr, RE_DEFAULT_STANDARD);
 		} catch (const RegexError &e) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));

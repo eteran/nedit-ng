@@ -12,7 +12,7 @@ public:
 	static constexpr auto eventType = static_cast<QEvent::Type>(QEvent::User + 2);
 
 public:
-	WindowMenuEvent(QString macroString, QStringList arguments);
+	WindowMenuEvent(QString action, QStringList arguments);
 
 public:
 	QString argumentString() const;
@@ -20,13 +20,13 @@ public:
 	QString actionString() const;
 
 private:
-	QString macroString_;
+	QString action_;
 	QStringList arguments_;
 };
 
-template <class... Types>
-void EmitEvent(const char *name, Types... args) {
-	WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
+template <class... Ts>
+void EmitEvent(const char *name, Ts &&...args) {
+	WindowMenuEvent menuEvent(QString::fromLatin1(name), {std::forward<Ts>(args)...});
 	QApplication::sendEvent(qApp, &menuEvent);
 }
 

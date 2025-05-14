@@ -52,7 +52,7 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 		if (ch == '&') {
 			paren_no = 0;
 		} else if (ch == '\\') {
-			/* Can not pass register variable '&src' to function 'numeric_escape'
+			/* Can not pass register variable '&src' to function 'NumericEscape'
 			   so make a non-register copy that we can take the address of. */
 
 			Reader src_alias = in;
@@ -60,11 +60,11 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 			if (char digit = in.match_if([](char c) { return '1' <= c && c <= '9'; })) {
 				paren_no = static_cast<size_t>(digit - '0');
 
-			} else if ((test = literal_escape<char>(in.peek())) != '\0') {
+			} else if ((test = LiteralEscape<char>(in.peek())) != '\0') {
 				ch = test;
 				in.read();
 
-			} else if ((test = numeric_escape<char>(in.peek(), &src_alias)) != '\0') {
+			} else if ((test = NumericEscape<char>(in.peek(), &src_alias)) != '\0') {
 				ch = test;
 				in = src_alias;
 				in.read();

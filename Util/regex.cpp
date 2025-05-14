@@ -11,6 +11,6 @@
  * @param flags The flags to use for the regex compilation.
  * @return The compiled Regex object.
  */
-std::unique_ptr<Regex> make_regex(const QString &re, int flags) {
+std::unique_ptr<Regex> MakeRegex(const QString &re, int flags) {
 	return std::make_unique<Regex>(re.toStdString(), flags);
 }

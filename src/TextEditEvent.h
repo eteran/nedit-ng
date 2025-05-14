@@ -12,8 +12,8 @@ public:
 	static constexpr auto eventType = static_cast<QEvent::Type>(QEvent::User + 1);
 
 public:
-	TextEditEvent(QString macroString, TextArea::EventFlags flags, QString argument);
-	TextEditEvent(QString macroString, TextArea::EventFlags flags);
+	TextEditEvent(QString action, TextArea::EventFlags flags, QString argument);
+	TextEditEvent(QString action, TextArea::EventFlags flags);
 
 public:
 	QString argumentString() const;
@@ -21,7 +21,7 @@ public:
 	QString actionString() const;
 
 private:
-	QString macroString_;
+	QString action_;
 	QString argument_;
 	TextArea::EventFlags flags_;
 };

@@ -16,7 +16,7 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f)
 	Dialog::shrinkToFit(this);
 
 	// seed the history with a blank string, makes later logic simpler
-	history_ << QLatin1String("");
+	history_ << QStringLiteral("");
 }
 
 /**

@@ -15,7 +15,7 @@
  * avoid some confusion.
  * @note If the input string is null, an empty QString is returned.
  */
-QString ensure_newline(const QString &string) {
+QString EnsureNewline(const QString &string) {
 
 	if (string.isNull()) {
 		return QString();
@@ -34,7 +34,7 @@ QString ensure_newline(const QString &string) {
  * @param s The input string to convert.
  * @return A new string with all characters converted to uppercase.
  */
-std::string to_upper(std::string_view s) {
+std::string ToUpper(std::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
@@ -50,7 +50,7 @@ std::string to_upper(std::string_view s) {
  * @param s The input string to convert.
  * @return A new string with all characters converted to lowercase.
  */
-std::string to_lower(std::string_view s) {
+std::string ToLower(std::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());

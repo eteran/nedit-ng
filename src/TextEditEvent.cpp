@@ -3,30 +3,30 @@
 #include "CommandRecorder.h"
 
 /**
- * @brief
+ * @brief Constructor for TextEditEvent.
  *
- * @param macroString
- * @param argument
- * @param flags
+ * @param action The action associated with the event.
+ * @param argument The argument associated with the event.
+ * @param flags The flags associated with the event.
  */
-TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags, QString argument)
-	: QEvent(eventType), macroString_(std::move(macroString)), argument_(std::move(argument)), flags_(flags) {
+TextEditEvent::TextEditEvent(QString action, TextArea::EventFlags flags, QString argument)
+	: QEvent(eventType), action_(std::move(action)), argument_(std::move(argument)), flags_(flags) {
 }
 
 /**
- * @brief
+ * @brief Constructor for TextEditEvent without an argument.
  *
- * @param macroString
- * @param flags
+ * @param action The action associated with the event.
+ * @param flags The flags associated with the event.
  */
-TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags)
-	: QEvent(eventType), macroString_(std::move(macroString)), flags_(flags) {
+TextEditEvent::TextEditEvent(QString action, TextArea::EventFlags flags)
+	: QEvent(eventType), action_(std::move(action)), flags_(flags) {
 }
 
 /**
- * @brief
+ * @brief Generates a string representation of the event's arguments.
  *
- * @return
+ * @return A string representation of the event's arguments.
  */
 QString TextEditEvent::argumentString() const {
 	QStringList args;
@@ -36,68 +36,68 @@ QString TextEditEvent::argumentString() const {
 	}
 
 	if (flags_ & TextArea::AbsoluteFlag) {
-		args << QLatin1String("\"absolute\"");
+		args << QStringLiteral("\"absolute\"");
 	}
 	if (flags_ & TextArea::ColumnFlag) {
-		args << QLatin1String("\"column\"");
+		args << QStringLiteral("\"column\"");
 	}
 	if (flags_ & TextArea::CopyFlag) {
-		args << QLatin1String("\"copy\"");
+		args << QStringLiteral("\"copy\"");
 	}
 	if (flags_ & TextArea::DownFlag) {
-		args << QLatin1String("\"down\"");
+		args << QStringLiteral("\"down\"");
 	}
 	if (flags_ & TextArea::ExtendFlag) {
-		args << QLatin1String("\"extend\"");
+		args << QStringLiteral("\"extend\"");
 	}
 	if (flags_ & TextArea::LeftFlag) {
-		args << QLatin1String("\"left\"");
+		args << QStringLiteral("\"left\"");
 	}
 	if (flags_ & TextArea::OverlayFlag) {
-		args << QLatin1String("\"overlay\"");
+		args << QStringLiteral("\"overlay\"");
 	}
 	if (flags_ & TextArea::RectFlag) {
-		args << QLatin1String("\"rect\"");
+		args << QStringLiteral("\"rect\"");
 	}
 	if (flags_ & TextArea::RightFlag) {
-		args << QLatin1String("\"right\"");
+		args << QStringLiteral("\"right\"");
 	}
 	if (flags_ & TextArea::UpFlag) {
-		args << QLatin1String("\"up\"");
+		args << QStringLiteral("\"up\"");
 	}
 	if (flags_ & TextArea::WrapFlag) {
-		args << QLatin1String("\"wrap\"");
+		args << QStringLiteral("\"wrap\"");
 	}
 	if (flags_ & TextArea::TailFlag) {
-		args << QLatin1String("\"tail\"");
+		args << QStringLiteral("\"tail\"");
 	}
 	if (flags_ & TextArea::StutterFlag) {
-		args << QLatin1String("\"stutter\"");
+		args << QStringLiteral("\"stutter\"");
 	}
 	if (flags_ & TextArea::ScrollbarFlag) {
-		args << QLatin1String("\"scrollbar\"");
+		args << QStringLiteral("\"scrollbar\"");
 	}
 	if (flags_ & TextArea::NoBellFlag) {
-		args << QLatin1String("\"nobell\"");
+		args << QStringLiteral("\"nobell\"");
 	}
 
-	return args.join(QLatin1String(","));
+	return args.join(QStringLiteral(","));
 }
 
 /**
- * @brief
+ * @brief Generates a string representation of the event.
  *
- * @return
+ * @return A string representation of the event.
  */
 QString TextEditEvent::toString() const {
-	return QStringLiteral("%1(%2)").arg(macroString_, argumentString());
+	return QStringLiteral("%1(%2)").arg(action_, argumentString());
 }
 
 /**
- * @brief
+ * @brief Returns the action associated with the event.
  *
- * @return
+ * @return The action associated with the event.
  */
 QString TextEditEvent::actionString() const {
-	return macroString_;
+	return action_;
 }
