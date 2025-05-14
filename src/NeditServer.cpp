@@ -192,7 +192,7 @@ void NeditServer::newConnection() {
 	QPointer<DocumentWidget> lastFile;
 	QScreen *const currentDesktop = CurrentDesktop();
 
-	auto array = jsonDocument.array();
+	const QJsonArray array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (array.isEmpty()) {
@@ -219,7 +219,7 @@ void NeditServer::newConnection() {
 		return;
 	}
 
-	for (auto entry : array) {
+	for (auto &entry : array) {
 
 		if (!entry.isObject()) {
 			qWarning("NEdit: error processing server request. Non-object in JSON array.");
