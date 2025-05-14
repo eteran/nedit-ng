@@ -32,6 +32,8 @@ auto BasicTextBuffer<Ch, Tr>::BufAsString() noexcept -> view_type {
 
 /**
  * @brief Replace the entire contents of the text buffer
+ *
+ * @param text The new text to set in the buffer.
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
@@ -54,10 +56,10 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 }
 
 /**
- * @brief Returns a copy of the text between "start" and "end" character positions.
+ * @brief Returns a copy of the text between `start` and `end` character positions.
  *
  * @param range The range of text to retrieve.
- * @return A string containing the text between the specified positions.
+ * @return The text between the specified positions.
  */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextRange range) const -> string_type {
@@ -65,11 +67,11 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextRange range) const -> string_type 
 }
 
 /**
- * @brief Returns a copy of the text between "start" and "end" character positions.
+ * @brief Returns a copy of the text between `start` and `end` character positions.
  *
  * @param start The starting position of the range.
  * @param end The ending position of the range.
- * @return A string containing the text between the specified positions.
+ * @return The text between the specified positions.
  */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextCursor start, TextCursor end) const -> string_type {
@@ -114,12 +116,8 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 	return buffer_[to_integer(pos)];
 }
 
-/*
-**
-*/
-
 /**
- * @brief Insert string `text` at position `pos`
+ * @brief Insert string `text` at position `pos`.
  *
  * @param pos The position to insert the text at.
  * @param text The text to insert.
@@ -140,10 +138,10 @@ void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, view_type text) noexcept
 }
 
 /**
- * @brief
+ * @brief Insert character `ch` at position `pos`.
  *
- * @param pos
- * @param ch
+ * @param pos The position to insert the character at.
+ * @param ch The character to insert.
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, Ch ch) noexcept {
@@ -160,20 +158,35 @@ void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, Ch ch) noexcept {
 	callModifyCBs(pos, 0, nInserted, 0, {});
 }
 
-/*
-** Delete the characters in the range, and insert the
-** string "text" in their place in the buffer
-*/
+/**
+ * @brief Delete the characters in `range`, and insert the string `text` in their place in the buffer.
+ *
+ * @param range The range of text to replace.
+ * @param text The new text to insert.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplace(TextRange range, view_type text) noexcept {
 	BufReplace(range.start, range.end, text);
 }
 
+/**
+ * @brief Delete the characters in `range`, and insert the character `ch` in their place in the buffer.
+ *
+ * @param range The range of text to replace.
+ * @param ch The new character to insert.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplace(TextRange range, Ch ch) noexcept {
 	BufReplace(range.start, range.end, ch);
 }
 
+/**
+ * @brief Delete the characters between `start` and `end`, and insert the string `text` in their place in the buffer.
+ *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ * @param text The new text to insert.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplace(TextCursor start, TextCursor end, view_type text) noexcept {
 
@@ -190,10 +203,13 @@ void BasicTextBuffer<Ch, Tr>::BufReplace(TextCursor start, TextCursor end, view_
 	callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }
 
-/*
-** Delete the characters between "start" and "end", and insert the
-** character "ch in their place in the buffer
-*/
+/**
+ * @brief Delete the characters between `start` and `end`, and insert the character `ch` in their place in the buffer.
+ *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ * @param ch The new character to insert.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplace(TextCursor start, TextCursor end, Ch ch) noexcept {
 
@@ -210,6 +226,12 @@ void BasicTextBuffer<Ch, Tr>::BufReplace(TextCursor start, TextCursor end, Ch ch
 	callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }
 
+/**
+ * @brief Delete the characters between `start` and `end` in the buffer.
+ *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemove(TextCursor start, TextCursor end) noexcept {
 
@@ -225,6 +247,14 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(TextCursor start, TextCursor end) noexce
 	callModifyCBs(start, end - start, 0, 0, deletedText);
 }
 
+/**
+ * @brief Copy a range of text from one buffer to another.
+ *
+ * @param fromBuf The source buffer to copy from.
+ * @param fromStart The starting position in the source buffer.
+ * @param fromEnd The ending position in the source buffer.
+ * @param toPos The position in the destination buffer to copy to.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, TextCursor fromStart, TextCursor fromEnd, TextCursor toPos) noexcept {
 
@@ -235,14 +265,18 @@ void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, T
 	updateSelections(toPos, 0, length);
 }
 
-/*
-** Insert "text" column-wise into buffer starting at displayed character
-** position "column" on the line beginning at "startPos".  Opens a rectangular
-** space the width and height of "text", by moving all text to the right of
-** "column" right.  If charsInserted and charsDeleted are not nullptr, the
-** number of characters inserted and deleted in the operation (beginning
-** at startPos) are returned in these arguments
-*/
+/**
+ * @brief Insert `text` column-wise into buffer starting at displayed character
+ ** position `column` on the line beginning at `startPos`. Opens a rectangular
+ ** space the width and height of `text`, by moving all text to the right of
+ ** `column` right.
+ *
+ * @param column The column to insert the text at.
+ * @param startPos The starting position in the buffer.
+ * @param text The text to insert.
+ * @param charsInserted Where to store the number of characters inserted.
+ * @param charsDeleted Where to store the number of characters deleted.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertCol(int64_t column, TextCursor startPos, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
 
@@ -272,13 +306,18 @@ void BasicTextBuffer<Ch, Tr>::BufInsertCol(int64_t column, TextCursor startPos, 
 	}
 }
 
-/*
-** Overlay a rectangular area of text without calling the modify callbacks.
-** "nDeleted" and "nInserted" return the number of characters deleted and
-** inserted beginning at the start of the line containing "startPos".
-** "endPos" returns buffer position of the lower left edge of the inserted
-** column (as a hint for routines which need to set a cursor position).
-*/
+/**
+ * @brief Overlay a rectangular area of text without calling the modify callbacks.
+ *
+ *
+ * @param startPos The starting position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ * @param insText The text to insert.
+ * @param nDeleted Where to store the number of characters deleted.
+ * @param nInserted Where to store the number of characters inserted.
+ * @param endPos Where to store the position of the lower left edge of the inserted column. (as a hint for routines which need to set a cursor position).
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos) {
 	int64_t len;
@@ -288,8 +327,8 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 	   possibly expanded tabs in the inserted text, as well as per line: 1)
 	   an additional 2*MAX_EXP_CHAR_LEN characters for padding where tabs
 	   and control characters cross the column of the selection, 2) up to
-	   "column" additional spaces per line for padding out to the position
-	   of "column", 3) padding up to the width of the inserted text if that
+	   `column` additional spaces per line for padding out to the position
+	   of `column`, 3) padding up to the width of the inserted text if that
 	   must be padded to align the text beyond the inserted column.  (Space
 	   for additional newlines if the inserted text extends beyond the end
 	   of the buffer is counted with the length of insText) */
@@ -349,13 +388,17 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 	*endPos    = start + ssize(outStr) - len + endOffset;
 }
 
-/*
-** Overlay "text" between displayed character positions "rectStart" and
-** "rectEnd" on the line beginning at "startPos".  If charsInserted and
-** charsDeleted are not nullptr, the number of characters inserted and deleted
-** in the operation (beginning at startPos) are returned in these arguments.
-** If rectEnd equals -1, the width of the inserted text is measured first.
-*/
+/**
+ * @brief Overlay `text` between displayed character positions `rectStart` and
+ * `rectEnd` on the line beginning at `startPos`.
+ *
+ * @param startPos The starting position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle, or -1 to measure the width of the text.
+ * @param text The text to insert.
+ * @param charsInserted Where to store the number of characters inserted.
+ * @param charsDeleted Where to store the number of characters deleted.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufOverlayRect(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
 
@@ -389,11 +432,18 @@ void BasicTextBuffer<Ch, Tr>::BufOverlayRect(TextCursor startPos, int64_t rectSt
 	}
 }
 
-/*
-** Replace a rectangular area in buf, given by "start", "end", "rectStart",
-** and "rectEnd", with "text".  If "text" is vertically longer than the
-** rectangle, add extra lines to make room for it.
-*/
+/**
+ * @brief Replace a rectangular area in buf, given by `start`, `end`, `rectStart`,
+ * and `rectEnd`, with `text`.
+ *
+ * @param start The starting position in the buffer.
+ * @param end The ending position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ * @param text The text to insert.
+ *
+ * @note If `text` is longer than the rectangle, it will be padded with newlines.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, view_type text) {
 
@@ -412,7 +462,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRect(TextCursor start, TextCursor end, i
 	   will indent all of the text to the right of the rectangle to the same
 	   column.  If more lines will be inserted than deleted, insert extra
 	   lines in the buffer at the end of the rectangle to make room for the
-	   additional lines in "text" */
+	   additional lines in `text` */
 	const int64_t nInsertedLines = countLines(text);
 	const int64_t nDeletedLines  = BufCountLines(start, end);
 
@@ -454,10 +504,15 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRect(TextCursor start, TextCursor end, i
 	callModifyCBs(start, end - start, insertInserted, 0, deletedText);
 }
 
-/*
-** Remove a rectangular swath of characters between character positions start
-** and end and horizontal displayed-character offsets rectStart and rectEnd.
-*/
+/**
+ * @brief Remove a rectangular swath of characters between character positions `start`
+ * and `end` and horizontal displayed-character offsets `rectStart` and `rectEnd`.
+ *
+ * @param start The starting position in the buffer.
+ * @param end The ending position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemoveRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
 
@@ -474,11 +529,15 @@ void BasicTextBuffer<Ch, Tr>::BufRemoveRect(TextCursor start, TextCursor end, in
 	callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }
 
-/*
-** Clear a rectangular "hole" out of the buffer between character positions
-** start and end and horizontal displayed-character offsets rectStart and
-** rectEnd.
-*/
+/**
+ * @brief Clear a rectangular area in the buffer between `start` and `end` with
+ * newlines.
+ *
+ * @param start The starting position in the buffer.
+ * @param end The ending position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufClearRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
 
@@ -488,6 +547,15 @@ void BasicTextBuffer<Ch, Tr>::BufClearRect(TextCursor start, TextCursor end, int
 	BufOverlayRect(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
 }
 
+/**
+ * @brief Get the text in a rectangular area of the buffer.
+ *
+ * @param start The starting position in the buffer.
+ * @param end The ending position in the buffer.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ * @return The text in the specified rectangular area.
+ */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const -> string_type {
 
@@ -526,10 +594,12 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end,
 	return realignTabs(textOut, rectStart, 0, tabDist_, useTabs_);
 }
 
-/*
-** Set the hardware tab distance used by all displays for this buffer,
-** and used in computing offsets for rectangular selection operations.
-*/
+/**
+ * @brief Set the tab distance for the text buffer.
+ *
+ * @param distance The new tab distance to set.
+ * @param notify Whether to notify the display callbacks.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int distance, bool notify) noexcept {
 
@@ -549,22 +619,41 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int distance, bool notify) noexc
 	}
 }
 
+/**
+ * @brief Calls the modification callbacks to update the display for a selection.
+ *
+ * @param start The starting position of the selection.
+ * @param end The ending position of the selection.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(TextCursor start, TextCursor end) const noexcept {
 	// just to make sure colors in the selected region are up to date
 	callModifyCBs(start, 0, 0, end - start, {});
 }
 
+/**
+ * @brief Select all text in the buffer.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelectAll() noexcept {
 	BufSelect(BufStartOfBuffer(), BufEndOfBuffer());
 }
 
+/**
+ * @brief Select a range of text in the buffer.
+ *
+ * @param range The range of text to select.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(std::pair<TextCursor, TextCursor> range) noexcept {
+	// TODO(eteran): use TextRange instead of std::pair
 	BufSelect(range.first, range.second);
 }
 
+/**
+ * @brief If the X selection is enabled, update the primary selection by calling the
+ * selection update callback.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 	if (syncXSelection_ && selectionUpdate_) {
@@ -572,6 +661,12 @@ void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 	}
 }
 
+/**
+ * @brief Select a range of text in the buffer.
+ *
+ * @param start The starting position of the selection.
+ * @param end The ending position of the selection.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {
 	const Selection oldSelection = primary;
@@ -584,6 +679,9 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexce
 #endif
 }
 
+/**
+ * @brief Unselect the current selection in the buffer.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 	const Selection oldSelection = primary;
@@ -593,6 +691,14 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 	redisplaySelection(oldSelection, &primary);
 }
 
+/**
+ * @brief Select a rectangular area of text in the buffer.
+ *
+ * @param start The starting position of the selection.
+ * @param end The ending position of the selection.
+ * @param rectStart The starting position of the rectangle.
+ * @param rectEnd The ending position of the rectangle.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
 	const Selection oldSelection = primary;
@@ -605,6 +711,11 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, in
 #endif
 }
 
+/**
+ * @brief Get the current selection position in the buffer.
+ *
+ * @return The current selection position, or an empty optional if no selection is present.
+ */
 template <class Ch, class Tr>
 std::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::BufGetSelectionPos() const noexcept {
 	return primary.getSelectionPos();
@@ -758,18 +869,18 @@ void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufP
 }
 
 /**
- * @brief
+ * @brief Get a cursor pointing to the end of the buffer.
  *
- * @return
+ * @return A cursor pointing to the end of the buffer.
  */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
 	return TextCursor(buffer_.size());
 }
 
-/*
-** Find the position of the start of the line containing position "pos"
-*/
+/**
+ * @brief Find the position of the start of the line containing position `pos`.
+ */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfLine(TextCursor pos) const noexcept {
 
@@ -782,7 +893,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfLine(TextCursor pos) const noexcep
 }
 
 /*
-** Find the position of the end of the line containing position "pos"
+** Find the position of the end of the line containing position `pos`
 ** (which is either a pointer to the newline character ending the line,
 ** or a pointer to one character beyond the end of the buffer)
 */
@@ -800,8 +911,8 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfLine(TextCursor pos) const noexcept 
 /*
 ** Get a character from the text buffer expanded into it's screen
 ** representation (which may be several characters for a tab or a
-** control code).  Returns the number of characters written to "outStr".
-** "indent" is the number of characters from the start of the line
+** control code).  Returns the number of characters written to `outStr`.
+** `indent` is the number of characters from the start of the line
 ** for figuring tabs.
 */
 template <class Ch, class Tr>
@@ -812,8 +923,8 @@ int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(TextCursor pos, int64_t indent, 
 /*
 ** Expand a single character from the text buffer into it's screen
 ** representation (which may be several characters for a tab or a
-** control code).  Returns the number of characters added to "outStr".
-** "indent" is the number of characters from the start of the line
+** control code).  Returns the number of characters added to `outStr`.
+** `indent` is the number of characters from the start of the line
 ** for figuring tabs.  Output string is guaranteed to be shorter or
 ** equal in length to MAX_EXP_CHAR_LEN
 */
@@ -868,7 +979,7 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch outStr
 }
 
 /*
-** Return the length in displayed characters of character "ch" expanded
+** Return the length in displayed characters of character `ch` expanded
 ** for display
 */
 template <class Ch, class Tr>
@@ -893,7 +1004,7 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) no
 
 /*
 ** Count the number of displayed characters between buffer position
-** "lineStartPos" and "targetPos". (displayed characters are the characters
+** `lineStartPos` and `targetPos`. (displayed characters are the characters
 ** shown on the screen to represent characters in the buffer, where tabs and
 ** control characters are expanded)
 */
@@ -913,7 +1024,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(TextCursor lineStartPos, Text
 }
 
 /*
-** Count forward from buffer position "startPos" in displayed characters
+** Count forward from buffer position `startPos` in displayed characters
 ** (displayed characters are the characters shown on the screen to represent
 ** characters in the buffer, where tabs and control characters are expanded)
 */
@@ -939,8 +1050,8 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(TextCursor lineStar
 }
 
 /*
-** Count the number of newlines between startPos and endPos in buffer "buf".
-** The character at position "endPos" is not counted.
+** Count the number of newlines between startPos and endPos in buffer `buf`.
+** The character at position `endPos` is not counted.
 */
 template <class Ch, class Tr>
 int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept {
@@ -964,8 +1075,8 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(TextCursor startPos, TextCursor e
 }
 
 /*
-** Find the first character of the line "nLines" forward from "startPos"
-** in "buf" and return its position
+** Find the first character of the line `nLines` forward from `startPos`
+** in `buf` and return its position
 */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
@@ -991,8 +1102,8 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 }
 
 /*
-** Find the position of the first character of the line "nLines" backwards
-** from "startPos" (not counting the character pointed to by "startpos" if
+** Find the position of the first character of the line `nLines` backwards
+** from `startPos` (not counting the character pointed to by `startpos` if
 ** that is a newline).  nLines == 0 means find the beginning of
 ** the line
 */
@@ -1025,8 +1136,8 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 }
 
 /*
-** Search forwards in buffer for characters in "searchChars", starting
-** with the character at "startPos", and returning the result
+** Search forwards in buffer for characters in `searchChars`, starting
+** with the character at `startPos`, and returning the result
 */
 template <class Ch, class Tr>
 std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, view_type searchChars) const noexcept {
@@ -1051,8 +1162,8 @@ std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor star
 }
 
 /*
-** Search backwards in buffer for characters in "searchChars", starting
-** with the character BEFORE at "startPos"
+** Search backwards in buffer for characters in `searchChars`, starting
+** with the character BEFORE at `startPos`
 */
 template <class Ch, class Tr>
 std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, view_type searchChars) const noexcept {
@@ -1136,8 +1247,8 @@ int64_t BasicTextBuffer<Ch, Tr>::insert(TextCursor pos, Ch ch) noexcept {
 }
 
 /*
-** Search forwards in buffer for character "searchChar", starting
-** with the character "startPos". (The difference between this and
+** Search forwards in buffer for character `searchChar`, starting
+** with the character `startPos`. (The difference between this and
 ** BufSearchForwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
@@ -1159,8 +1270,8 @@ std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor star
 }
 
 /*
-** Search backwards in buffer for character "searchChar", starting
-** with the character BEFORE "startPos". (The difference between this and
+** Search backwards in buffer for character `searchChar`, starting
+** with the character BEFORE `startPos`. (The difference between this and
 ** BufSearchBackwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
@@ -1246,7 +1357,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRange(TextCursor start, TextCursor end) noex
 ** Delete a rectangle of text without calling the modify callbacks.  Returns
 ** the number of characters replacing those between start and end.  Note that
 ** in some pathological cases, deleting can actually increase the size of
-** the buffer because of tab expansions.  "endPos" returns the buffer position
+** the buffer because of tab expansions.  `endPos` returns the buffer position
 ** of the point in the last line where the text was removed (as a hint for
 ** routines which need to position the cursor after a delete operation)
 */
@@ -1366,9 +1477,9 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
 /*
 ** Insert a column of text without calling the modify callbacks.  Note that
 ** in some pathological cases, inserting can actually decrease the size of
-** the buffer because of spaces being coalesced into tabs.  "nDeleted" and
-** "nInserted" return the number of characters deleted and inserted beginning
-** at the start of the line containing "startPos".  "endPos" returns buffer
+** the buffer because of spaces being coalesced into tabs.  `nDeleted` and
+** `nInserted` return the number of characters deleted and inserted beginning
+** at the start of the line containing `startPos`.  `endPos` returns buffer
 ** position of the lower left edge of the inserted column (as a hint for
 ** routines which need to set a cursor position).
 */
@@ -1386,8 +1497,8 @@ void BasicTextBuffer<Ch, Tr>::insertCol(int64_t column, TextCursor startPos, vie
 	   possibly expanded tabs in both the inserted text and the replaced
 	   area, as well as per line: 1) an additional 2*MAX_EXP_CHAR_LEN
 	   characters for padding where tabs and control characters cross the
-	   column of the selection, 2) up to "column" additional spaces per
-	   line for padding out to the position of "column", 3) padding up
+	   column of the selection, 2) up to `column` additional spaces per
+	   line for padding out to the position of `column`, 3) padding up
 	   to the width of the inserted text if that must be padded to align
 	   the text beyond the inserted column.  (Space for additional
 	   newlines if the inserted text extends beyond the end of the buffer
@@ -1572,7 +1683,7 @@ void BasicTextBuffer<Ch, Tr>::replaceSelected(Selection *sel, view_type text) no
 }
 
 /*
-** Update all of the selections in "buf" for changes in the buffer's text
+** Update all of the selections in `buf` for changes in the buffer's text
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept {
@@ -1609,7 +1720,7 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextRange *range) const noexcept {
 
-	// TODO(eteran): return optional "range"?
+	// TODO(eteran): return optional `range`?
 
 	TextCursor selStart;
 	TextCursor selEnd;
@@ -1679,8 +1790,8 @@ auto BasicTextBuffer<Ch, Tr>::unexpandTabs(view_type text, int64_t startIndent, 
 
 /*
 ** Expand tabs to spaces for a block of text.  The additional parameter
-** "startIndent" if nonzero, indicates that the text is a rectangular selection
-** beginning at column "startIndent"
+** `startIndent` if nonzero, indicates that the text is a rectangular selection
+** beginning at column `startIndent`
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::expandTabs(view_type text, int64_t startIndent, int tabDist) -> string_type {
@@ -1731,9 +1842,9 @@ auto BasicTextBuffer<Ch, Tr>::expandTabs(view_type text, int64_t startIndent, in
 }
 
 /*
-** Adjust the space and tab characters from string "text" so that non-white
+** Adjust the space and tab characters from string `text` so that non-white
 ** characters remain stationary when the text is shifted from starting at
-** "origIndent" to starting at "newIndent".
+** `origIndent` to starting at `newIndent`.
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::realignTabs(view_type text, int64_t origIndent, int64_t newIndent, int tabDist, bool useTabs) noexcept -> string_type {
@@ -1785,9 +1896,9 @@ int BasicTextBuffer<Ch, Tr>::addPadding(Out out, int64_t startIndent, int64_t to
 }
 
 /*
-** Insert characters from single-line string "insLine" in single-line string
-** "line" at "column", leaving "insWidth" space before continuing line.
-** "outLen" returns the number of characters written to "outStr", "endOffset"
+** Insert characters from single-line string `insLine` in single-line string
+** `line` at `column`, leaving `insWidth` space before continuing line.
+** `outLen` returns the number of characters written to `outStr`, `endOffset`
 ** returns the number of characters from the beginning of the string to
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
@@ -1798,7 +1909,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	int64_t len = 0;
 	int64_t postColIndent;
 
-	// copy the line up to "column"
+	// copy the line up to `column`
 	auto outPtr    = std::back_inserter(*outStr);
 	int64_t indent = 0;
 
@@ -1813,7 +1924,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 		*outPtr++ = *linePtr;
 	}
 
-	/* If "column" falls in the middle of a character, and the character is a
+	/* If `column` falls in the middle of a character, and the character is a
 	   tab, leave it off and leave the indent short and it will get padded
 	   later.  If it's a control character, insert it and adjust indent
 	   accordingly. */
@@ -1841,7 +1952,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 		indent = column;
 	}
 
-	/* Copy the text from "insLine" (if any), recalculating the tabs as if
+	/* Copy the text from `insLine` (if any), recalculating the tabs as if
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, indent, tabDist, useTabs);
@@ -1854,7 +1965,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 		}
 	}
 
-	// If the original line did not extend past "column", that's all
+	// If the original line did not extend past `column`, that's all
 	if (linePtr == line.end()) {
 		*endOffset = static_cast<int64_t>(outStr->size());
 		return;
@@ -1866,7 +1977,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	len              = addPadding(outPtr, indent, toIndent, tabDist, useTabs);
 	indent           = toIndent;
 
-	// realign tabs for text beyond "column" and write it out
+	// realign tabs for text beyond `column` and write it out
 	string_type retabbedStr = realignTabs(
 		line.substr(linePtr - line.begin()),
 		postColIndent,
@@ -1880,11 +1991,11 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 }
 
 /*
-** Remove characters in single-line string "line" between displayed positions
-** "rectStart" and "rectEnd", and write the result to "outStr", which is
+** Remove characters in single-line string `line` between displayed positions
+** `rectStart` and `rectEnd`, and write the result to `outStr`, which is
 ** assumed to be large enough to hold the returned string.  Note that in
 ** certain cases, it is possible for the string to get longer due to
-** expansion of tabs.  "endOffset" returns the number of characters from
+** expansion of tabs.  `endOffset` returns the number of characters from
 ** the beginning of the string to the point where the characters were
 ** deleted (as a hint for routines which need to position the cursor).
 */
@@ -1945,7 +2056,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
 }
 
 /*
-** Copy from "text" to end up to but not including newline (or end of "text")
+** Copy from `text` to end up to but not including newline (or end of `text`)
 ** and return the copy
 */
 template <class Ch, class Tr>
@@ -1964,7 +2075,7 @@ int64_t BasicTextBuffer<Ch, Tr>::countLines(view_type string) noexcept {
 }
 
 /*
-** Measure the width in displayed characters of string "text"
+** Measure the width in displayed characters of string `text`
 */
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::textWidth(view_type text, int tabDist) noexcept {
@@ -1984,9 +2095,9 @@ int BasicTextBuffer<Ch, Tr>::textWidth(view_type text, int tabDist) noexcept {
 }
 
 /*
-** Overlay characters from single-line string "insLine" on single-line string
-** "line" between displayed character offsets "rectStart" and "rectEnd".
-** "outLen" returns the number of characters written to "outStr", "endOffset"
+** Overlay characters from single-line string `insLine` on single-line string
+** `line` between displayed character offsets `rectStart` and `rectEnd`.
+** `outLen` returns the number of characters written to `outStr`, `endOffset`
 ** returns the number of characters from the beginning of the string to
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
@@ -1998,7 +2109,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 
 	int postRectIndent;
 
-	/* copy the line up to "rectStart" or just before the char that contains it*/
+	/* copy the line up to `rectStart` or just before the char that contains it*/
 	auto outPtr       = std::back_inserter(*outStr);
 	int inIndent      = 0;
 	int64_t outIndent = 0;
@@ -2016,7 +2127,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 		*outPtr++ = *linePtr;
 	}
 
-	/* If "rectStart" falls in the middle of a character, and the character
+	/* If `rectStart` falls in the middle of a character, and the character
 	   is a tab, leave it off and leave the outIndent short and it will get
 	   padded later.  If it's a control character, insert it and adjust
 	   outIndent accordingly. */
@@ -2057,7 +2168,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 
 	outIndent = rectStart;
 
-	/* Copy the text from "insLine" (if any), recalculating the tabs as if
+	/* Copy the text from `insLine` (if any), recalculating the tabs as if
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, rectStart, tabDist, useTabs);
@@ -2070,7 +2181,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 		}
 	}
 
-	/* If the original line did not extend past "rectStart", that's all */
+	/* If the original line did not extend past `rectStart`, that's all */
 	if (linePtr == line.end()) {
 		*endOffset = static_cast<int64_t>(outStr->size());
 		return;
@@ -2083,13 +2194,13 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 
 	*endOffset = static_cast<int64_t>(outStr->size());
 
-	/* copy the text beyond "rectEnd" */
+	/* copy the text beyond `rectEnd` */
 	std::copy(linePtr, line.end(), outPtr);
 }
 
-/*
-** Create an empty text buffer
-*/
+/**
+ * @brief Construct a new BasicTextBuffer object.
+ */
 template <class Ch, class Tr>
 BasicTextBuffer<Ch, Tr>::BasicTextBuffer()
 	: BasicTextBuffer(0) {
@@ -2150,10 +2261,10 @@ void BasicTextBuffer<Ch, Tr>::BufSetSelectionUpdate(selection_update_callback_ty
 }
 
 /**
- * @brief
+ * @brief Set the selection to the given start and end positions.
  *
- * @param newStart
- * @param newEnd
+ * @param newStart The new start position of the selection.
+ * @param newEnd The new end position of the selection.
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextCursor newEnd) {
@@ -2165,12 +2276,13 @@ void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextC
 }
 
 /**
- * @brief
+ * @brief Set the selection to the given start and end positions, and
+ * rectangular selection start and end.
  *
- * @param newStart
- * @param newEnd
- * @param newRectStart
- * @param newRectEnd
+ * @param newStart The new start position of the selection.
+ * @param newEnd The new end position of the selection.
+ * @param newRectStart The new start position of the rectangular selection.
+ * @param newRectEnd The new end position of the rectangular selection.
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, TextCursor newEnd, int64_t newRectStart, int64_t newRectEnd) {
@@ -2184,14 +2296,14 @@ void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, Text
 }
 
 /**
- * @brief
+ * @brief Get the selection position.
  *
- * @param start
- * @param end
- * @param isRect
- * @param rectStart
- * @param rectEnd
- * @return
+ * @param start Where to store the start position of the selection.
+ * @param end Where to store the end position of the selection.
+ * @param isRect Where to store the whether the selection is rectangular.
+ * @param rectStart Where to store the start position of the rectangular selection.
+ * @param rectEnd Where to store the end position of the rectangular selection.
+ * @return `true` if the selection is valid, `false` otherwise.
  */
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
@@ -2256,7 +2368,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t
 }
 
 /*
-** Return `true` if position "pos" with indentation "dispIndex" is in this
+** Return `true` if position `pos` with indentation `dispIndex` is in this
 ** selection
 */
 template <class Ch, class Tr>
@@ -2266,7 +2378,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(TextCursor pos, TextCursor 
 
 /*
 ** Return `true` if this selection is rectangular, and touches a buffer position
-** within "rangeStart" to "rangeEnd"
+** within `rangeStart` to `rangeEnd`
 */
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const {

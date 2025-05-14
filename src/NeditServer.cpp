@@ -219,7 +219,7 @@ void NeditServer::newConnection() {
 		return;
 	}
 
-	for (auto &entry : array) {
+	for (const auto &entry : array) {
 
 		if (!entry.isObject()) {
 			qWarning("NEdit: error processing server request. Non-object in JSON array.");
