@@ -21,16 +21,17 @@ namespace SmartIndent {
 Q_DECLARE_NAMESPACE_TR(SmartIndent)
 
 bool LMHasSmartIndentMacros(const QString &languageMode);
-void LoadSmartIndentCommonString(const QString &string);
-void LoadSmartIndentString(const QString &string);
 bool SmartIndentMacrosAvailable(const QString &languageModeName);
+const SmartIndentEntry *FindDefaultIndentSpec(const QString &language);
+const SmartIndentEntry *FindIndentSpec(const QString &language);
+QString LoadDefaultCommonMacros();
 QString WriteSmartIndentCommonString();
 QString WriteSmartIndentString();
+void LoadSmartIndentCommonString(const QString &string);
+void LoadSmartIndentFromYaml();
+void LoadSmartIndentString(const QString &string);
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
 void UpdateLangModeMenuSmartIndent();
-QString LoadDefaultCommonMacros();
-const SmartIndentEntry *FindIndentSpec(const QString &language);
-const SmartIndentEntry *FindDefaultIndentSpec(const QString &language);
 
 extern QString CommonMacros;
 extern std::vector<SmartIndentEntry> SmartIndentSpecs;
