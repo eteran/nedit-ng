@@ -204,6 +204,7 @@ int ExecError(const std::error_code &error_code, T &&...args) {
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	QT_WARNING_DISABLE_GCC("-Wformat-nonliteral")
+	QT_WARNING_DISABLE_CLANG("-Wformat-nonliteral")
 	static char msg[MaxErrorMessageLen];
 	const std::string str = error_code.message();
 	snprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
@@ -227,6 +228,7 @@ int ExecError(const char *fmt, T &&...args) {
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	QT_WARNING_DISABLE_GCC("-Wformat-nonliteral")
+	QT_WARNING_DISABLE_CLANG("-Wformat-nonliteral")
 	static char msg[MaxErrorMessageLen];
 	snprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
 	ErrorMessage = msg;
