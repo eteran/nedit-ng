@@ -73,3 +73,26 @@ jobs:
         with:
           name: nedit-ng-win64-qt${{matrix.QT_VERSION}}
           path: nedit-ng-win64-qt${{matrix.QT_VERSION}}/
+
+  build_macos:
+    strategy:
+      matrix:
+        QT_VERSION: [5.12.8, 6.7.0]
+    runs-on: macos-latest
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{matrix.QT_VERSION}}
+          setup-python: 'false'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --parallel 4 --config ${{env.BUILD_TYPE}}
