@@ -14,7 +14,16 @@ RegexError::RegexError(const char *fmt, ...) {
 	char buf[1024];
 	va_list ap;
 	va_start(ap, fmt);
+	QT_WARNING_PUSH
+	QT_WARNING_DISABLE_GCC("-Wformat-security")
+	QT_WARNING_DISABLE_GCC("-Wformat-nonliteral")
+	QT_WARNING_DISABLE_CLANG("-Wformat-security")
+	QT_WARNING_DISABLE_CLANG("-Wformat-nonliteral")
 	vsnprintf(buf, sizeof(buf), fmt, ap);
+	QT_WARNING_POP
+	// NOTE(eteran): this warning is not needed for this function because
+	// we happen to know that the inputs for `RegexError` always originate
+	// from string constants.
 	va_end(ap);
 	error_ = buf;
 }

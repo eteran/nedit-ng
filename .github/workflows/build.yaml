@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         QT_VERSION: [5.12.8, 6.7.0]
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
