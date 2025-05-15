@@ -84,7 +84,6 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{matrix.QT_VERSION}}
-          setup-python: 'false'
 
       - name: Checkout
         uses: actions/checkout@v4
