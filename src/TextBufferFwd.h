@@ -10,7 +10,13 @@ class BasicTextBuffer;
 
 using TextBuffer = BasicTextBuffer<char>;
 
-struct char_traits_u8 {
+// TODO(eteran): it seems that technically, std::char_traits<uint8_t> is not
+// supported by the C++ standard, but it works in practice. So we had to
+// implement our own traits class for uint8_t to be standard
+// compliant. (Adapted from LLVM's libc++ std::char_traits<Ch>)
+namespace std {
+template <>
+struct char_traits<uint8_t> {
 	using char_type  = uint8_t;
 	using int_type   = int;
 	using off_type   = std::streamoff;
@@ -27,32 +33,35 @@ struct char_traits_u8 {
 	static constexpr int_type eof() noexcept { return int_type(EOF); }
 
 	static constexpr int compare(const char_type *s1, const char_type *s2, size_t n) {
-		for (; n; --n, ++s1, ++s2) {
-			if (lt(*s1, *s2)) {
-				return -1;
-			}
+		int ret           = 0;
+		const uint8_t *p1 = s1;
+		const uint8_t *p2 = s2;
 
-			if (lt(*s2, *s1)) {
-				return 1;
-			}
+		while (!ret && n--) {
+			ret = static_cast<int>(*p1++ - *p2++);
 		}
-		return 0;
+
+		return ret;
 	}
 
 	static constexpr size_t length(const char_type *s) {
-		size_t len = 0;
-		for (; !eq(*s, char_type(0)); ++s) {
-			++len;
+		const uint8_t *s_ptr = s;
+
+		while (*s != uint8_t(0)) {
+			++s;
 		}
-		return len;
+
+		return static_cast<size_t>(s - s_ptr);
 	}
 
 	static constexpr const char_type *find(const char_type *s, size_t n, const char_type &ch) {
-		for (; n; --n) {
-			if (eq(*s, ch)) {
-				return s;
+		const uint8_t *s_ptr = s;
+
+		while (n--) {
+			if (*s_ptr == ch) {
+				return s_ptr;
 			}
-			++s;
+			++s_ptr;
 		}
 
 		return nullptr;
@@ -88,18 +97,18 @@ struct char_traits_u8 {
 	}
 
 	static char_type *assign(char_type *s, size_t n, char_type ch) {
-		char_type *r = s;
-		for (; n; --n, ++s) {
-			assign(*s, ch);
+		uint8_t *ptr = s;
+
+		while (n--) {
+			*ptr++ = ch;
 		}
-		return r;
+
+		return s;
 	}
 };
 
-// TODO(eteran): it seems that technically, std::char_traits<uint8_t> is not
-// supported by the C++ standard, but it works in practice. So we had to
-// implement our own traits class for uint8_t to be standard
-// compliant. (Adapted from LLVM's libc++ std::char_traits<uint8_t>)
-using UTextBuffer = BasicTextBuffer<uint8_t, char_traits_u8>;
+}
+
+using UTextBuffer = BasicTextBuffer<uint8_t, std::char_traits<uint8_t>>;
 
 #endif
