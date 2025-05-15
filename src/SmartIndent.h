@@ -28,6 +28,7 @@ QString LoadDefaultCommonMacros();
 QString WriteSmartIndentCommonString();
 QString WriteSmartIndentString();
 void LoadSmartIndentCommonString(const QString &string);
+void LoadSmartIndentFromString(const QString &string);
 void LoadSmartIndentFromYaml();
 void LoadSmartIndentString(const QString &string);
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
