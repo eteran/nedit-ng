@@ -37,14 +37,10 @@ target_add_warnings(nedit-import)
 target_link_libraries(nedit-import PUBLIC
 	Settings
 	Interpreter
-	X11
+	X11::X11
 	Qt${QT_VERSION_MAJOR}::Core
 	Qt${QT_VERSION_MAJOR}::Xml
 	Qt${QT_VERSION_MAJOR}::Network
-)
-
-target_include_directories(nedit-import PRIVATE
-	${X11_INCLUDE_DIR}
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
