@@ -1406,9 +1406,7 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 	switch (event->button()) {
 	case Qt::LeftButton:
-		if (dragState_ == PRIMARY_CLICKED) {
-			endDrag();
-		}
+		endDrag();
 		break;
 
 	case Qt::RightButton:
