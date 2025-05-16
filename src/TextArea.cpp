@@ -6887,10 +6887,12 @@ void TextArea::exchangeSelections() {
 	**    incompatible with Motif text widgets */
 }
 
-/*
-** Returns the absolute (non-wrapped) line number of the first line displayed.
-** Returns 0 if the absolute top line number is not being maintained.
-*/
+/**
+ * @brief Get the absolute top line number of the text area.
+ *
+ * @return The absolute (non-wrapped) line number of the first line displayed,
+ *         `0`if the absolute top line number is not being maintained.
+ */
 int64_t TextArea::getAbsTopLineNum() const {
 
 	if (!continuousWrap_) {
@@ -6904,18 +6906,38 @@ int64_t TextArea::getAbsTopLineNum() const {
 	return 0;
 }
 
+/**
+ * @brief Get the foreground color of the text area.
+ *
+ * @return The foreground color of the text area.
+ */
 QColor TextArea::getForegroundColor() const {
 	return palette().color(QPalette::Text);
 }
 
+/**
+ * @brief Get the background color of the text area.
+ *
+ * @return The background color of the text area.
+ */
 QColor TextArea::getBackgroundColor() const {
 	return palette().color(QPalette::Base);
 }
 
+/**
+ * @brief Sets the read-only state of the text area.
+ *
+ * @param value The read-only state to set.
+ */
 void TextArea::setReadOnly(bool value) {
 	readOnly_ = value;
 }
 
+/**
+ * @brief Sets the overstrike state of the text area.
+ *
+ * @param value The overstrike state to set.
+ */
 void TextArea::setOverstrike(bool value) {
 
 	// Only need to do anything if the value of overstrike has changed
@@ -6935,10 +6957,20 @@ void TextArea::setOverstrike(bool value) {
 	}
 }
 
+/**
+ * @brief Sets the vertical padding of the cursor.
+ *
+ * @param value The vertical padding value.
+ */
 void TextArea::setCursorVPadding(int value) {
 	cursorVPadding_ = value;
 }
 
+/**
+ * @brief Sets the font of the text area.
+ *
+ * @param font The font to set.
+ */
 void TextArea::setFont(const QFont &font) {
 
 	font_ = font;
@@ -6955,22 +6987,47 @@ void TextArea::setFont(const QFont &font) {
 	viewport()->update();
 }
 
+/**
+ * @brief Gets the line number area width in columns (characters).
+ *
+ * @return The line number area width in columns.
+ */
 int TextArea::getLineNumCols() const {
 	return lineNumCols_;
 }
 
+/**
+ * @brief Sets the auto-wrap mode of the text area.
+ *
+ * @param value The auto-wrap mode to set.
+ */
 void TextArea::setAutoWrap(bool value) {
 	autoWrap_ = value;
 }
 
+/**
+ * @brief Sets the continuous wrap mode of the text area.
+ *
+ * @param value The continuous wrap mode to set.
+ */
 void TextArea::setContinuousWrap(bool value) {
 	setWrapMode(value, wrapMargin_);
 }
 
+/**
+ * @brief Sets the auto-indent mode of the text area.
+ *
+ * @param value The auto-indent mode to set.
+ */
 void TextArea::setAutoIndent(bool value) {
 	autoIndent_ = value;
 }
 
+/**
+ * @brief Sets the smart indent mode of the text area.
+ *
+ * @param value The smart indent mode to set.
+ */
 void TextArea::setSmartIndent(bool value) {
 	smartIndent_ = value;
 }
