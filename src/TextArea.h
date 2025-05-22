@@ -208,7 +208,7 @@ public:
 	int lineNumberAreaWidth() const;
 	int maximumFontWidth() const;
 	int minimumFontWidth() const;
-	int TextDGetCalltipID(int id) const;
+	int TextDGetCalltipID() const;
 	int TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
 	int TextVisibleWidth() const;
 	int64_t getBufferLinesCount() const;

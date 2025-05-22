@@ -2807,7 +2807,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 std::error_code calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	*result = make_value(MainWindow::fromDocument(document)->lastFocus()->TextDGetCalltipID(0));
+	*result = make_value(MainWindow::fromDocument(document)->lastFocus()->TextDGetCalltipID());
 	return MacroErrorCode::Success;
 }
 

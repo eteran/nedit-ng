@@ -7328,10 +7328,13 @@ int64_t TextArea::preferredColumn(int *visLineNum, TextCursor *lineStartPos) {
 			   : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
 }
 
-/*
-** Return the insert position of the requested column given
-** the lineStartPos.
-*/
+/**
+ * @brief Get the preferred column position for a given column and line start position.
+ *
+ * @param column The column number to get the preferred position for.
+ * @param lineStartPos The line start position to use for the calculation.
+ * @return The preferred column position.
+ */
 TextCursor TextArea::preferredColumnPos(int64_t column, TextCursor lineStartPos) {
 
 	TextCursor newPos = buffer_->BufCountForwardDispChars(lineStartPos, column);
@@ -7343,22 +7346,27 @@ TextCursor TextArea::preferredColumnPos(int64_t column, TextCursor lineStartPos)
 }
 
 /**
- * @brief
+ * @brief Get the current cursor position.
  *
- * @return
+ * @return The current cursor position.
  */
 TextCursor TextArea::cursorPos() const {
 	return cursorPos_;
 }
 
-/*
-** If the text widget is maintaining a line number count appropriate to "pos"
-** return the line and column numbers of pos, otherwise return false.  If
-** continuous wrap mode is on, returns the absolute line number (as opposed to
-** the wrapped line number which is used for scrolling).  THIS ROUTINE ONLY
-** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
-** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
-*/
+/**
+ * @brief If the text widget is maintaining a line number count appropriate to `pos`
+ * return the line and column numbers of pos, otherwise return an empty optional. If
+ * continuous wrap mode is on, returns the absolute line number (as opposed to
+ * the wrapped line number which is used for scrolling).
+ *
+ * @param pos The position to convert to line and column numbers.
+ * @return The line and column numbers of pos, or an empty optional if the
+ *         line and column numbers cannot be determined.
+ *
+ * @note THIS ROUTINE ONLY WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE,
+ * ONLY WHEN THE ABSOLUTE LINE NUMBER IS BEING MAINTAINED.
+ */
 std::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually
@@ -7386,26 +7394,52 @@ std::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	return loc;
 }
 
+/**
+ * @brief Add a callback for when the cursor moves.
+ *
+ * @param callback The callback function to call.
+ * @param arg The argument to pass to the callback function.
+ */
 void TextArea::addCursorMovementCallback(CursorMovedFunc callback, void *arg) {
 	movedCallbacks_.emplace_back(callback, arg);
 }
 
+/**
+ * @brief Add a callback for when the drag operation starts.
+ *
+ * @param callback The callback function to call.
+ * @param arg The argument to pass to the callback function.
+ */
 void TextArea::addDragStartCallback(DragStartFunc callback, void *arg) {
 	dragStartCallbacks_.emplace_back(callback, arg);
 }
 
+/**
+ * @brief Add a callback for when the drag operation ends.
+ *
+ * @param callback The callback function to call.
+ * @param arg The argument to pass to the callback function.
+ */
 void TextArea::addDragEndCallback(DragEndFunc callback, void *arg) {
 	dragEndCallbacks_.emplace_back(callback, arg);
 }
 
+/**
+ * @brief Add a callback for when the text area is resized.
+ *
+ * @param callback The callback function to call.
+ * @param arg The argument to pass to the callback function.
+ */
 void TextArea::addSmartIndentCallback(SmartIndentFunc callback, void *arg) {
 	smartIndentCallbacks_.emplace_back(callback, arg);
 }
 
-/*
-**  Sets the caret to on or off and restart the caret blink timer.
-**  This could be used by other modules to modify the caret's blinking.
-*/
+/**
+ * @brief Sets the caret to on or off and restart the caret blink timer.
+ * This could be used by other modules to modify the caret's blinking.
+ *
+ * @param startsBlanked If `true`, the caret is blanked. If `false`, the caret is not blanked.
+ */
 void TextArea::resetCursorBlink(bool startsBlanked) {
 	if (cursorBlinkTimer_->isActive()) {
 		//  Start blinking the caret again.
@@ -7419,45 +7453,76 @@ void TextArea::resetCursorBlink(bool startsBlanked) {
 	}
 }
 
+/**
+ * @brief Handles the focus next/prev child event.
+ *
+ * @param next If `true`, focus the next child. If `false`, focus the previous
+ * @return `false` to prevent tab from changing focus.
+ *
+ * @note This function is overridden to prevent the tab key from changing focus
+ */
 bool TextArea::focusNextPrevChild(bool next) {
-
-	// Prevent tab from changing focus
 	Q_UNUSED(next)
 	return false;
 }
 
+/**
+ * @brief Get the emulate tabs value.
+ *
+ * @return The emulate tabs value. If `0`, tabs are not emulated. If > `0`, tabs are emulated.
+ *         The value indicates the number of spaces to use for each tab.
+ */
 int TextArea::getEmulateTabs() const {
 	return emulateTabs_;
 }
 
-/*
-** Set the cursor position
-*/
+/**
+ * @brief Set the cursor position.
+ *
+ * @param pos The position to set the cursor to.
+ */
 void TextArea::TextSetCursorPos(TextCursor pos) {
 	setInsertPosition(pos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Set the modifying tab distance.
+ *
+ * @param modifying The modifying tab distance to set.
+ */
 void TextArea::setModifyingTabDist(bool modifying) {
 	modifyingTabDist_ = modifying;
 }
 
+/**
+ * @brief Get the number of lines in the buffer.
+ *
+ * @return The number of lines in the buffer.
+ */
 int64_t TextArea::getBufferLinesCount() const {
 	return nBufferLines_;
 }
 
-/*
-** Attach (or remove) highlight information in text display and redisplay.
-** Highlighting information consists of a style buffer which parallels the
-** normal text buffer, but codes font and color information for the display;
-** a style table which translates style buffer codes (indexed by buffer
-** character - 65 (ASCII code for 'A')) into fonts and colors; and a callback
-** mechanism for as-needed highlighting, triggered by a style buffer entry of
-** "unfinishedStyle".  Style buffer can trigger additional redisplay during
-** a normal buffer modification if the buffer contains a primary selection
-** (see extendRangeForStyleMods for more information on this protocol).
-*/
+/**
+ * @brief Attach (or remove) highlight information in text display and redisplay.
+ * Highlighting information consists of a style buffer which parallels the
+ * normal text buffer, but codes font and color information for the display;
+ * a style table which translates style buffer codes (indexed by buffer
+ * character - 65 (ASCII code for 'A')) into fonts and colors; and a callback
+ * mechanism for as-needed highlighting, triggered by a style buffer entry of
+ * "unfinishedStyle". Style buffer can trigger additional redisplay during
+ * a normal buffer modification if the buffer contains a primary selection
+ * (see extendRangeForStyleMods for more information on this protocol).
+ *
+ * @param styleBuffer The style buffer to attach.
+ * @param styleTable The style table to use for the text area.
+ * @param unfinishedStyle The unfinished style to use for the text area.
+ * @param unfinishedHighlightCB The callback function to call for unfinished
+ *                             highlighting.
+ * @param user The user data to pass to the callback function.
+ */
 void TextArea::attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleFunc unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
@@ -7467,26 +7532,46 @@ void TextArea::attachHighlightData(UTextBuffer *styleBuffer, const std::vector<S
 	viewport()->update();
 }
 
+/**
+ * @brief Get the cursor blink timer of the text area.
+ *
+ * @return The cursor blink timer of the text area.
+ */
 QTimer *TextArea::cursorBlinkTimer() const {
 	return cursorBlinkTimer_;
 }
 
+/**
+ * @brief Get the first visible position of the text area.
+ *
+ * @return The first visible position of the text area.
+ */
 TextCursor TextArea::firstVisiblePos() const {
 	return firstChar_;
 }
 
+/**
+ * @brief Get the last visible position of the text area.
+ *
+ * @return The last visible position of the text area.
+ */
 TextCursor TextArea::TextLastVisiblePos() const {
 	return lastChar_;
 }
 
+/**
+ * @brief Get the style buffer of the text area.
+ *
+ * @return The style buffer of the text area.
+ */
 UTextBuffer *TextArea::styleBuffer() const {
 	return styleBuffer_;
 }
 
 /**
- * @brief
+ * @brief Update the font metrics based on the given font.
  *
- * @param font
+ * @param font The font to use for the text area.
  */
 void TextArea::updateFontMetrics(const QFont &font) {
 	const QFontInfo fi(font);
@@ -7509,23 +7594,44 @@ void TextArea::updateFontMetrics(const QFont &font) {
 	widerBold_ = Font::maxWidth(fm) != Font::maxWidth(fmb);
 }
 
+/**
+ * @brief Get the line number area width.
+ *
+ * @return The line number area width.
+ *
+ * @note This function simply aliases the `lineNumberAreaWidth` function.
+ */
 int TextArea::getLineNumWidth() const {
 	return lineNumberAreaWidth();
 }
 
+/**
+ * @brief Get the number of rows in the text area.
+ *
+ * @return The number of rows in the text area.
+ */
 int TextArea::getRows() const {
 	const QRect viewRect = viewport()->contentsRect();
 	return viewRect.height() / fixedFontHeight_;
 }
 
+/**
+ * @brief Get the margins of the text area.
+ *
+ * @return The margins of the text area.
+ */
 QMargins TextArea::getMargins() const {
 	return viewport()->contentsMargins();
 }
 
-/*
-** Fetch text from the widget's buffer, adding wrapping newlines to emulate
-** effect achieved by wrapping in the text display in continuous wrap mode.
-*/
+/**
+ * @brief Fetch text from the widget's buffer, adding wrapping newlines to emulate
+ * the effect achieved by wrapping in the text display in continuous wrap mode.
+ *
+ * @param startPos The starting position of the text to fetch.
+ * @param endPos The ending position of the text to fetch.
+ * @return The wrapped text as a string.
+ */
 std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 
 	if (!continuousWrap_ || startPos == endPos) {
@@ -7564,29 +7670,52 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 	return outBuf.BufGetAll();
 }
 
+/**
+ * @brief Sets the style buffer of the text area.
+ *
+ * @param buffer The style buffer to set.
+ */
 void TextArea::setStyleBuffer(UTextBuffer *buffer) {
 	styleBuffer_ = buffer;
 }
 
+/**
+ * @brief Sets the wrap margin of the text area.
+ *
+ * @param value The wrap margin to set.
+ */
 int TextArea::getWrapMargin() const {
 	return wrapMargin_;
 }
 
+/**
+ * @brief Gets the number of columns in the text area.
+ *
+ * @return The number of columns in the text area.
+ */
 int TextArea::getColumns() const {
 	const QRect viewRect = viewport()->contentsRect();
 	return viewRect.width() / fixedFontWidth_;
 }
 
 /**
- * @brief
+ * @brief Inserts a string at the current cursor position.
  *
- * @param string
- * @param flags
+ * @param string The string to insert.
+ * @param flags The event flags.
+ *
+ * @note this function simply aliases the `insertStringAP` function
  */
 void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
 	insertStringAP(string, flags);
 }
 
+/**
+ * @brief Inserts a string at the current cursor position.
+ *
+ * @param string The string to insert.
+ * @param flags The event flags.
+ */
 void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
 	EMIT_EVENT_1("insert_string", string);
@@ -7614,10 +7743,13 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 	buffer_->BufUnselect();
 }
 
-/*
-** Translate line and column to the nearest row and column number for
-** positioning the cursor.
-*/
+/**
+ * @brief Converts a line and column number to a position in the text area.
+ *
+ * @param loc The location containing the line and column numbers.
+ * @return The position in the text area corresponding to the specified line and
+ *         column.
+ */
 TextCursor TextArea::lineAndColToPosition(Location loc) const {
 	int i;
 	TextCursor lineStart = {};
@@ -7679,43 +7811,37 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
 }
 
 /**
- * @brief
+ * @brief Converts a line and column number to a position in the text area.
  *
- * @param line
- * @param column
- * @return
+ * @param line The line number (1-based).
+ * @param column The column number (1-based).
+ * @return The position in the text area corresponding to the specified line and
+ *         column.
  */
 TextCursor TextArea::lineAndColToPosition(int64_t line, int64_t column) const {
-
-	Location loc;
-	loc.line   = line;
-	loc.column = column;
-	return lineAndColToPosition(loc);
+	return lineAndColToPosition(Location{line, column});
 }
 
 /**
- * @brief
+ * @brief Gets the ID of the currently displayed calltip.
  *
- * @param id
- * @return
+ * @return The ID of the currently displayed calltip, or `0` if no calltip is
+ *         currently displayed.
  */
-int TextArea::TextDGetCalltipID(int id) const {
-
-	if (id == 0) {
-		return calltip_.ID;
-	}
-
-	if (id == calltip_.ID) {
-		return id;
-	}
-
-	return 0;
+int TextArea::TextDGetCalltipID() const {
+	return calltip_.ID;
 }
 
 /**
- * @brief
+ * @brief Hides the calltip if it is currently displayed.
  *
- * @param id
+ * @param id The ID of the calltip to hide.
+ *           If `0`, hides the currently displayed calltip.
+ *           If `id` is the ID of the currently displayed calltip, it will be
+ *           hidden.
+ *
+ * @note This function uses an ID to identify the calltip, but that doesn't
+ * seem to be entirely necessary as the calltip is only displayed once at a time.
  */
 void TextArea::TextDKillCalltip(int id) {
 	if (calltip_.ID == 0) {
@@ -7732,19 +7858,19 @@ void TextArea::TextDKillCalltip(int id) {
 }
 
 /**
- * @brief
+ * @brief Shows a calltip at the specified position.
  *
- * @param text
- * @param anchored
- * @param pos
- * @param hAlign
- * @param vAlign
- * @param alignMode
- * @return
+ * @param text The text to display in the calltip.
+ * @param anchored `true` if the calltip should be anchored, `false` otherwise.
+ * @param pos The position to show the calltip at.
+ * @param hAlign The horizontal alignment of the calltip.
+ * @param vAlign The vertical alignment of the calltip.
+ * @param alignMode The alignment mode of the calltip.
+ * @return The ID of the calltip.
  */
 int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
-	static int StaticCalltipID = 1;
+	static int32_t StaticCalltipID = 1;
 
 	// Destroy any previous calltip
 	TextDKillCalltip(0);
@@ -7784,10 +7910,11 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 	calltip_.vAlign    = vAlign;
 	calltip_.alignMode = alignMode;
 
-	/* Increment the static calltip ID.  Macro variables can only be int,
+	/* Increment the static calltip ID. Macro variables can only be int,
 		not unsigned, so have to work to keep it > 0 on overflow */
-	if (++StaticCalltipID <= 0) {
-		StaticCalltipID = 1;
+	StaticCalltipID = (StaticCalltipID + 1) % std::numeric_limits<int32_t>::max();
+	if (StaticCalltipID == 0) {
+		++StaticCalltipID;
 	}
 
 	// Expand any tabs in the calltip and set the calltip's text
@@ -7807,7 +7934,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
  * More specifically, this allows the line number reported in the statistics
  * line to be calibrated in absolute lines, rather than post-wrapped lines.
  *
- * @param state
+ * @param state `true` to maintain absolute line numbers, `false` otherwise.
  */
 void TextArea::TextDMaintainAbsLineNum(bool state) {
 	needAbsTopLineNum_ = state;
@@ -8307,9 +8434,9 @@ int TextArea::fixedFontWidth() const {
 }
 
 /**
- * @brief
+ * @brief Updates the primary selection in the clipboard.
  *
- * @param buffer
+ * @param buffer The text buffer to update the selection for.
  */
 void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer) {
 #ifdef Q_OS_UNIX
