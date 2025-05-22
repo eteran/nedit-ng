@@ -23,7 +23,7 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 	char test;
 
 	if (!re->isValid()) {
-		reg_error("damaged Regex passed to 'SubstituteRE'");
+		ReportError("damaged Regex passed to 'SubstituteRE'");
 		return false;
 	}
 

@@ -42,6 +42,6 @@ const char *RegexError::what() const noexcept {
  *
  * @param str The error message string.
  */
-void reg_error(const char *str) {
+void ReportError(const char *str) {
 	qCritical("NEdit: Internal error processing regular expression (%s)", str);
 }

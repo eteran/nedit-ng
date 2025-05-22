@@ -27,7 +27,6 @@ public:
 	~Regex()                        = default;
 
 public:
-
 	bool ExecRE(const char *start, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end);
 	bool execute(std::string_view string, bool reverse = false);
 	bool execute(std::string_view string, size_t offset, bool reverse = false);
