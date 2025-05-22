@@ -95,3 +95,17 @@ jobs:
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --parallel 4 --config ${{env.BUILD_TYPE}}
+
+      - name: Deploy app
+        run: |
+          mkdir nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
+          cd nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
+          macdeployqt nedit-ng.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
+          path: nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
