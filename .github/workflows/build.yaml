@@ -99,8 +99,8 @@ jobs:
       - name: Deploy app
         run: |
           mkdir nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
-          cp ${{github.workspace}}/build/nedit-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
-          cp ${{github.workspace}}/build/nc-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
+          cp -a ${{github.workspace}}/build/nedit-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
+          cp -a ${{github.workspace}}/build/nc-ng.app nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
           cd nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
           macdeployqt nedit-ng.app
 
