@@ -224,7 +224,7 @@ uint32_t Greedy(uint8_t *p, uint32_t max) {
 		/* Called inappropriately.  Only atoms that are SIMPLE should generate
 		 * a call to Greedy.  The above cases should cover all the atoms that
 		 * are SIMPLE. */
-		reg_error("internal error #10 'Greedy'");
+		ReportError("internal error #10 'Greedy'");
 		count = 0U; // Best we can do.
 	}
 
@@ -264,7 +264,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 	if (++eContext.Recursion_Count > RecursionLimit) {
 		// Prevent duplicate errors
 		if (!eContext.Recursion_Limit_Exceeded) {
-			reg_error("recursion limit exceeded, please re-specify expression");
+			ReportError("recursion limit exceeded, please re-specify expression");
 		}
 
 		eContext.Recursion_Limit_Exceeded = true;
@@ -943,7 +943,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 					MATCH_RETURN(false);
 				}
 			} else {
-				reg_error("memory corruption, 'match'");
+				ReportError("memory corruption, 'match'");
 				MATCH_RETURN(false);
 			}
 
@@ -956,7 +956,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 	/* We get here only if there's trouble -- normally "case END" is
 	   the terminating point. */
 
-	reg_error("corrupted pointers, 'match'");
+	ReportError("corrupted pointers, 'match'");
 	MATCH_RETURN(false);
 }
 
@@ -1044,7 +1044,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 
 	// Check validity of program.
 	if (!re->isValid()) {
-		reg_error("corrupted program");
+		ReportError("corrupted program");
 		return false;
 	}
 

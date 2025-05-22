@@ -1,6 +1,6 @@
 
-#include "Common.h"
 #include "Compile.h"
+#include "Common.h"
 #include "Constants.h"
 #include "Execute.h"
 #include "Opcodes.h"
@@ -165,7 +165,7 @@ bool InitAnsiClasses() noexcept {
 			/* Make sure arrays are big enough.  ("- 2" because of zero array
 			   origin and we need to leave room for the '\0' terminator.) */
 			if (word_count > (AlnumCharSize - 2) || space_count > (WhiteSpaceSize - 2) || letter_count > (AlnumCharSize - 2)) {
-				reg_error("internal error #9 'InitAnsiClasses'");
+				ReportError("internal error #9 'InitAnsiClasses'");
 				return false;
 			}
 		}

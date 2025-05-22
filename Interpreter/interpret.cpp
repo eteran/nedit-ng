@@ -189,12 +189,31 @@ void RestoreContext(Pointer context) {
 	Context.FocusDocument = context->FocusDocument;
 }
 
+int ExecError(const char *fmt, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+/**
+ * @brief Formats an error message using a format string and additional arguments.
+ *
+ * @param fmt The format string for the error message.
+ * @param ... Additional arguments to format the message with.
+ * @return Returns StatusError after setting the ErrorMessage.
+ */
+int ExecError(const char *fmt, ...) {
+	static char msg[MaxErrorMessageLen];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
+	ErrorMessage = msg;
+	return StatusError;
+}
+
 /**
  * @brief Formats an error message using a std::error_code and additional arguments.
  *
  * @param error_code The error code to format the message from.
  * @param args Additional arguments to format the message with.
- * @return int Returns StatusError after setting the ErrorMessage.
+ * @return Returns StatusError after setting the ErrorMessage.
  */
 template <class... T>
 int ExecError(const std::error_code &error_code, T &&...args) {
@@ -204,33 +223,11 @@ int ExecError(const std::error_code &error_code, T &&...args) {
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	QT_WARNING_DISABLE_GCC("-Wformat-nonliteral")
+	QT_WARNING_DISABLE_CLANG("-Wformat-security")
 	QT_WARNING_DISABLE_CLANG("-Wformat-nonliteral")
 	static char msg[MaxErrorMessageLen];
 	const std::string str = error_code.message();
 	snprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
-	ErrorMessage = msg;
-	return StatusError;
-	QT_WARNING_POP
-}
-
-/**
- * @brief Formats an error message using a format string and additional arguments.
- *
- * @param fmt The format string for the error message.
- * @param args Additional arguments to format the message with.
- * @return int Returns StatusError after setting the ErrorMessage.
- */
-template <class... T>
-int ExecError(const char *fmt, T &&...args) {
-	// NOTE(eteran): this warning is not needed for this function because
-	// we happen to know that the inputs for `ExecError` always originate
-	// from string constants
-	QT_WARNING_PUSH
-	QT_WARNING_DISABLE_GCC("-Wformat-security")
-	QT_WARNING_DISABLE_GCC("-Wformat-nonliteral")
-	QT_WARNING_DISABLE_CLANG("-Wformat-nonliteral")
-	static char msg[MaxErrorMessageLen];
-	snprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
 	ErrorMessage = msg;
 	return StatusError;
 	QT_WARNING_POP

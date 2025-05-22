@@ -19,6 +19,6 @@ private:
 };
 
 COLD_CODE
-void reg_error(const char *str);
+void ReportError(const char *str);
 
 #endif

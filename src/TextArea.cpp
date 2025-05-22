@@ -5851,9 +5851,7 @@ void TextArea::adjustSelection(const QPoint &coord) {
 */
 void TextArea::checkAutoScroll(const QPoint &coord) {
 
-	const QRect viewRect = viewport()->contentsRect();
-	const bool inWindow  = viewRect.contains(coord);
-
+	const bool inWindow = contentsRect().contains(coord);
 	if (inWindow) {
 		autoScrollTimer_->stop();
 		return;

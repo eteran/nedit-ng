@@ -56,7 +56,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 
 		const TextCursor lineStart = area_->lineStarts_[visLine];
 #ifdef ENABLE_HIGHLIGHT
-		if(area_->visibleLineContainsCursor(visLine, cursor)) {
+		if (area_->visibleLineContainsCursor(visLine, cursor)) {
 			painter.fillRect(0, y, width(), lineHeight, Qt::darkCyan);
 		}
 #endif
