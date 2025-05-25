@@ -6526,12 +6526,26 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	emTabsBeforeCursor_ = 0;
 }
 
+/**
+ * @brief Call all registered cursor movement callbacks.
+ *
+ * This function iterates through all registered cursor movement callbacks and
+ * invokes them with the current text area and the associated data.
+ */
 void TextArea::callMovedCBs() {
 	for (auto &c : movedCallbacks_) {
 		c.first(this, c.second);
 	}
 }
 
+/**
+ * @brief Adjust the secondary selection based on the current mouse position.
+ *
+ * This function is called when the mouse is moved while a secondary selection
+ * is active. It updates the secondary selection to include the new position.
+ *
+ * @param coord The current mouse position in viewport coordinates.
+ */
 void TextArea::adjustSecondarySelection(const QPoint &coord) {
 
 	const TextCursor newPos = coordToPosition(coord);
@@ -6552,13 +6566,18 @@ void TextArea::adjustSecondarySelection(const QPoint &coord) {
 	}
 }
 
-/*
-** Correct a row number from an unconstrained position (as returned by
-** TextDXYToUnconstrainedPosition) to a straight number of newlines from the
-** top line of the display.  Because rectangular selections are based on
-** newlines, rather than display wrapping, and anywhere a rectangular selection
-** needs a row, it needs it in terms of un-wrapped lines.
-*/
+/**
+ * @brief Correct a row number from an unconstrained position (as returned by
+ * TextDXYToUnconstrainedPosition) to a straight number of newlines from the
+ * top line of the display.  Because rectangular selections are based on
+ * newlines, rather than display wrapping, and anywhere a rectangular selection
+ * needs a row, it needs it in terms of un-wrapped lines.
+ *
+ * @param row The row number to correct, as returned by
+ * TextDXYToUnconstrainedPosition.
+ * @return The corrected row number, which is the number of newlines from the
+ * top line of the display.
+ */
 int TextArea::offsetWrappedRow(int row) const {
 	if (!continuousWrap_ || row < 0 || row > nVisibleLines_) {
 		return row;
@@ -6567,6 +6586,14 @@ int TextArea::offsetWrappedRow(int row) const {
 	return gsl::narrow<int>(buffer_->BufCountLines(firstChar_, lineStarts_[row]));
 }
 
+/**
+ * @brief Set the word delimiters for the text area.
+ *
+ * @param delimiters A string containing the characters that will be treated as
+ * word delimiters. The default delimiters are space, tab, and newline.
+ *
+ * @note Space, tab, and newline are always included as mandatory delimiters.
+ */
 void TextArea::setWordDelimiters(std::string_view delimiters) {
 
 	// add mandatory delimiters blank, tab, and newline to the list
@@ -6574,18 +6601,41 @@ void TextArea::setWordDelimiters(std::string_view delimiters) {
 	delimiters_ += delimiters;
 }
 
+/**
+ * @brief Set the auto-show insert position option.
+ *
+ * @param value If `true`, the insert position will be automatically shown
+ * when the cursor is moved.
+ */
 void TextArea::setAutoShowInsertPos(bool value) {
 	autoShowInsertPos_ = value;
 }
 
+/**
+ * @brief Set the emulate tabs option.
+ *
+ * @param value If non-zero, tabs will be emulated with spaces, and the value
+ * will determine the number of spaces per tab.
+ */
 void TextArea::setEmulateTabs(int value) {
 	emulateTabs_ = value;
 }
 
+/**
+ * @brief Set the auto-wrap pasted text option.
+ *
+ * @param value If `true`, pasted text will be auto-wrapped.
+ */
 void TextArea::setWrapMargin(int value) {
 	setWrapMode(continuousWrap_, value);
 }
 
+/**
+ * @brief Set the number of columns for line numbers.
+ *
+ * @param value The number of columns for line numbers.
+ * If 0, line numbers are disabled.
+ */
 void TextArea::setLineNumCols(int value) {
 	lineNumCols_ = value;
 	resetAbsLineNum();
@@ -6598,24 +6648,33 @@ void TextArea::setLineNumCols(int value) {
 }
 
 /**
- * @brief
+ * @brief Get the width of the line number area.
  *
- * @return
+ * @return The width of the line number area in pixels.
+ * If line numbers are disabled, this will return 0.
  */
 int TextArea::lineNumberAreaWidth() const {
 	return lineNumberArea_->width();
 }
 
-/*
-** Define area for drawing line numbers. A width of 0 disables line
-** number drawing.
-*/
+/**
+ * @brief Set the width of the line number area.
+ *
+ * @param lineNumWidth The width of the line number area in pixels.
+ * If 0, line numbers are disabled.
+ */
 void TextArea::setLineNumberAreaWidth(int lineNumWidth) {
 	lineNumberArea_->resize(lineNumWidth, lineNumberArea_->height());
 	setViewportMargins(lineNumberArea_->width(), 0, 0, 0);
 	lineNumberArea_->update();
 }
 
+/**
+ * @brief Set the wrap mode for the text area.
+ *
+ * @param wrap Whether to enable wrapping.
+ * @param wrapMargin The margin for wrapping, in characters.
+ */
 void TextArea::setWrapMode(bool wrap, int wrapMargin) {
 
 	continuousWrap_ = wrap;
@@ -6647,6 +6706,11 @@ void TextArea::setWrapMode(bool wrap, int wrapMargin) {
 	viewport()->update();
 }
 
+/**
+ * @brief Delete from the current cursor position to the end of the line.
+ *
+ * @param flags Flags indicating the type of action (e.g., AbsoluteFlag, NoBellFlag).
+ */
 void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_to_end_of_line");
@@ -6679,6 +6743,11 @@ void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Cut the primary selection and insert it at the current cursor position.
+ *
+ * @param flags Flags indicating the type of action (e.g., RectFlag).
+ */
 void TextArea::cutPrimaryAP(EventFlags flags) {
 
 	EMIT_EVENT_0("cut_primary");
@@ -6720,11 +6789,13 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 	}
 }
 
-/*
-** Insert the contents of the PRIMARY selection at the cursor position and
-** deletes the contents of the selection in its current owner
-** (if the selection owner supports DELETE targets).
-*/
+/**
+ * @brief Moves the primary selection to the current cursor position.
+ *
+ * @param isColumnar If `true`, the selection is treated as a columnar selection.
+ *
+ * @note This function is a placeholder and not yet implemented.
+ */
 void TextArea::movePrimarySelection(bool isColumnar) {
 	Q_UNUSED(isColumnar)
 
@@ -6732,6 +6803,13 @@ void TextArea::movePrimarySelection(bool isColumnar) {
 	qWarning("MovePrimarySelection is not implemented");
 }
 
+/**
+ * @brief Move the cursor to the position of the mouse click, or end a drag
+ * operation if one is in progress.
+ *
+ * @param event The mouse event that triggered this action.
+ * @param flags Flags indicating the type of action (e.g., SuppressRecording).
+ */
 void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("move_to_or_end_drag");
@@ -6746,6 +6824,12 @@ void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 	finishBlockDrag();
 }
 
+/**
+ * @brief Move the cursor to the position of the mouse click.
+ *
+ * @param event The mouse event that triggered this action.
+ * @param flags Flags indicating the type of action (e.g., SuppressRecording).
+ */
 void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("move_to");
@@ -6800,6 +6884,12 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Exchange the primary and secondary selections.
+ *
+ * @param event The mouse event that triggered this action.
+ * @param flags Flags indicating the type of action (e.g., NoBellFlag).
+ */
 void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
 	Q_UNUSED(event)
@@ -6858,10 +6948,12 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	checkAutoShowInsertPos();
 }
 
-/*
-** Exchange Primary and secondary selections (to be called by the widget
-** with the secondary selection)
-*/
+/**
+ * @brief Exchange Primary and secondary selections.
+ *
+ * @note To be called by the widget  with the secondary selection.
+ * @note This function is not implemented yet.
+ */
 void TextArea::exchangeSelections() {
 
 	if (!buffer_->secondary.hasSelection()) {
@@ -7030,6 +7122,11 @@ void TextArea::setSmartIndent(bool value) {
 	smartIndent_ = value;
 }
 
+/**
+ * @brief Move the cursor to the previous page in the text area, scrolling left.
+ *
+ * @param flags Event flags that may modify the behavior of the operation.
+ */
 void TextArea::pageLeftAP(EventFlags flags) {
 
 	EMIT_EVENT_0("page_left");
@@ -7064,6 +7161,11 @@ void TextArea::pageLeftAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Move the cursor to the next page in the text area, scrolling right.
+ *
+ * @param flags Event flags that may modify the behavior of the operation.
+ */
 void TextArea::pageRightAP(EventFlags flags) {
 
 	EMIT_EVENT_0("page_right");
@@ -7101,6 +7203,11 @@ void TextArea::pageRightAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Move the cursor to the next page in the text area.
+ *
+ * @param flags Event flags that may modify the behavior of the operation.
+ */
 void TextArea::nextPageAP(EventFlags flags) {
 
 	EMIT_EVENT_0("next_page");
@@ -7110,7 +7217,6 @@ void TextArea::nextPageAP(EventFlags flags) {
 	int64_t column             = 0;
 	int visLineNum;
 	TextCursor lineStartPos;
-	int64_t targetLine;
 	const int pageForwardCount = std::max(1, nVisibleLines_ - 1);
 
 	const bool silent         = flags & NoBellFlag;
@@ -7118,7 +7224,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) { // scrollbar only
-		targetLine = std::min(topLineNum_ + pageForwardCount, lastTopLine);
+		const int64_t targetLine = std::min(topLineNum_ + pageForwardCount, lastTopLine);
 
 		if (targetLine == topLineNum_) {
 			BeepIfNecessary(silent);
@@ -7130,8 +7236,8 @@ void TextArea::nextPageAP(EventFlags flags) {
 	} else if (flags & StutterFlag) { // Mac style
 		// move to bottom line of visible area
 		// if already there, page down maintaining preferred column
-		targetLine = std::max<int64_t>(std::min<int64_t>(nVisibleLines_ - 1, nBufferLines_), 0);
-		column     = preferredColumn(&visLineNum, &lineStartPos);
+		int64_t targetLine = std::max<int64_t>(std::min<int64_t>(nVisibleLines_ - 1, nBufferLines_), 0);
+		column             = preferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[gsl::narrow<int>(targetLine)]) {
 			if (insertPos >= buffer_->length() || topLineNum_ == lastTopLine) {
 				BeepIfNecessary(silent);
@@ -7187,8 +7293,8 @@ void TextArea::nextPageAP(EventFlags flags) {
 			column = preferredColumn(&visLineNum, &lineStartPos);
 		}
 
-		targetLine = topLineNum_ + nVisibleLines_ - 1;
-		targetLine = std::clamp<int64_t>(targetLine, 1, lastTopLine);
+		int64_t targetLine = topLineNum_ + nVisibleLines_ - 1;
+		targetLine         = std::clamp<int64_t>(targetLine, 1, lastTopLine);
 
 		TextCursor pos = forwardNLines(insertPos, nVisibleLines_ - 1, false);
 		if (maintainColumn) {
@@ -7210,6 +7316,11 @@ void TextArea::nextPageAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Move the cursor to the previous page in the text area.
+ *
+ * @param flags Event flags that may modify the behavior of the operation.
+ */
 void TextArea::previousPageAP(EventFlags flags) {
 
 	EMIT_EVENT_0("previous_page");
@@ -7306,11 +7417,13 @@ void TextArea::previousPageAP(EventFlags flags) {
 	}
 }
 
-/*
-** Return the current preferred column along with the current
-** visible line index (-1 if not visible) and the lineStartPos
-** of the current insert position.
-*/
+/**
+ * @brief Get the preferred column for the current cursor position.
+ *
+ * @param visLineNum Where to store the visible line number, (-1 if not visible).
+ * @param lineStartPos Where  to store the start position of the line.
+ * @return The preferred column position.
+ */
 int64_t TextArea::preferredColumn(int *visLineNum, TextCursor *lineStartPos) {
 
 	/* Find the position of the start of the line.  Use the line starts array
