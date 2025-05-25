@@ -1460,16 +1460,11 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	const int lastLine  = (top + height - viewRect.top()) / fixedFontHeight_;
 
 	QPainter painter(viewport());
-	{
-		painter.save();
-		painter.setClipRect(viewRect);
+	painter.setClipRect(viewRect);
 
-		// draw the lines of text
-		for (int line = firstLine; line <= lastLine; line++) {
-			redisplayLine(&painter, line, left, left + width);
-		}
-
-		painter.restore();
+	// draw the lines of text
+	for (int line = firstLine; line <= lastLine; line++) {
+		redisplayLine(&painter, line, left, left + width);
 	}
 }
 
