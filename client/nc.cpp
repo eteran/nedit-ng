@@ -338,7 +338,7 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 }
 
 /**
- * @brief  Reconstruct the command line in string commandLine in case we have
+ * @brief Reconstruct the command line in string commandLine in case we have
  * to start a server (nc command line args parallel nedit's). Include -svrname
  * if nc wants a named server, so nedit will match. Special characters are protected
  * from the shell by escaping EVERYTHING with '\'.

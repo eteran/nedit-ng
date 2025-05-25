@@ -572,7 +572,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 }
 
 /**
- * @brief  Back up position pointed to by `pos` enough that parsing from that point
+ * @brief Back up position pointed to by `pos` enough that parsing from that point
  * on will satisfy context guarantees for pattern matching for modifications
  * at `pos`. The caller is guaranteed that parsing may safely BEGIN with that style,
  * but not that it will continue at that level.

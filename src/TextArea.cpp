@@ -306,7 +306,7 @@ void BeepIfNecessary(bool silent) {
 }
 
 /**
- * @brief  Maintain boundaries of changed region between two buffers which
+ * @brief Maintain boundaries of changed region between two buffers which
  * start out with identical contents, but diverge through insertion,
  * deletion, and replacement, such that the buffers can be reconciled
  * by replacing the changed region of either buffer with the changed
@@ -4015,9 +4015,9 @@ void TextArea::TextDMakeInsertPosVisible() {
 	horizontalScrollBar()->setValue(horizOffset);
 }
 
-/*
-** Cancel a block drag operation
-*/
+/**
+ * @brief Cancel a block drag operation.
+ */
 void TextArea::cancelBlockDrag() {
 
 	const std::shared_ptr<TextBuffer> origBuf = std::move(dragOrigBuf_);
@@ -4065,21 +4065,24 @@ void TextArea::cancelBlockDrag() {
 	}
 }
 
-/*
-** Do operations triggered by cursor movement: Call cursor movement callback
-** procedure(s), and cancel marker indicating that the cursor is after one or
-** more just-entered emulated tabs (spaces to be deleted as a unit).
-*/
+/**
+ * @brief Do operations triggered by cursor movement: Call cursor movement callback
+ * procedure(s), and cancel marker indicating that the cursor is after one or
+ * more just-entered emulated tabs (spaces to be deleted as a unit).
+ */
 void TextArea::callCursorMovementCBs() {
 	emTabsBeforeCursor_ = 0;
 	callMovedCBs();
 }
 
-/*
-** For actions involving cursor movement, "extend" keyword means incorporate
-** the new cursor position in the selection, and lack of an "extend" keyword
-** means cancel the existing selection
-*/
+/**
+ * @brief For actions involving cursor movement, "extend" keyword means incorporate
+ * the new cursor position in the selection, and lack of an "extend" keyword
+ * means cancel the existing selection.
+ *
+ * @param flags The event flags, which may include ExtendFlag and RectFlag.
+ * @param startPos The position of the cursor before the move.
+ */
 void TextArea::checkMoveSelectionChange(EventFlags flags, TextCursor startPos) {
 
 	const bool extend = flags & ExtendFlag;
@@ -4091,12 +4094,15 @@ void TextArea::checkMoveSelectionChange(EventFlags flags, TextCursor startPos) {
 	}
 }
 
-/*
-** If a selection change was requested via a keyboard command for moving
-** the insertion cursor (usually with the "extend" keyword), adjust the
-** selection to include the new cursor position, or begin a new selection
-** between startPos and the new cursor position with anchor at startPos.
-*/
+/**
+ * @brief If a selection change was requested via a keyboard command for moving
+ * the insertion cursor (usually with the "extend" keyword), adjust the
+ * selection to include the new cursor position, or begin a new selection
+ * between startPos and the new cursor position with anchor at startPos.
+ *
+ * @param origPos The original position of the cursor before the move.
+ * @param rectangular If `true`, treat the selection as rectangular.
+ */
 void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 	const TextBuffer::Selection *sel = &buffer_->primary;
@@ -4184,9 +4190,10 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor right one character, if possible.
  *
- * @return
+ * @return `true` if the cursor was moved, `false` if it was already at the end of the buffer
+ * or if the move was not possible.
  */
 bool TextArea::moveRight() {
 	if (cursorPos_ >= buffer_->BufEndOfBuffer()) {
@@ -4198,9 +4205,10 @@ bool TextArea::moveRight() {
 }
 
 /**
- * @brief
+ * @brief Move the cursor left one character, if possible.
  *
- * @return
+ * @return `true` if the cursor was moved, `false` if it was already at the start of the buffer
+ * or if the move was not possible.
  */
 bool TextArea::moveLeft() {
 	if (cursorPos_ <= buffer_->BufStartOfBuffer()) {
@@ -4212,10 +4220,12 @@ bool TextArea::moveLeft() {
 }
 
 /**
- * @brief
+ * @brief Move the cursor up one line, optionally to the start of the line.
  *
- * @param absolute
- * @return
+ * @param absolute If `true`, move to the start of the line, otherwise move to the
+ *                 same column on the previous line.
+ * @return `true` if the cursor was moved, `false` if it was already at the start of the buffer
+ * or if the move was not possible.
  */
 bool TextArea::moveUp(bool absolute) {
 	TextCursor lineStartPos;
@@ -4265,10 +4275,12 @@ bool TextArea::moveUp(bool absolute) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor down one line, optionally to the start of the line.
  *
- * @param absolute
- * @return
+ * @param absolute If `true`, move to the start of the line, otherwise move to the
+ *                 same column on the next line.
+ * @return `true` if the cursor was moved, `false` if it was already at the end of the buffer
+ * or if the move was not possible.
  */
 bool TextArea::moveDown(bool absolute) {
 	TextCursor lineStartPos;
@@ -4307,9 +4319,10 @@ bool TextArea::moveDown(bool absolute) {
 }
 
 /**
- * @brief
+ * @brief Check if the text area is in read-only mode.
  *
- * @return
+ * @return `true` if the text area is read-only, `false` otherwise.
+ * If it is read-only, a beep is emitted to indicate the action is not allowed.
  */
 bool TextArea::checkReadOnly() const {
 	if (readOnly_) {
@@ -4319,15 +4332,17 @@ bool TextArea::checkReadOnly() const {
 	return false;
 }
 
-/*
-** Insert text "chars" at the cursor position, respecting pending delete
-** selections, overstrike, and handling cursor repositioning as if the text
-** had been typed.  If autoWrap is on wraps the text to fit within the wrap
-** margin, auto-indenting where the line was wrapped (but nowhere else).
-** "allowPendingDelete" controls whether primary selections in the widget are
-** treated as pending delete selections (true), or ignored (false). "event"
-** is optional and is just passed on to the cursor movement callbacks.
-*/
+/**
+ * @brief Insert text at the cursor position, respecting pending delete selections,
+ * overstrike, and handling cursor repositioning as if the text had been typed.
+ *
+ * @param chars The text to insert at the cursor position.
+ * @param allowPendingDelete If `true`, pending delete selections are treated as
+ * pending delete selections, otherwise they are ignored.
+ * @param allowWrap If `true`, the text is wrapped to fit within the wrap margin,
+ * auto-indenting where the line was wrapped (but nowhere else). If `false`, the
+ * text is inserted as-is without wrapping.
+ */
 void TextArea::TextInsertAtCursor(std::string_view chars, bool allowPendingDelete, bool allowWrap) {
 
 	const QRect viewRect = viewport()->contentsRect();
@@ -4371,8 +4386,7 @@ void TextArea::TextInsertAtCursor(std::string_view chars, bool allowPendingDelet
 	const std::string lineStartText = buffer_->BufGetRange(lineStartPos, cursorPos);
 	const std::string wrappedText   = wrapText(lineStartText, chars, to_integer(lineStartPos), wrapMargin, replaceSel ? nullptr : &breakAt);
 
-	/* Insert the text.  Where possible, use TextDInsert which is optimized
-	   for less redraw. */
+	/* Insert the text. Where possible, use TextDInsert which is optimized for less redraw.*/
 	if (replaceSel) {
 		buffer_->BufReplaceSelected(wrappedText);
 		setInsertPosition(buffer_->BufCursorPosHint());
@@ -4396,12 +4410,14 @@ void TextArea::TextInsertAtCursor(std::string_view chars, bool allowPendingDelet
 	callCursorMovementCBs();
 }
 
-/*
-** Return `true` if pending delete is on and there's a selection contiguous
-** with the cursor ready to be deleted.  These criteria are used to decide
-** if typing a character or inserting something should delete the selection
-** first.
-*/
+/**
+ * @brief Return `true` if pending delete is on and there's a selection contiguous
+ * with the cursor ready to be deleted. These criteria are used to decide
+ * if typing a character or inserting something should delete the selection
+ * first.
+ * @return `true` if pending delete is on and there's a selection contiguous
+ * with the cursor ready to be deleted.
+ */
 bool TextArea::pendingSelection() const {
 	const TextBuffer::Selection *sel = &buffer_->primary;
 	const TextCursor pos             = cursorPos_;
@@ -4409,18 +4425,17 @@ bool TextArea::pendingSelection() const {
 	return pendingDelete_ && sel->hasSelection() && pos >= sel->start() && pos <= sel->end();
 }
 
-/*
-** Wrap multi-line text in argument "text" to be inserted at the end of the
-** text on line "startLine" and return the result.  If "breakBefore" is
-** non-nullptr, allow wrapping to extend back into "startLine", in which case
-** the returned text will include the wrapped part of "startLine", and
-** "breakBefore" will return the number of characters at the end of
-** "startLine" that were absorbed into the returned string.  "breakBefore"
-** will return zero if no characters were absorbed into the returned string.
-** The buffer offset of text in the widget's text buffer is needed so that
-** smart indent (which can be triggered by wrapping) can search back farther
-** in the buffer than just the text in startLine.
-*/
+/**
+ * @brief Wrap multi-line text in argument "text" to be inserted at the end of the
+ * text on line "startLine" and return the result.
+ *
+ * @param startLine The text at the start of the line to wrap.
+ * @param text The text to wrap.
+ * @param bufOffset The buffer offset of the text in the widget's text buffer.
+ * @param wrapMargin The maximum number of characters per line before wrapping.
+ * @param breakBefore Where to store the number of characters absorbed from "startLine" into the returned string.
+ * @return The wrapped text, possibly including part of `startLine`.
+ */
 std::string TextArea::wrapText(std::string_view startLine, std::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore) {
 
 	// Create a temporary text buffer and load it with the strings
@@ -4480,10 +4495,12 @@ std::string TextArea::wrapText(std::string_view startLine, std::string_view text
 	return wrappedText;
 }
 
-/*
-** Insert "text" (which must not contain newlines), over-striking the current
-** cursor location.
-*/
+/**
+ * @brief Insert `text` (which must not contain newlines), over-striking the current
+ * cursor location.
+ *
+ * @param text The text to insert.
+ */
 void TextArea::TextDOverstrike(std::string_view text) {
 
 	const TextCursor startPos  = cursorPos_;
@@ -4543,12 +4560,14 @@ void TextArea::TextDOverstrike(std::string_view text) {
 	cursorToHint_ = NO_HINT;
 }
 
-/*
-** Insert "text" at the current cursor location.  This has the same
-** effect as inserting the text into the buffer using BufInsertEx and
-** then moving the insert position after the newly inserted text, except
-** that it's optimized to do less redrawing.
-*/
+/**
+ * @brief Insert "text" at the current cursor location.  This has the same
+ * effect as inserting the text into the buffer using BufInsertEx and
+ * then moving the insert position after the newly inserted text, except
+ * that it's optimized to do less redrawing.
+ *
+ * @param text The text to insert.
+ */
 void TextArea::insertText(std::string_view text) {
 
 	const TextCursor pos = cursorPos_;
@@ -4558,21 +4577,25 @@ void TextArea::insertText(std::string_view text) {
 	cursorToHint_ = NO_HINT;
 }
 
-/*
-** Wraps the end of a line beginning at lineStartPos and ending at lineEndPos
-** in "buf", at the last white-space on the line >= limitPos.  (The implicit
-** assumption is that just the last character of the line exceeds the wrap
-** margin, and anywhere on the line we can wrap is correct).  Returns `false` if
-** unable to wrap the line.  "breakAt", returns the character position at
-** which the line was broken,
-**
-** Auto-wrapping can also trigger auto-indent.  The additional parameter
-** bufOffset is needed when auto-indent is set to smart indent and the smart
-** indent routines need to scan far back in the buffer.  "charsAdded" returns
-** the number of characters added to achieve the auto-indent.  wrapMargin is
-** used to decide whether auto-indent should be skipped because the indent
-** string itself would exceed the wrap margin.
-*/
+/**
+ * @brief Wraps the end of a line beginning at lineStartPos and ending at lineEndPos
+ * in `buf`, at the last white-space on the line >= limitPos.  (The implicit
+ * assumption is that just the last character of the line exceeds the wrap
+ * margin, and anywhere on the line we can wrap is correct).
+ *
+ * Auto-wrapping can also trigger auto-indent. The additional parameter
+ * bufOffset is needed when auto-indent is set to smart indent and the smart
+ * indent routines need to scan far back in the buffer.
+ *
+ * @param buf The text buffer to use for wrapping.
+ * @param bufOffset The offset of the buffer from the real text buffer.
+ * @param lineStartPos The start position of the line to wrap.
+ * @param lineEndPos The end position of the line to wrap.
+ * @param limitPos The position at which to stop wrapping.
+ * @param breakAt Where to store the position at which the line was broken.
+ * @param charsAdded Where to store the number of characters added to achieve the auto-indent.
+ * @return `true` if the line was successfully wrapped, `false` otherwise.
+ */
 bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded) {
 
 	// TODO(eteran): return optional structure?
@@ -4614,14 +4637,17 @@ bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStart
 	return true;
 }
 
-/*
-** Create and return an auto-indent string to add a newline at lineEndPos to a
-** line starting at lineStartPos in buf.  "buf" may or may not be the real
-** text buffer for the widget.  If it is not the widget's text buffer it's
-** offset position from the real buffer must be specified in "bufOffset" to
-** allow the smart-indent routines to scan back as far as necessary.
-** the indent column is returned in "column" (if non nullptr).
-*/
+/**
+ * @brief Create and return an auto-indent string to add a newline at lineEndPos to a
+ * line starting at lineStartPos in buf.
+ *
+ * @param buf The text buffer to use for indent calculation.
+ * @param bufOffset The offset of the buffer from the real text buffer.
+ * @param lineStartPos The start position of the line to indent.
+ * @param lineEndPos The end position of the line to indent.
+ * @param column Where the indent column will be stored.
+ * @return A string containing the indent to insert after a newline.
+ */
 std::string TextArea::createIndentString(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column) {
 
 	int indent         = -1;
@@ -4693,6 +4719,11 @@ std::string TextArea::createIndentString(TextBuffer *buf, int64_t bufOffset, Tex
 	return indentStr;
 }
 
+/**
+ * @brief Insert a newline at the current cursor position without auto-indenting.
+ *
+ * @param flags Event flags that may affect the behavior of the insertion.
+ */
 void TextArea::newlineNoIndentAP(EventFlags flags) {
 
 	EMIT_EVENT_0("newline_no_indent");
@@ -4706,6 +4737,11 @@ void TextArea::newlineNoIndentAP(EventFlags flags) {
 	buffer_->BufUnselect();
 }
 
+/**
+ * @brief Insert a newline and auto-indent at the current cursor position.
+ *
+ * @param flags Event flags that may affect the behavior of the insertion.
+ */
 void TextArea::newlineAndIndentAP(EventFlags flags) {
 
 	EMIT_EVENT_0("newline_and_indent");
@@ -4737,13 +4773,13 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	buffer_->BufUnselect();
 }
 
-/*
-** Check if tab emulation is on and if there are emulated tabs before the
-** cursor, and if so, delete an emulated tab as a unit.  Also finishes up
-** by calling checkAutoShowInsertPos and callCursorMovementCBs, so the
-** calling action proc can just return (this is necessary to preserve
-** emTabsBeforeCursor which is otherwise cleared by callCursorMovementCBs).
-*/
+/**
+ * @brief Check if tab emulation is on and if there are emulated tabs before the
+ * cursor, and if so, delete an emulated tab as a unit. Also finishes up
+ * by calling checkAutoShowInsertPos and callCursorMovementCBs, so the
+ * calling action proc can just return (this is necessary to preserve
+ * emTabsBeforeCursor which is otherwise cleared by callCursorMovementCBs).
+ */
 bool TextArea::deleteEmulatedTab() {
 
 	const int emTabDist          = emulateTabs_;
@@ -4809,11 +4845,11 @@ bool TextArea::deleteEmulatedTab() {
 	return true;
 }
 
-/*
-** If there's a selection, delete it and position the cursor where the
-** selection was deleted.  (Called by routines which do deletion to check
-** first for and do possible selection delete)
-*/
+/**
+ * @brief If there's a selection, delete it and position the cursor where the
+ * selection was deleted. (Called by routines which do deletion to check
+ * first for and do possible selection delete)
+ */
 bool TextArea::deletePendingSelection() {
 
 	if (buffer_->primary.hasSelection()) {
@@ -4827,6 +4863,12 @@ bool TextArea::deletePendingSelection() {
 	return false;
 }
 
+/**
+ * @brief Move the cursor to the end of the current word.
+ *
+ * @param pos The position to start searching from.
+ * @return The position after the end of the word, or the end of the buffer if no word is found.
+ */
 TextCursor TextArea::startOfWord(TextCursor pos) const {
 
 	if (buffer_->BufIsEmpty()) {
@@ -4852,6 +4894,12 @@ TextCursor TextArea::startOfWord(TextCursor pos) const {
 	return std::min(pos, *startPos + 1);
 }
 
+/**
+ * @brief Find the end of the word starting at position `pos` in the buffer.
+ *
+ * @param pos The position to start searching from.
+ * @return The position after the end of the word, or the end of the buffer if no word is found.
+ */
 TextCursor TextArea::endOfWord(TextCursor pos) const {
 
 	if (buffer_->BufIsEmpty()) {
@@ -4877,11 +4925,18 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 	return *endPos;
 }
 
-/*
-** Search backwards in buffer "buf" for the first character NOT in
-** "searchChars",  starting with the character BEFORE "startPos". If
-** ignoreSpace is set, then Space, Tab, and Newlines are ignored in searchChars.
-*/
+/**
+ * @brief Search backwards in buffer `buf` for the first character NOT in
+ * `searchChars`, starting with the character `startPos`.
+ *
+ * @param buf The TextBuffer to search in.
+ * @param startPos The position to start searching from.
+ * @param searchChars A string_view containing characters to search for.
+ * @param ignoreSpace If true, Space, Tab, and Newline characters in `searchChars`
+ * 				  are ignored during the search.
+ *
+ * @return The position after the found character, or an empty optional if no such character is found.
+ */
 std::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor startPos, std::string_view searchChars, bool ignoreSpace) const {
 
 	if (startPos == 0) {
@@ -4911,11 +4966,18 @@ std::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor sta
 	return {};
 }
 
-/*
-** Search forwards in buffer "buf" for the first character NOT in
-** "searchChars",  starting with the character "startPos". If ignoreSpace
-** is set, then Space, Tab, and Newlines are ignored in searchChars.
-*/
+/**
+ * @brief Search forwards in buffer `buf` for the first character NOT in
+ * `searchChars`, starting with the character `startPos`.
+ *
+ * @param buf The TextBuffer to search in.
+ * @param startPos The position to start searching from.
+ * @param searchChars A string_view containing characters to search for.
+ * @param ignoreSpace If true, Space, Tab, and Newline characters in `searchChars`
+ * 				  are ignored during the search.
+ *
+ * @return The position after the found character, or an empty optional if no such character is found.
+ */
 std::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor startPos, std::string_view searchChars, bool ignoreSpace) const {
 
 	TextCursor pos = startPos;
@@ -4939,6 +5001,11 @@ std::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor star
 	return {};
 }
 
+/**
+ * @brief Move the cursor left and extend the selection if necessary.
+ *
+ * @param flags Flags that may affect the behavior of the cursor movement.
+ */
 void TextArea::processShiftUpAP(EventFlags flags) {
 
 	EMIT_EVENT_0("process_shift_up");
@@ -4957,6 +5024,11 @@ void TextArea::processShiftUpAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Move the cursor down and extend the selection if necessary.
+ *
+ * @param flags Flags that may affect the behavior of the cursor movement.
+ */
 void TextArea::processShiftDownAP(EventFlags flags) {
 
 	EMIT_EVENT_0("process_shift_down");
@@ -4975,6 +5047,11 @@ void TextArea::processShiftDownAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Select the text at the cursor position and move the cursor.
+ *
+ * @param flags Flags that may affect the behavior of the selection.
+ */
 void TextArea::keySelectAP(EventFlags flags) {
 
 	EMIT_EVENT_0("key_select");
@@ -5007,6 +5084,10 @@ void TextArea::keySelectAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Cut the primary selection to the clipboard and remove it from the
+ * buffer.
+ */
 void TextArea::TextCutClipboard() {
 
 	cancelDrag();
@@ -5025,9 +5106,9 @@ void TextArea::TextCutClipboard() {
 	checkAutoShowInsertPos();
 }
 
-/*
-** Copy the primary selection to the clipboard
-*/
+/**
+ * @brief Copy the primary selection to the clipboard
+ */
 void TextArea::CopyToClipboard() {
 
 	// Get the selected text, if there's no selection, do nothing
@@ -5039,6 +5120,9 @@ void TextArea::CopyToClipboard() {
 	QApplication::clipboard()->setText(QString::fromStdString(text));
 }
 
+/**
+ * @brief Paste the clipboard contents at the current cursor position.
+ */
 void TextArea::TextPasteClipboard() {
 	cancelDrag();
 	if (checkReadOnly()) {
@@ -5049,6 +5133,10 @@ void TextArea::TextPasteClipboard() {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Paste the clipboard contents as a columnar paste at the current cursor
+ * position.
+ */
 void TextArea::TextColPasteClipboard() {
 	cancelDrag();
 	if (checkReadOnly()) {
@@ -5059,10 +5147,12 @@ void TextArea::TextColPasteClipboard() {
 	callCursorMovementCBs();
 }
 
-/*
-** Insert the X CLIPBOARD selection at the cursor position.  If isColumnar,
-** do an BufInsertCol for a columnar paste instead of BufInsert
-*/
+/**
+ * @brief Insert the clipboard contents at the current cursor position.
+ *
+ * @param isColumnar If `true`, insert the clipboard contents as a columnar paste,
+ *                   otherwise insert it as a regular paste.
+ */
 void TextArea::insertClipboard(bool isColumnar) {
 
 	const QMimeData *const mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
@@ -5093,11 +5183,15 @@ void TextArea::insertClipboard(bool isColumnar) {
 	}
 }
 
-/*
-** Insert text "chars" at the cursor position, as if the text had been
-** typed.  Same as TextInsertAtCursorEx, but without the complicated auto-wrap
-** scanning and re-formatting.
-*/
+/**
+ * @brief Insert text "chars" at the cursor position, as if the text had been
+ * typed. Same as TextInsertAtCursorEx, but without the complicated auto-wrap
+ * scanning and re-formatting.
+ *
+ * @param chars The text to insert at the cursor position.
+ * @param allowPendingDelete If `true`, allows pending delete selections to be
+ *                           replaced with the inserted text.
+ */
 void TextArea::simpleInsertAtCursor(std::string_view chars, bool allowPendingDelete) {
 
 	if (allowPendingDelete && pendingSelection()) {
@@ -5119,6 +5213,12 @@ void TextArea::simpleInsertAtCursor(std::string_view chars, bool allowPendingDel
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Copy the primary selection to the clipboard or insert it at the
+ * current cursor position, depending on the flags.
+ *
+ * @param flags Flags that may affect the behavior of the copy operation.
+ */
 void TextArea::copyPrimaryAP(EventFlags flags) {
 
 	EMIT_EVENT_0("copy_primary");
@@ -5159,10 +5259,12 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 	}
 }
 
-/*
-** Insert the X PRIMARY selection (from whatever window currently owns it)
-** at the cursor position.
-*/
+/**
+ * @brief Insert the primary selection at the current cursor position.
+ *
+ * @param isColumnar If `true`, insert the selection as a columnar paste,
+ * otherwise insert it as a regular paste.
+ */
 void TextArea::insertPrimarySelection(bool isColumnar) {
 
 	if (!QApplication::clipboard()->supportsSelection()) {
@@ -5196,27 +5298,41 @@ void TextArea::insertPrimarySelection(bool isColumnar) {
 	}
 }
 
-/*
-** Translate window coordinates to the nearest row and column number for
-** positioning the cursor.
-*/
+/**
+ * @brief Translate window coordinates to the nearest row and column number for
+ * positioning the cursor.
+ *
+ * @param pos The position in the viewport to translate.
+ * @param row Where to store the resulting row number.
+ * @param column Where to store the resulting column number.
+ */
 void TextArea::coordToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const {
 	xyToUnconstrainedPos(coord.x(), coord.y(), row, column, PositionType::Cursor);
 }
 
-/*
-** Translate window coordinates to the nearest row and column number for
-** positioning the cursor.
-**
-** The parameter posType specifies how to interpret the position:
-** CURSOR_POS means translate the coordinates to the nearest position between
-** characters, and CHARACTER_POS means translate the position to the nearest
-** character cell.
-*/
+/**
+ * @brief Translate window coordinates to the nearest row and column number for
+ * positioning the cursor.
+ *
+ * @param pos The position in the viewport to translate.
+ * @param row Where to store the resulting row number.
+ * @param column Where to store the resulting column number.
+ * @param posType Specifies how to interpret the position.
+ */
 void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionType posType) const {
 	xyToUnconstrainedPos(pos.x(), pos.y(), row, column, posType);
 }
 
+/**
+ * @brief Translate window coordinates to the nearest row and column number for
+ * positioning the cursor.
+ *
+ * @param x The x coordinate in the viewport to translate.
+ * @param y The y coordinate in the viewport to translate.
+ * @param row Where to store the resulting row number.
+ * @param column Where to store the resulting column number.
+ * @param posType Specifies how to interpret the position.
+ */
 void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionType posType) const {
 
 	const QRect viewRect = viewport()->contentsRect();
@@ -5241,6 +5357,11 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, Positio
 	}
 }
 
+/**
+ * @brief Move the cursor to the beginning of the file, adjusting the scrollbar if necessary.
+ *
+ * @param flags Flags that may affect the behavior of the beginning of file movement.
+ */
 void TextArea::beginningOfFileAP(EventFlags flags) {
 
 	EMIT_EVENT_0("beginning_of_file");
@@ -5260,6 +5381,11 @@ void TextArea::beginningOfFileAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Move the cursor to the end of the file, adjusting the scrollbar if necessary.
+ *
+ * @param flags Flags that may affect the behavior of the end of file movement.
+ */
 void TextArea::endOfFileAP(EventFlags flags) {
 
 	EMIT_EVENT_0("end_of_file");
@@ -5280,6 +5406,12 @@ void TextArea::endOfFileAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Move the cursor backward to the start of the previous word, skipping
+ * whitespace and newlines.
+ *
+ * @param flags Flags that may affect the behavior of the backward word movement.
+ */
 void TextArea::backwardWordAP(EventFlags flags) {
 
 	EMIT_EVENT_0("backward_word");
@@ -5306,6 +5438,12 @@ void TextArea::backwardWordAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Move the cursor forward to the end of the next word, skipping
+ * whitespace and newlines.
+ *
+ * @param flags Flags that may affect the behavior of the forward word movement.
+ */
 void TextArea::forwardWordAP(EventFlags flags) {
 
 	EMIT_EVENT_0("forward_word");
@@ -5347,6 +5485,12 @@ void TextArea::forwardWordAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Move the cursor forward to the end of the next paragraph, skipping
+ * whitespace and newlines.
+ *
+ * @param flags Flags that may affect the behavior of the forward paragraph movement.
+ */
 void TextArea::forwardParagraphAP(EventFlags flags) {
 
 	EMIT_EVENT_0("forward_paragraph");
@@ -5381,6 +5525,12 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Move the cursor backward to the start of the previous paragraph,
+ * skipping whitespace and newlines.
+ *
+ * @param flags Flags that may affect the behavior of the backward paragraph movement.
+ */
 void TextArea::backwardParagraphAP(EventFlags flags) {
 
 	EMIT_EVENT_0("backward_paragraph");
@@ -5417,6 +5567,12 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Process a tab key press in the text area, inserting an emulated tab
+ * or a real tab character depending on the settings.
+ *
+ * @param flags Flags that may affect the behavior of the tab processing.
+ */
 void TextArea::processTabAP(EventFlags flags) {
 
 	EMIT_EVENT_0("process_tab");
@@ -5484,13 +5640,16 @@ void TextArea::processTabAP(EventFlags flags) {
 	buffer_->BufUnselect();
 }
 
-/*
-** Select the word or whitespace adjacent to the cursor, and move the cursor
-** to its end.  pointerX is used as a tie-breaker, when the cursor is at the
-** boundary between a word and some white-space.  If the cursor is on the
-** left, the word or space on the left is used.  If it's on the right, that
-** is used instead.
-*/
+/**
+ * @brief Select the word or whitespace adjacent to the cursor, and move the cursor
+ * to its end.  pointerX is used as a tie-breaker, when the cursor is at the
+ * boundary between a word and some white-space.  If the cursor is on the
+ * left, the word or space on the left is used.  If it's on the right, that
+ * is used instead.
+ *
+ * @param pointerX The x coordinate of the mouse pointer, used to determine
+ * which side of the word to select when the cursor is at the boundary.
+ */
 void TextArea::selectWord(int pointerX) {
 
 	TextCursor insertPos = cursorPos_;
@@ -5505,10 +5664,10 @@ void TextArea::selectWord(int pointerX) {
 	}
 }
 
-/*
-** Select the line containing the cursor, including the terminating newline,
-** and move the cursor to its end.
-*/
+/**
+ * @brief Select the line containing the cursor, including the terminating newline,
+ * and move the cursor to its end.
+ */
 void TextArea::selectLine() {
 
 	const TextCursor insertPos = cursorPos_;
@@ -5519,6 +5678,11 @@ void TextArea::selectLine() {
 	setInsertPosition(endPos);
 }
 
+/**
+ * @brief Move the cursor to the position specified by the mouse event.
+ *
+ * @param event The mouse event containing the click position.
+ */
 void TextArea::moveDestinationAP(QMouseEvent *event) {
 
 	// Move the cursor
@@ -5527,24 +5691,42 @@ void TextArea::moveDestinationAP(QMouseEvent *event) {
 	callCursorMovementCBs();
 }
 
-/*
-** Translate window coordinates to the nearest text cursor position.
-*/
+/**
+ * @brief Translate window coordinates to the nearest (insert cursor or character
+ * cell) text position.
+ *
+ * @param pos The coordinates in the viewport.
+ * @return The text cursor position corresponding to the given coordinates.
+ */
 TextCursor TextArea::coordToPosition(const QPoint &coord) const {
 	return xyToPos(coord, PositionType::Cursor);
 }
 
-/*
-** Translate window coordinates to the nearest (insert cursor or character
-** cell) text position.  The parameter posType specifies how to interpret the
-** position: CURSOR_POS means translate the coordinates to the nearest cursor
-** position, and CHARACTER_POS means return the position of the character
-** closest to (x, y).
-*/
+/**
+ * @brief Translate window coordinates to the nearest (insert cursor or character
+ * cell) text position.
+ *
+ * @param pos The coordinates in the viewport.
+ * @param posType Specifies how to interpret the position: Cursor means
+ * translate the coordinates to the nearest cursor position, and Character
+ * means return the position of the character closest to coordinate.
+ * @return The text cursor position corresponding to the given coordinates.
+ */
 TextCursor TextArea::xyToPos(const QPoint &pos, PositionType posType) const {
 	return xyToPos(pos.x(), pos.y(), posType);
 }
 
+/**
+ * @brief Translate window coordinates to the nearest (insert cursor or character
+ * cell) text position.
+ *
+ * @param x The x coordinate in the viewport.
+ * @param y The y coordinate in the viewport.
+ * @param posType Specifies how to interpret the position: Cursor means
+ * translate the coordinates to the nearest cursor position, and Character
+ * means return the position of the character closest to (x, y).
+ * @return The text cursor position corresponding to the given coordinates.
+ */
 TextCursor TextArea::xyToPos(int x, int y, PositionType posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
@@ -5593,16 +5775,20 @@ TextCursor TextArea::xyToPos(int x, int y, PositionType posType) const {
 	return lineStart + lineLen;
 }
 
-/*
-** Correct a column number based on an unconstrained position (as returned by
-** TextDXYToUnconstrainedPosition) to be relative to the last actual newline
-** in the buffer before the row and column position given, rather than the
-** last line start created by line wrapping.  This is an adapter
-** for rectangular selections and code written before continuous wrap mode,
-** which thinks that the unconstrained column is the number of characters
-** from the last newline.  Obviously this is time consuming, because it
-** involves character re-counting.
-*/
+/**
+ * @brief Correct a column number based on an unconstrained position (as returned by
+ * TextDXYToUnconstrainedPosition) to be relative to the last actual newline
+ * in the buffer before the row and column position given, rather than the
+ * last line start created by line wrapping.  This is an adapter
+ * for rectangular selections and code written before continuous wrap mode,
+ * which thinks that the unconstrained column is the number of characters
+ * from the last newline.  Obviously this is time consuming, because it
+ * involves character re-counting.
+ *
+ * @param row The row number in the text area.
+ * @param column The column number in the text area.
+ * @return The corrected column number, adjusted for wrapped lines.
+ */
 int TextArea::offsetWrappedColumn(int row, int column) const {
 
 	if (!continuousWrap_ || row < 0 || row > nVisibleLines_) {
@@ -5618,9 +5804,9 @@ int TextArea::offsetWrappedColumn(int row, int column) const {
 	return gsl::narrow<int>(column + buffer_->BufCountDispChars(lineStart, dispLineStart));
 }
 
-/*
-** Reset drag state and cancel the auto-scroll timer
-*/
+/**
+ * @briefReset drag state and cancel the auto-scroll timer
+ */
 void TextArea::endDrag() {
 
 	autoScrollTimer_->stop();
@@ -5632,6 +5818,17 @@ void TextArea::endDrag() {
 	dragState_ = NOT_CLICKED;
 }
 
+/**
+ * @brief Handle mouse clicks and double-clicks in the text area.
+ *
+ * This function tracks mouse clicks and determines whether to handle them as
+ * single, double, triple, or quadruple clicks. It also manages the click timer
+ * to reset the click count after a certain interval.
+ *
+ * @param event The mouse event containing the click information.
+ * @param inDoubleClickHandler Indicates if this is being called from a double-click handler.
+ * @return `true` if the click should be processed further, `false` if it has been handled.
+ */
 bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 
 	if (clickCount_ < 3 && clickPos_ == event->pos() && !clickTimerExpired_) {
@@ -5668,9 +5865,9 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 }
 
 /**
- * @brief
+ * @brief Select all text in the text area.
  *
- * @param flags
+ * @param flags Flags indicating the type of action, such as RectFlag for rectangular selection.
  */
 void TextArea::selectAllAP(EventFlags flags) {
 
@@ -5681,9 +5878,9 @@ void TextArea::selectAllAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Deselect all text in the text area.
  *
- * @param flags
+ * @param flags Flags indicating the type of action, such as RectFlag for rectangular selection.
  */
 void TextArea::deselectAllAP(EventFlags flags) {
 
@@ -5694,10 +5891,10 @@ void TextArea::deselectAllAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Extend the selection to the start of the primary selection.
  *
- * @param event
- * @param flags
+ * @param event The mouse event containing the current position of the mouse pointer.
+ * @param flags Flags indicating the type of action, such as RectFlag for rectangular selection.
  */
 void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
@@ -5763,10 +5960,10 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Adjust the selection as the mouse is dragged.
  *
- * @param event
- * @param flags
+ * @param event The mouse event containing the current position of the mouse pointer.
+ * @param flags Flags indicating the type of action, such as RectFlag for rectangular selection.
  */
 void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
@@ -5804,9 +6001,11 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 	adjustSelection(event->pos());
 }
 
-/*
-** Adjust the selection as the mouse is dragged to position: (x, y).
-*/
+/**
+ * @brief Adjust the selection as the mouse is dragged.
+ *
+ * @param coord The current mouse pointer location in the viewport.
+ */
 void TextArea::adjustSelection(const QPoint &coord) {
 
 	TextCursor newPos = coordToPosition(coord);
@@ -5844,11 +6043,13 @@ void TextArea::adjustSelection(const QPoint &coord) {
 	callCursorMovementCBs();
 }
 
-/*
-** Given a new mouse pointer location, pass the position on to the
-** auto-scroll timer routine, and make sure the timer is on when it's
-** needed and off when it's not.
-*/
+/**
+ * @brief Given a new mouse pointer location, pass the position on to the
+ * auto-scroll timer routine, and make sure the timer is on when it's
+ * needed and off when it's not.
+ *
+ * @param coord The current mouse pointer location in the viewport.
+ */
 void TextArea::checkAutoScroll(const QPoint &coord) {
 
 	const bool inWindow = contentsRect().contains(coord);
@@ -5864,6 +6065,11 @@ void TextArea::checkAutoScroll(const QPoint &coord) {
 	mouseCoord_ = coord;
 }
 
+/**
+ * @brief Delete the text from the cursor position to the start of the line.
+ *
+ * @param flags Flags indicating the type of action, such as NoBellFlag to suppress beeping.
+ */
 void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_to_start_of_line");
@@ -5898,6 +6104,12 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Handle mouse panning by adjusting the scroll bars based on mouse movement.
+ *
+ * @param event The mouse event containing the position to pan to.
+ * @param flags Flags indicating the type of action, such as SuppressRecording to avoid recording this action.
+ */
 void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("mouse_pan");
@@ -5925,6 +6137,13 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Copy the secondary selection or the primary selection to the clipboard
+ *        or insert it at the cursor position, and end the drag operation if applicable.
+ *
+ * @param event The mouse event containing the position to copy to.
+ * @param flags Flags indicating the type of action, such as SuppressRecording to avoid recording this action.
+ */
 void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("copy_to_end_drag");
@@ -5939,6 +6158,13 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 	finishBlockDrag();
 }
 
+/**
+ * @brief Copy the secondary selection or the primary selection to the clipboard
+ *        or insert it at the cursor position.
+ *
+ * @param event The mouse event containing the position to copy to.
+ * @param flags Flags indicating the type of action, such as SuppressRecording to avoid recording this action.
+ */
 void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("copy_to");
@@ -5988,9 +6214,9 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 	}
 }
 
-/*
-** Complete a block text drag operation
-*/
+/**
+ * @brief Finish a block drag operation by restoring the original buffer state
+ */
 void TextArea::finishBlockDrag() {
 
 	auto modRangeStart = TextCursor(-1);
@@ -6025,10 +6251,10 @@ void TextArea::finishBlockDrag() {
 }
 
 /**
- * @brief
+ * @brief Handle the start of a secondary selection or drag operation.
  *
- * @param event
- * @param flags
+ * @param event The mouse event containing the position to start the selection or drag.
+ * @param flags Flags indicating the type of action, such as SuppressRecording to avoid recording this action.
  */
 void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 
@@ -6052,9 +6278,12 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 	dragState_    = CLICKED_IN_SELECTION;
 }
 
-/*
-** Return `true` if position (x, y) is inside of the primary selection
-*/
+/**
+ * @brief Check if a point is within the primary selection.
+ *
+ * @param p The point to check.
+ * @return `true` if the point is within the primary selection, `false` otherwise.
+ */
 bool TextArea::inSelection(const QPoint &p) const {
 
 	const TextCursor pos = xyToPos(p, PositionType::Character);
@@ -6071,10 +6300,10 @@ bool TextArea::inSelection(const QPoint &p) const {
 }
 
 /**
- * @brief
+ * @brief Start a secondary selection or drag operation.
  *
- * @param event
- * @param flags
+ * @param event The mouse event containing the position to start the selection or drag.
+ * @param flags Flags indicating the type of action, such as SuppressRecording to avoid recording this action.
  */
 void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
@@ -6113,10 +6342,10 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Adjust the secondary selection or drag the primary selection
  *
- * @param event
- * @param flags
+ * @param event The mouse event containing the position to adjust to.
+ * @param flags Flags indicating the type of adjustment, such as OverlayFlag for drag overlay.
  */
 void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
@@ -6152,6 +6381,12 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 		(flags & OverlayFlag) ? ((flags & CopyFlag) ? DRAG_OVERLAY_COPY : DRAG_OVERLAY_MOVE) : ((flags & CopyFlag) ? DRAG_COPY : DRAG_MOVE));
 }
 
+/**
+ * @brief Adjust the secondary selection as the mouse is dragged.
+ *
+ * @param event The mouse event containing the position to adjust to.
+ * @param flags Flags indicating the type of adjustment, such as RectFlag for rectangular selection.
+ */
 void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("secondary_adjust");
@@ -6187,11 +6422,11 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 	adjustSecondarySelection(event->pos());
 }
 
-/*
-** Start the process of dragging the current primary-selected text across
-** the window (move by dragging, as opposed to dragging to create the
-** selection)
-*/
+/**
+ * @brief Start the process of dragging the current primary-selected text across
+ * the window (move by dragging, as opposed to dragging to create the
+ * selection).
+ */
 void TextArea::beginBlockDrag() {
 
 	const QRect viewRect             = viewport()->contentsRect();
@@ -6280,10 +6515,13 @@ void TextArea::beginBlockDrag() {
 	}
 }
 
-/*
-** Reposition the primary-selected text that is being dragged as a block
-** for a new mouse position of (x, y)
-*/
+/**
+ * @brief Reposition the primary-selected text that is being dragged as a block
+ * for a new mouse.
+ *
+ * @param pos The new mouse position.
+ * @param dragType The type of drag operation to perform.
+ */
 void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	const int fontHeight                 = fixedFontHeight_;

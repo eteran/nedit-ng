@@ -10,7 +10,7 @@
 #include <cstring>
 
 /**
- * @brief  Get the entire contents of a text buffer.
+ * @brief Get the entire contents of a text buffer.
  *
  * @return A string containing the entire contents of the text buffer.
  */
@@ -20,7 +20,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAll() const -> string_type {
 }
 
 /**
- * @brief  Get the entire contents of a text buffer as a read-only view of
+ * @brief Get the entire contents of a text buffer as a read-only view of
  * contiguous characters
  *
  * @return A read-only view of the entire contents of the text buffer.

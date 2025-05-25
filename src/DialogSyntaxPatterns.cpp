@@ -745,7 +745,7 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 }
 
 /**
- * @brief  Get the current information that the user has entered in the syntax
+ * @brief Get the current information that the user has entered in the syntax
  * highlighting dialog.
  *
  * @return A PatternSet object containing the dialog's current state, or
