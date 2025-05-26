@@ -1648,15 +1648,15 @@ void MainWindow::updateLanguageModeSubmenu() {
 	});
 }
 
-/*
-** Create a submenu for choosing language mode for the current window.
-*/
+/**
+ * @brief Create a submenu for choosing language mode for the current window.
+ */
 void MainWindow::createLanguageModeSubMenu() {
 	updateLanguageModeSubmenu();
 }
 
 /**
- * @brief
+ * @brief Updates the display of line numbers in the text area.
  *
  * @return The number of columns required for the line number area.
  */
@@ -1671,10 +1671,10 @@ int MainWindow::updateLineNumDisp() {
 	return updateGutterWidth();
 }
 
-/*
-**  Set the new gutter width in the window. Sadly, the only way to do this is
-**  to set it on every single document, so we have to iterate over them.
-*/
+/**
+ * @brief Set the new gutter width in the window. Sadly, the only way to do this is
+ *  to set it on every single document, so we have to iterate over them.
+ */
 int MainWindow::updateGutterWidth() const {
 
 	// Min. # of columns in line number display
@@ -1719,10 +1719,10 @@ int MainWindow::updateGutterWidth() const {
 	return reqCols;
 }
 
-/*
-** Temporarily show and hide the incremental search line if the line is not
-** already up.
-*/
+/**
+ * @brief Temporarily show and hide the incremental search line if the line is not
+ * already up.
+ */
 void MainWindow::tempShowISearch(bool state) {
 	if (showISearchLine_) {
 		return;
@@ -1731,11 +1731,11 @@ void MainWindow::tempShowISearch(bool state) {
 	ui.incrementalSearchFrame->setVisible(state);
 }
 
-/*
-** Find a name for an untitled file, unique in the name space of in the opened
-** files in this session, i.e. Untitled or Untitled_nn, and write it into
-** the string "name".
-*/
+/**
+ * @brief Find a name for an untitled file, unique in the name space of in the opened
+ * files in this session, i.e. Untitled or Untitled_nn, and write it into
+ * the string "name".
+ */
 QString MainWindow::uniqueUntitledName() {
 
 	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
@@ -1763,9 +1763,9 @@ QString MainWindow::uniqueUntitledName() {
 }
 
 /**
- * @brief
+ * @brief Performs the undo action on the specified document widget.
  *
- * @param document
+ * @param document The document widget on which to perform the undo action.
  */
 void MainWindow::action_Undo(DocumentWidget *document) {
 
@@ -1779,7 +1779,7 @@ void MainWindow::action_Undo(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Triggers the undo action for the current document.
  */
 void MainWindow::action_Undo_triggered() {
 
@@ -1789,9 +1789,9 @@ void MainWindow::action_Undo_triggered() {
 }
 
 /**
- * @brief
+ * @brief Performs the redo action on the specified document widget.
  *
- * @param document
+ * @param document The document widget on which to perform the redo action.
  */
 void MainWindow::action_Redo(DocumentWidget *document) {
 
@@ -1805,7 +1805,7 @@ void MainWindow::action_Redo(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Triggers the redo action for the current document.
  */
 void MainWindow::action_Redo_triggered() {
 
@@ -1814,13 +1814,19 @@ void MainWindow::action_Redo_triggered() {
 	}
 }
 
+/**
+ * @brief Finds a document window that is already open for the specified file.
+ *
+ * @param path The PathInfo object containing the filename and pathname.
+ * @return The DocumentWidget if found, otherwise `nullptr`.
+ */
 DocumentWidget *MainWindow::findWindowWithFile(const PathInfo &path) {
 	return findWindowWithFile(path.filename, path.pathname);
 }
 
-/*
-** Check if there is already a window open for a given file
-*/
+/**
+ * @brief Check if there is already a window open for a given file
+ */
 DocumentWidget *MainWindow::findWindowWithFile(const QString &filename, const QString &path) {
 
 	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
@@ -2020,7 +2026,7 @@ void MainWindow::readNEditDB() {
 }
 
 /**
- * @brief
+ * @brief Update the "Open Previous" menu in all MainWindow instances.
  */
 void MainWindow::invalidatePrevOpenMenus() {
 
@@ -2029,12 +2035,12 @@ void MainWindow::invalidatePrevOpenMenus() {
 	}
 }
 
-/*
-** Write dynamic database of file names for "Open Previous".  Eventually,
-** this may hold window positions, and possibly file marks, in which case,
-** it should be moved to a different module, but for now it's just a list
-** of previously opened files.
-*/
+/**
+ * @brief Write dynamic database of file names for "Open Previous".  Eventually,
+ * this may hold window positions, and possibly file marks, in which case,
+ * it should be moved to a different module, but for now it's just a list
+ * of previously opened files.
+ */
 void MainWindow::writeNEditDB() {
 
 	const QString HistoryFile = Settings::HistoryFile();
@@ -2064,9 +2070,9 @@ void MainWindow::writeNEditDB() {
 }
 
 /**
- * @brief
+ * @brief Remove a file from the list of previously opened files.
  *
- * @param filename
+ * @param filename The name of the file to remove from the list.
  */
 void MainWindow::removeFromPrevOpenMenu(const QString &filename) {
 
@@ -2075,10 +2081,10 @@ void MainWindow::removeFromPrevOpenMenu(const QString &filename) {
 	MainWindow::writeNEditDB();
 }
 
-/*
-** Update the Previously Opened Files menu of a single window to reflect the
-** current state of the list.
-*/
+/**
+ * @brief Update the Previously Opened Files menu of a single window to reflect the
+ * current state of the list.
+ */
 void MainWindow::updatePrevOpenMenu() {
 
 	if (Preferences::GetPrefMaxPrevOpenFiles() < 1) {
@@ -2741,12 +2747,12 @@ void MainWindow::action_Goto_Selected_triggered() {
 }
 
 /**
- * @brief
+ * @brief Open the Find dialog for the specified document with the given parameters.
  *
- * @param document
- * @param direction
- * @param type
- * @param keepDialog
+ * @param document The document widget on which to perform the find action.
+ * @param direction The direction of the search (forward or backward).
+ * @param type The type of search (case-sensitive, regex, etc.).
+ * @param keepDialog Whether to keep the dialog open after the search.
  */
 void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
 
@@ -2820,9 +2826,9 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 }
 
 /**
- * @brief
+ * @brief Handle the "Find Again" action with a shift key pressed.
  *
- * @param document
+ * @param document The document widget on which to perform the action.
  */
 void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
 	action_Find_Again(
@@ -2832,9 +2838,7 @@ void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
 }
 
 /**
- * @brief
- *
- * @param document
+ * @brief Handle the "Find Again" action with a shift key pressed.
  */
 void MainWindow::action_Shift_Find_Again() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -2843,12 +2847,12 @@ void MainWindow::action_Shift_Find_Again() {
 }
 
 /**
- * @brief
+ * @brief Find the selected text in the current document.
  *
- * @param document
- * @param direction
- * @param type
- * @param wrap
+ * @param document The document widget on which to perform the action.
+ * @param direction The direction of the search (forward or backward).
+ * @param type The type of search (case-sensitive, regex, etc.).
+ * @param wrap The wrap mode for the search (whether to wrap around the document).
  */
 void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap) {
 
@@ -2865,9 +2869,9 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 }
 
 /**
- * @brief
+ * @brief Find the selected text in the current document with a shift key pressed.
  *
- * @param document
+ * @param document The document widget on which to perform the action.
  */
 void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
 	action_Find_Selection(
@@ -2878,7 +2882,7 @@ void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Find the selected text in the current document with a shift key pressed.
  */
 void MainWindow::action_Shift_Find_Selection() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -2886,10 +2890,10 @@ void MainWindow::action_Shift_Find_Selection() {
 	}
 }
 
-/*
-** Called when user types in the incremental search line. Redoes the
-** search for the new search string.
-*/
+/**
+ * @brief Called when user types in the incremental search line. Redoes the
+ * search for the new search string.
+ */
 void MainWindow::editIFind_textChanged(const QString &text) {
 
 	const SearchType searchType = [this]() {
@@ -2937,28 +2941,28 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Triggered when the user clicks the "Find Incremental" button.
  */
 void MainWindow::action_Find_Incremental_triggered() {
 	beginISearch(Direction::Forward);
 }
 
 /**
- * @brief
+ * @brief Triggered when the user clicks the "Shift Find Incremental" button.
  */
 void MainWindow::action_Shift_Find_Incremental() {
 	beginISearch(Direction::Backward);
 }
 
 /**
- * @brief
+ * @brief Perform an incremental search in the current document.
  *
- * @param document
- * @param searchString
- * @param direction
- * @param searchType
- * @param searchWraps
- * @param isContinue
+ * @param document The document widget on which to perform the search.
+ * @param searchString The string to search for.
+ * @param direction The direction of the search (forward or backward).
+ * @param searchType The type of search (case-sensitive, regex, etc.).
+ * @param searchWraps The wrap mode for the search (whether to wrap around the document).
+ * @param isContinue Whether this is a continuation of an existing search.
  */
 void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
@@ -2974,7 +2978,7 @@ void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString
 }
 
 /**
- * @brief
+ * @brief Triggered when the user clicks the "I Find" button in the toolbar.
  */
 void MainWindow::buttonIFind_clicked() {
 	// same as pressing return
@@ -2982,11 +2986,9 @@ void MainWindow::buttonIFind_clicked() {
 }
 
 /**
- * User pressed return in the incremental search bar. Do a new search with the
+ * @brief User pressed return in the incremental search bar. Do a new search with the
  * search string displayed.  The direction of the search is toggled if the Ctrl
  * key or the Shift key is pressed when the text field is activated.
- *
- * @brief
  */
 void MainWindow::editIFind_returnPressed() {
 
@@ -3216,7 +3218,9 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
 }
 
 /**
- * @brief
+ * @brief Find the next occurrence of the search string and replace it with the
+ * replacement string, if any. If the search string is empty, it will
+ * search for the next occurrence of the replacement string.
  */
 void MainWindow::action_Replace_Find_Again_triggered() {
 
@@ -3226,20 +3230,24 @@ void MainWindow::action_Replace_Find_Again_triggered() {
 }
 
 /**
- * @brief
+ * @brief Find the previous occurrence of the search string and replace it with the
+ * replacement string, if any. If the search string is empty, it will
+ * search for the previous occurrence of the replacement string.
  *
- * @param document
+ * @param document The document widget on which to perform the action.
  */
 void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
 	action_Replace_Find_Again(document, Direction::Backward, Preferences::GetPrefSearchWraps());
 }
 
 /**
- * @brief
+ * @brief Replace the next occurrence of the search string with the replacement
+ * string, if any. If the search string is empty, it will replace the next
+ * occurrence of the replacement string.
  *
- * @param document
- * @param direction
- * @param wrap
+ * @param document The document widget on which to perform the action.
+ * @param direction The direction of the search (forward or backward).
+ * @param wrap The wrap mode for the search (whether to wrap around the document).
  */
 void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
 
@@ -3258,7 +3266,9 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 }
 
 /**
- * @brief
+ * @brief Replace the next occurrence of the search string with the replacement
+ * string, if any. If the search string is empty, it will replace the next
+ * occurrence of the replacement string.
  */
 void MainWindow::action_Replace_Again_triggered() {
 
@@ -3270,7 +3280,9 @@ void MainWindow::action_Replace_Again_triggered() {
 }
 
 /**
- * @brief
+ * @brief Replace the previous occurrence of the search string with the
+ * replacement string, if any. If the search string is empty, it will
+ * replace the previous occurrence of the replacement string.
  */
 void MainWindow::action_Shift_Replace_Again() {
 
@@ -3282,9 +3294,12 @@ void MainWindow::action_Shift_Replace_Again() {
 }
 
 /**
- * @brief
+ * @brief Marks the current selection and/or cursor position with a single
+ * character label. The label is used to recall the selection and/or cursor
+ * position later.
  *
- * @param mark
+ * @param document The document widget on which to perform the action.
+ * @param mark The single character label to use for the mark.
  */
 void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 
@@ -3306,9 +3321,11 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 }
 
 /**
- * @brief
+ * @brief Marks the current selection and/or cursor position with a single
+ * character label. The label is used to recall the selection and/or cursor
+ * position later.
  *
- * @param document
+ * @param document The document widget on which to perform the action.
  */
 void MainWindow::action_Mark(DocumentWidget *document) {
 	bool ok;
@@ -3337,7 +3354,9 @@ void MainWindow::action_Mark(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Marks the current selection and/or cursor position with a single
+ * character label. The label is used to recall the selection and/or cursor
+ * position later.
  */
 void MainWindow::action_Mark_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -3346,7 +3365,9 @@ void MainWindow::action_Mark_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handles the shortcut for marking the current selection and/or cursor
+ * position with a single character label. The label is used to recall the
+ * selection and/or cursor position later.
  */
 void MainWindow::action_Mark_Shortcut() {
 
@@ -3369,6 +3390,13 @@ void MainWindow::action_Mark_Shortcut() {
 	}
 }
 
+/**
+ * @brief Handles the action of going to a marked position in the document.
+ *
+ * @param document The document widget on which to perform the action.
+ * @param mark The single character label used to mark the selection and/or cursor position.
+ * @param extend Whether to extend the selection to the marked position.
+ */
 void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark, bool extend) {
 
 	EmitEvent("goto_mark", mark);
@@ -3388,9 +3416,11 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
 }
 
 /**
- * @brief
+ * @brief Prompts the user for a single letter label used to mark the selection
+ * and/or cursor position, and then goes to that marked position in the document.
  *
- * @param extend
+ * @param document The document widget on which to perform the action.
+ * @param extend Whether to extend the selection to the marked position.
  */
 void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) {
 	bool ok;
@@ -3419,7 +3449,7 @@ void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) 
 }
 
 /**
- * @brief
+ * @brief Triggered when the user clicks the "Goto Mark" button.
  */
 void MainWindow::action_Goto_Mark_triggered() {
 
@@ -3431,9 +3461,9 @@ void MainWindow::action_Goto_Mark_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handles the shortcut for going to a marked position in the document.
  *
- * @param shifted
+ * @param shifted Whether the Shift key was pressed when the shortcut was triggered.
  */
 void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 	if (auto shortcut = qobject_cast<QShortcut *>(sender())) {

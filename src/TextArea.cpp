@@ -1487,10 +1487,10 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Callback for buffer pre-delete events.
  *
- * @param pos
- * @param nDeleted
+ * @param pos The position in the buffer where deletion starts.
+ * @param nDeleted The number of characters to be deleted.
  */
 void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
 	if (continuousWrap_ && modifyingTabDist_) {
@@ -1509,13 +1509,13 @@ void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
 }
 
 /**
- * @brief
+ * @brief Callback for buffer modification events.
  *
- * @param pos
- * @param nInserted
- * @param nDeleted
- * @param nRestyled
- * @param deletedText
+ * @param pos The position in the buffer where modification starts.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ * @param nRestyled The number of characters restyled.
+ * @param deletedText The text that was deleted.
  */
 void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText) {
 
@@ -1640,9 +1640,9 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 }
 
 /**
- * @brief
+ * @brief Set the character types that should be highlighted in the text area.
  *
- * @param charTypes
+ * @param charTypes A string containing the character types to be highlighted.
  */
 void TextArea::setBacklightCharTypes(const QString &charTypes) {
 	setupBGClasses(charTypes);
@@ -1650,7 +1650,7 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
 }
 
 /**
- * @brief
+ * @brief Hide or show the horizontal scroll bar based on the wrap margin and continuous wrap settings.
  */
 void TextArea::hideOrShowHScrollBar() {
 	const QRect viewRect = viewport()->contentsRect();
@@ -1662,7 +1662,7 @@ void TextArea::hideOrShowHScrollBar() {
 }
 
 /**
- * This is a stripped-down version of the findWrapRange() function,
+ * @briefThis is a stripped-down version of the findWrapRange() function,
  * intended to be used to calculate the number of "deleted" lines during a
  * buffer modification. It is called _before_ the modification takes place.
  *
@@ -1672,10 +1672,9 @@ void TextArea::hideOrShowHScrollBar() {
  * available _after_ the modification. In other cases, we can still perform the
  * calculation afterwards (possibly even more efficiently).
  *
- * @brief
  *
- * @param pos
- * @param nDeleted
+ * @param pos The position in the buffer where the deletion starts.
+ * @param nDeleted The number of characters to be deleted.
  */
 void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 
@@ -1948,7 +1947,7 @@ TextCursor TextArea::startOfLine(TextCursor pos) const {
 }
 
 /**
- * When continuous wrap is on, and the user inserts or deletes characters,
+ * @brief When continuous wrap is on, and the user inserts or deletes characters,
  * wrapping can happen before and beyond the changed position.  This routine
  * finds the extent of the changes, and counts the deleted and inserted lines
  * over that range.  It also attempts to minimize the size of the range to what
@@ -1956,16 +1955,14 @@ TextCursor TextArea::startOfLine(TextCursor pos) const {
  * delimiting where the line starts need to be recalculated, and for deciding
  * what part of the text to redisplay.
  *
- * @brief
- *
- * @param deletedText
- * @param pos
- * @param nInserted
- * @param nDeleted
- * @param modRangeStart
- * @param modRangeEnd
- * @param linesInserted
- * @param linesDeleted
+ * @param deletedText The text that was deleted.
+ * @param pos The position in the buffer where the modification starts.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ * @param modRangeStart Where to store the start of the modified range.
+ * @param modRangeEnd Where to store the end of the modified range.
+ * @param linesInserted Where to store the number of lines inserted.
+ * @param linesDeleted Where to store the number of lines deleted.
  */
 void TextArea::findWrapRange(std::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted) {
 
@@ -2351,10 +2348,14 @@ void TextArea::calcLastChar() {
 	lastChar_ = (i < 0) ? buffer_->BufStartOfBuffer() : endOfLine(lineStarts_[i], /*startPosIsLineStart=*/true);
 }
 
-/*
-** Same as BufCountBackwardNLines, but takes in to account line breaks when
-** wrapping is turned on.
-*/
+/**
+ * @brief Same as BufCountBackwardNLines, but takes in to account line breaks when
+ * wrapping is turned on.
+ *
+ * @param startPos The position in the text buffer to start counting from.
+ * @param nLines The number of lines to count backward.
+ * @return The position in the text buffer after counting backward nLines lines.
+ */
 TextCursor TextArea::countBackwardNLines(TextCursor startPos, int64_t nLines) const {
 
 	// If we're not wrapping, use the more efficient BufCountBackwardNLines
@@ -2386,37 +2387,37 @@ TextCursor TextArea::countBackwardNLines(TextCursor startPos, int64_t nLines) co
 	}
 }
 
-/*
-** Return `true` if a separate absolute top line number is being maintained
-** (for displaying line numbers or showing in the statistics line).
-*/
+/**
+ * @brief Return `true` if a separate absolute top line number is being maintained
+ * (for displaying line numbers or showing in the statistics line).
+ *
+ * @return `true` if the absolute top line number is being maintained, `false` otherwise.
+ */
 bool TextArea::maintainingAbsTopLineNum() const {
 	return continuousWrap_ && (lineNumCols_ != 0 || needAbsTopLineNum_);
 }
 
-/*
-** Count lines from the beginning of the buffer to reestablish the
-** absolute (non-wrapped) top line number.  If mode is not continuous wrap,
-** or the number is not being maintained, does nothing.
-*/
+/**
+ * @brief  Count lines from the beginning of the buffer to reestablish the
+ * absolute (non-wrapped) top line number.  If mode is not continuous wrap,
+ * or the number is not being maintained, does nothing.
+ */
 void TextArea::resetAbsLineNum() {
 	absTopLineNum_ = 1;
 	offsetAbsLineNum(buffer_->BufStartOfBuffer());
 }
 
-/*
-** Refresh a rectangle of the text display.  left and top are in coordinates of
-** the text drawing window
-*/
+/**
+ * @brief Refresh a rectangle of the text display.  left and top are in coordinates of
+ * the text drawing window
+ */
 void TextArea::redisplayRect(const QRect &rect) {
 	viewport()->update(rect);
 }
 
 /**
- * Update the minimum, maximum, page increment, and value for
+ * @brief Update the minimum, maximum, page increment, and value for
  * vertical scroll bar.
- *
- * @brief
  */
 void TextArea::updateVScrollBarRange() {
 	/* NOTE(eteran) Originally, it seemed that some special handling was needed
@@ -2429,17 +2430,18 @@ void TextArea::updateVScrollBarRange() {
 }
 
 /**
- * Same as BufCountForwardNLines, but takes in to account line breaks when
+ * @brief Same as BufCountForwardNLines, but takes in to account line breaks when
  * wrapping is turned on. If the caller knows that startPos is at a line start,
  * it can pass "startPosIsLineStart" as `true` to make the call more efficient by
  * avoiding the additional step of scanning back to the last newline.
  *
- * @brief
  *
- * @param startPos
- * @param nLines
- * @param startPosIsLineStart
- * @return
+ * @param startPos The position in the text buffer to start counting from.
+ * @param nLines The number of lines to count forward.
+ * @param startPosIsLineStart If `true`, startPos is known to be at the
+ *                            start of a line, so no need to scan back to the
+ *                            last newline.
+ * @return The position in the text buffer after counting forward nLines lines.
  */
 TextCursor TextArea::forwardNLines(TextCursor startPos, int64_t nLines, bool startPosIsLineStart) const {
 
@@ -2512,18 +2514,16 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
 }
 
 /**
- * Update the minimum, maximum, page increment, and value for the horizontal
- * scroll bar.  If scroll position is such that there is blank space to the
+ * @brief Update the minimum, maximum, page increment, and value for the horizontal
+ * scroll bar. If scroll position is such that there is blank space to the
  * right of all lines of text, scroll back to take up the slack and position
  * the right edge of the text at the right edge of the display.
  *
- * Note, there is some cost to this routine, since it scans the whole range of
+ * @return `true` if the scroll position was changed, `false` otherwise.
+ *
+ * @note There is some cost to this routine, since it scans the whole range of
  * displayed text, particularly since it's usually called for each typed
  * character!
- *
- * @brief
- *
- * @return
  */
 bool TextArea::updateHScrollBarRange() {
 
@@ -2548,25 +2548,21 @@ bool TextArea::updateHScrollBarRange() {
 }
 
 /**
- * Return `true` if there are lines visible with no corresponding buffer text
+ * @brief Return `true` if there are lines visible with no corresponding buffer text.
  *
- * @brief
- *
- * @return
+ * @return `true` if there are empty lines visible, `false` otherwise.
  */
 bool TextArea::emptyLinesVisible() const {
 	return nVisibleLines_ > 0 && lineStarts_[nVisibleLines_ - 1] == -1;
 }
 
 /**
- * Find the line number of position "pos" relative to the first line of
+ * @brief Find the line number of position "pos" relative to the first line of
  * displayed text. Returns `false` if the line is not displayed.
  *
- * @brief
- *
- * @param pos
- * @param lineNum
- * @return
+ * @param pos The position in the text buffer to check.
+ * @param lineNum Where the line number will be stored if the position is valid.
+ * @return `true` if the position corresponds to a visible line, `false` otherwise.
  */
 bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 
@@ -2603,12 +2599,10 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 }
 
 /**
- * Return the width in pixels of the displayed line pointed to by "visLineNum"
+ * @brief Return the width in pixels of the displayed line pointed to by `visLineNum`.
  *
- * @brief
- *
- * @param visLineNum
- * @return
+ * @param visLineNum The visible line number to measure, starting from 0.
+ * @return The width of the line in pixels, or 0 if the line is empty or not visible.
  */
 int64_t TextArea::measureVisLine(int visLineNum) const {
 
@@ -2628,13 +2622,11 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
 }
 
 /**
- * Return the length of a line (number of displayable characters) by examining
+ * @brief Return the length of a line (number of displayable characters) by examining
  * entries in the line starts array rather than by scanning for newlines
  *
- * @brief
- *
- * @param visLineNum
- * @return
+ * @param visLineNum The visible line number to measure, starting from 0.
+ * @return The length of the line in characters, or 0 if the line is empty or not visible.
  */
 int TextArea::visLineLength(int visLineNum) const {
 
@@ -2798,7 +2790,7 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 }
 
 /**
- * @brief
+ * @brief Repaint the line numbers area.
  */
 void TextArea::repaintLineNumbers() {
 	lineNumberArea_->update();
@@ -3249,13 +3241,11 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 }
 
 /**
- * Draw a cursor with top center at x, y.
+ * @brief Draw a cursor with top center at x, y.
  *
- * @brief
- *
- * @param painter
- * @param x
- * @param y
+ * @param painter The painter to use for drawing the cursor.
+ * @param x The x-coordinate of the cursor's top center position.
+ * @param y The y-coordinate of the cursor's top center position.
  */
 void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
@@ -3320,26 +3310,26 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 }
 
 /**
- * @brief
+ * @brief Get the color for a rangeset index.
  *
- * @param ind
- * @param bground
- * @return
+ * @param index The rangeset index (1-based).
+ * @param bground The default background color to use if the rangeset index is invalid.
+ * @return The color for the rangeset index, or the default background color if the index is invalid.
  */
-QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
+QColor TextArea::getRangesetColor(size_t index, QColor bground) const {
 
-	if (ind > 0) {
-		--ind;
-		const std::unique_ptr<RangesetTable> &tab = document_->rangesetTable_;
+	if (index > 0) {
+		--index;
+		const std::unique_ptr<RangesetTable> &table = document_->rangesetTable_;
 
 		QColor color;
-		const int valid = tab->getColorValid(ind, &color);
+		const int valid = table->getColorValid(index, &color);
 		if (valid == 0) {
-			const QString color_name = tab->getColorName(ind);
+			const QString color_name = table->getColorName(index);
 			if (!color_name.isNull()) {
 				color = X11Colors::FromString(color_name);
 			}
-			tab->assignColor(ind, color);
+			table->assignColor(index, color);
 		}
 
 		if (color.isValid()) {
@@ -3351,9 +3341,9 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 }
 
 /**
- * @brief
+ * @brief Handle resize events for the text area.
  *
- * @param widthChanged
+ * @param widthChanged Indicates if the width of the text area has changed.
  */
 void TextArea::handleResize(bool widthChanged) {
 
@@ -3435,9 +3425,9 @@ int64_t TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startP
 }
 
 /**
- * @brief
+ * @brief Set the cursor style to one of the available styles.
  *
- * @param style
+ * @param style The cursor style to set.
  */
 void TextArea::setCursorStyle(CursorStyles style) {
 	cursorStyle_ = style;
@@ -3447,7 +3437,7 @@ void TextArea::setCursorStyle(CursorStyles style) {
 }
 
 /**
- * @brief
+ * @brief Blank the cursor if it is currently visible.
  */
 void TextArea::TextDBlankCursor() {
 	if (cursorOn_) {
@@ -3457,7 +3447,7 @@ void TextArea::TextDBlankCursor() {
 }
 
 /**
- * @brief
+ * @brief Unblank the cursor if it is currently blank.
  */
 void TextArea::unblankCursor() {
 	if (!cursorOn_) {
@@ -3834,19 +3824,19 @@ bool TextArea::positionToXY(TextCursor pos, int *x, int *y) const {
 }
 
 /**
- * Change the (non syntax-highlight) colors
  *
- * @brief
  *
- * @param textFG
- * @param textBG
- * @param selectionFG
- * @param selectionBG
- * @param matchFG
- * @param matchBG
- * @param lineNumberFG
- * @param lineNumberBG
- * @param cursorFG
+ * @brief Change the (non syntax-highlight) colors.
+ *
+ * @param textFG The foreground color for normal text.
+ * @param textBG The background color for normal text.
+ * @param selectionFG The foreground color for selected text.
+ * @param selectionBG The background color for selected text.
+ * @param matchFG The foreground color for matched text.
+ * @param matchBG The background color for matched text.
+ * @param lineNumberFG The foreground color for line numbers.
+ * @param lineNumberBG The background color for line numbers.
+ * @param cursorFG The foreground color for the cursor.
  */
 void TextArea::setColors(const QColor &textFG, const QColor &textBG, const QColor &selectionFG, const QColor &selectionBG, const QColor &matchFG, const QColor &matchBG, const QColor &lineNumberFG, const QColor &lineNumberBG, const QColor &cursorFG) {
 
