@@ -668,23 +668,19 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 	/* Process any regex comments, e.g. '(?# match next token->)'.  The
 	   terminating right parenthesis can not be escaped.  The comment stops at
 	   the first right parenthesis encountered (or the end of the regex
-	   string)... period.  Handles multiple sequential comments,
+	   string)... period. Handles multiple sequential comments,
 	   e.g. '(?# one)(?# two)...'  */
 
 	while (pContext.Reg_Parse.match("(?#")) {
 
-		pContext.Reg_Parse.consume_while([](char ch) {
-			return ch != ')';
-		});
-
+		pContext.Reg_Parse.consume_until(')');
 		pContext.Reg_Parse.match(')');
 
 		if (pContext.Reg_Parse.eof() || pContext.Reg_Parse.next_is(')') || pContext.Reg_Parse.next_is('|')) {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
-			ret_val = EmitNode(NOTHING);
-			return ret_val;
+			return EmitNode(NOTHING);
 		}
 	}
 

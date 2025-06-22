@@ -137,6 +137,26 @@ public:
 	}
 
 	/**
+	 * @brief Consumes until the end of the input or a character `ch` is found.
+	 *
+	 * @param ch The character to consume until.
+	 * @return The number of characters consumed until `ch` or end of input.
+	 */
+	size_t consume_until(Ch ch) noexcept {
+		size_t count = 0;
+		while (!eof()) {
+			const Ch next = peek();
+			if (next == ch) {
+				break;
+			}
+
+			++index_;
+			++count;
+		}
+		return count;
+	}
+
+	/**
 	 * @brief Consumes while a given predicate function returns `true`
 	 * and returns the number of consumed characters.
 	 *
