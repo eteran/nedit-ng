@@ -246,7 +246,7 @@ std::error_code make_error_code(MacroErrorCode e) {
 // Global symbols for returning values from built-in functions
 constexpr int ReturnGlobalNamesCount = 5;
 
-enum retGlobalSyms : uint8_t {
+enum ReturnGlobalSyms : uint8_t {
 	STRING_DIALOG_BUTTON,
 	SEARCH_END,
 	READ_STATUS,
@@ -634,8 +634,16 @@ std::optional<bool> ToggleOrBool(Arguments arguments, bool previous, std::error_
 	}
 }
 
+/**
+ * @brief Toggles a boolean setting on a DocumentWidget.
+ *
+ * @param document The DocumentWidget to operate on.
+ * @param arguments The list of arguments to read from.
+ * @param result Where to store the result of the operation.
+ * @return std::error_code indicating success or failure.
+ */
 template <void (DocumentWidget::*Set)(bool), bool (DocumentWidget::*Get)() const>
-std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	document = MacroFocusDocument();
 
 	std::error_code ec;
@@ -648,8 +656,16 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	return ec;
 }
 
+/**
+ * @brief Toggles a boolean setting on a DocumentWidget.
+ *
+ * @param document The DocumentWidget to operate on.
+ * @param arguments The list of arguments to read from.
+ * @param result Where to store the result of the operation.
+ * @return std::error_code indicating success or failure.
+ */
 template <void (MainWindow::*Set)(bool), bool (MainWindow::*Get)() const>
-std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
@@ -666,7 +682,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 }
 
 template <void (TextArea::*Func)(TextArea::EventFlags)>
-std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+std::error_code TextEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::optional<TextArea::EventFlags> flags = FlagsFromArguments(arguments, 0);
 	if (!flags) {
@@ -684,7 +700,7 @@ std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataVal
 }
 
 template <class T, void (TextArea::*Func)(T, TextArea::EventFlags)>
-std::error_code textEventArg(DocumentWidget *document, Arguments arguments, DataValue *result) {
+std::error_code TextEventArg(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	if (arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -791,10 +807,9 @@ std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataVal
 
 	document = MacroFocusDocument();
 
-	MainWindow *win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	(win->*Func)();
+	if(MainWindow *win = MainWindow::fromDocument(document)) {
+		(win->*Func)();
+	}
 
 	*result = make_value();
 	return MacroErrorCode::Success;
@@ -4899,55 +4914,55 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 
 const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
-	{"backward_character", textEvent<&TextArea::backwardCharacter>},
-	{"backward_paragraph", textEvent<&TextArea::backwardParagraphAP>},
-	{"backward_word", textEvent<&TextArea::backwardWordAP>},
-	{"beginning_of_file", textEvent<&TextArea::beginningOfFileAP>},
-	{"beginning_of_line", textEvent<&TextArea::beginningOfLine>},
-	{"beginning_of_selection", textEvent<&TextArea::beginningOfSelectionAP>},
-	{"copy_clipboard", textEvent<&TextArea::copyClipboard>},
-	{"copy_primary", textEvent<&TextArea::copyPrimaryAP>},
-	{"cut_clipboard", textEvent<&TextArea::cutClipboard>},
-	{"cut_primary", textEvent<&TextArea::cutPrimaryAP>},
-	{"delete_selection", textEvent<&TextArea::deleteSelectionAP>},
-	{"delete_next_character", textEvent<&TextArea::deleteNextCharacter>},
-	{"delete_previous_character", textEvent<&TextArea::deletePreviousCharacter>},
-	{"delete_next_word", textEvent<&TextArea::deleteNextWordAP>},
-	{"delete_previous_word", textEvent<&TextArea::deletePreviousWord>},
-	{"delete_to_start_of_line", textEvent<&TextArea::deleteToStartOfLineAP>},
-	{"delete_to_end_of_line", textEvent<&TextArea::deleteToEndOfLineAP>},
-	{"deselect_all", textEvent<&TextArea::deselectAllAP>},
-	{"end_of_file", textEvent<&TextArea::endOfFileAP>},
-	{"end_of_line", textEvent<&TextArea::endOfLine>},
-	{"end_of_selection", textEvent<&TextArea::endOfSelectionAP>},
-	{"forward_character", textEvent<&TextArea::forwardCharacter>},
-	{"forward_paragraph", textEvent<&TextArea::forwardParagraphAP>},
-	{"forward_word", textEvent<&TextArea::forwardWordAP>},
-	{"insert_string", textEventArg<const QString &, &TextArea::insertStringAP>},
-	{"key_select", textEvent<&TextArea::keySelectAP>},
-	{"newline", textEvent<&TextArea::newline>},
-	{"newline_and_indent", textEvent<&TextArea::newlineAndIndentAP>},
-	{"newline_no_indent", textEvent<&TextArea::newlineNoIndentAP>},
-	{"next_page", textEvent<&TextArea::nextPageAP>},
-	{"page_left", textEvent<&TextArea::pageLeftAP>},
-	{"page_right", textEvent<&TextArea::pageRightAP>},
-	{"paste_clipboard", textEvent<&TextArea::pasteClipboard>},
-	{"previous_page", textEvent<&TextArea::previousPageAP>},
-	{"process_cancel", textEvent<&TextArea::processCancel>},
-	{"process_down", textEvent<&TextArea::processDown>},
-	{"process_return", textEvent<&TextArea::newline>},
-	{"process_shift_down", textEvent<&TextArea::processShiftDownAP>},
-	{"process_shift_up", textEvent<&TextArea::processShiftUpAP>},
-	{"process_tab", textEvent<&TextArea::processTabAP>},
-	{"process_up", textEvent<&TextArea::processUp>},
+	{"backward_character", TextEvent<&TextArea::backwardCharacter>},
+	{"backward_paragraph", TextEvent<&TextArea::backwardParagraphAP>},
+	{"backward_word", TextEvent<&TextArea::backwardWordAP>},
+	{"beginning_of_file", TextEvent<&TextArea::beginningOfFileAP>},
+	{"beginning_of_line", TextEvent<&TextArea::beginningOfLine>},
+	{"beginning_of_selection", TextEvent<&TextArea::beginningOfSelectionAP>},
+	{"copy_clipboard", TextEvent<&TextArea::copyClipboard>},
+	{"copy_primary", TextEvent<&TextArea::copyPrimaryAP>},
+	{"cut_clipboard", TextEvent<&TextArea::cutClipboard>},
+	{"cut_primary", TextEvent<&TextArea::cutPrimaryAP>},
+	{"delete_selection", TextEvent<&TextArea::deleteSelectionAP>},
+	{"delete_next_character", TextEvent<&TextArea::deleteNextCharacter>},
+	{"delete_previous_character", TextEvent<&TextArea::deletePreviousCharacter>},
+	{"delete_next_word", TextEvent<&TextArea::deleteNextWordAP>},
+	{"delete_previous_word", TextEvent<&TextArea::deletePreviousWord>},
+	{"delete_to_start_of_line", TextEvent<&TextArea::deleteToStartOfLineAP>},
+	{"delete_to_end_of_line", TextEvent<&TextArea::deleteToEndOfLineAP>},
+	{"deselect_all", TextEvent<&TextArea::deselectAllAP>},
+	{"end_of_file", TextEvent<&TextArea::endOfFileAP>},
+	{"end_of_line", TextEvent<&TextArea::endOfLine>},
+	{"end_of_selection", TextEvent<&TextArea::endOfSelectionAP>},
+	{"forward_character", TextEvent<&TextArea::forwardCharacter>},
+	{"forward_paragraph", TextEvent<&TextArea::forwardParagraphAP>},
+	{"forward_word", TextEvent<&TextArea::forwardWordAP>},
+	{"insert_string", TextEventArg<const QString &, &TextArea::insertStringAP>},
+	{"key_select", TextEvent<&TextArea::keySelectAP>},
+	{"newline", TextEvent<&TextArea::newline>},
+	{"newline_and_indent", TextEvent<&TextArea::newlineAndIndentAP>},
+	{"newline_no_indent", TextEvent<&TextArea::newlineNoIndentAP>},
+	{"next_page", TextEvent<&TextArea::nextPageAP>},
+	{"page_left", TextEvent<&TextArea::pageLeftAP>},
+	{"page_right", TextEvent<&TextArea::pageRightAP>},
+	{"paste_clipboard", TextEvent<&TextArea::pasteClipboard>},
+	{"previous_page", TextEvent<&TextArea::previousPageAP>},
+	{"process_cancel", TextEvent<&TextArea::processCancel>},
+	{"process_down", TextEvent<&TextArea::processDown>},
+	{"process_return", TextEvent<&TextArea::newline>},
+	{"process_shift_down", TextEvent<&TextArea::processShiftDownAP>},
+	{"process_shift_up", TextEvent<&TextArea::processShiftUpAP>},
+	{"process_tab", TextEvent<&TextArea::processTabAP>},
+	{"process_up", TextEvent<&TextArea::processUp>},
 	{"scroll_down", scrollDownMS},
-	{"scroll_left", textEventArg<int, &TextArea::scrollLeftAP>},
-	{"scroll_right", textEventArg<int, &TextArea::scrollRightAP>},
+	{"scroll_left", TextEventArg<int, &TextArea::scrollLeftAP>},
+	{"scroll_right", TextEventArg<int, &TextArea::scrollRightAP>},
 	{"scroll_up", scrollUpMS},
-	{"scroll_to_line", textEventArg<int, &TextArea::scrollToLineAP>},
-	{"self_insert", textEventArg<const QString &, &TextArea::insertStringAP>},
-	{"process_home", textEvent<&TextArea::beginningOfLine>},
-	{"toggle_overstrike", textEvent<&TextArea::toggleOverstrike>},
+	{"scroll_to_line", TextEventArg<int, &TextArea::scrollToLineAP>},
+	{"self_insert", TextEventArg<const QString &, &TextArea::insertStringAP>},
+	{"process_home", TextEvent<&TextArea::beginningOfLine>},
+	{"toggle_overstrike", TextEvent<&TextArea::toggleOverstrike>},
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
 	{"extend_end",                nullptr},
@@ -5062,19 +5077,19 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_auto_indent", setAutoIndentMS},
 	{"set_em_tab_dist", setEmTabDistMS},
 	{"set_fonts", setFontsMS},
-	{"set_highlight_syntax", menuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
-	{"set_incremental_backup", menuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
-	{"set_incremental_search_line", menuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
+	{"set_highlight_syntax", MenuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
+	{"set_incremental_backup", MenuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
+	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_language_mode", setLanguageModeMS},
-	{"set_locked", menuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
-	{"set_make_backup_copy", menuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
-	{"set_overtype_mode", menuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
-	{"set_show_line_numbers", menuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
+	{"set_locked", MenuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
+	{"set_make_backup_copy", MenuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
+	{"set_overtype_mode", MenuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
+	{"set_show_line_numbers", MenuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
 	{"set_show_matching", setShowMatchingMS},
-	{"set_match_syntax_based", menuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
-	{"set_statistics_line", menuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine>},
+	{"set_match_syntax_based", MenuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
+	{"set_statistics_line", MenuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine>},
 	{"set_tab_dist", setTabDistMS},
-	{"set_use_tabs", menuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
+	{"set_use_tabs", MenuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
 	{"set_wrap_margin", setWrapMarginMS},
 	{"set_wrap_text", setWrapTextMS},
 
