@@ -26,17 +26,19 @@
 #include <gsl/span>
 
 class DialogColors;
+class DialogDrawingStyles;
+class DialogExecuteCommand;
+class DialogFilter;
 class DialogFind;
+class DialogFonts;
+class DialogLanguageModes;
 class DialogMacros;
 class DialogReplace;
 class DialogShellMenu;
-class DialogWindowBackgroundMenu;
 class DialogSyntaxPatterns;
-class DialogDrawingStyles;
-class DialogLanguageModes;
-class DocumentWidget;
+class DialogWindowBackgroundMenu;
 class DialogWindowTitle;
-class DialogFonts;
+class DocumentWidget;
 class TextArea;
 struct MenuData;
 struct PathInfo;
@@ -443,16 +445,18 @@ public:
 
 private:
 	QList<QAction *> previousOpenFilesList_;
+	QPointer<DialogColors> dialogColors_;
+	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
+	QPointer<DialogExecuteCommand> dialogExecuteCommand_;
+	QPointer<DialogFilter> dialogFilter_;
 	QPointer<DialogFind> dialogFind_;
+	QPointer<DialogFonts> dialogFonts_;
+	QPointer<DialogLanguageModes> dialogLanguageModes_;
+	QPointer<DialogMacros> dialogMacros_;
 	QPointer<DialogReplace> dialogReplace_;
 	QPointer<DialogShellMenu> dialogShellMenu_;
-	QPointer<DialogMacros> dialogMacros_;
-	QPointer<DialogColors> dialogColors_;
-	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
 	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
-	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
-	QPointer<DialogLanguageModes> dialogLanguageModes_;
-	QPointer<DialogFonts> dialogFonts_;
+	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
 	QPointer<DialogWindowTitle> dialogWindowTitle_;
 	QPointer<TextArea> lastFocus_;
 
