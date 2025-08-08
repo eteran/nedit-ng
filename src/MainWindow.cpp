@@ -6188,6 +6188,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 	}
 
 	const QString filterText = dialogFilter_->currentText();
+	dialogFilter_->addHistoryItem(filterText);
 	action_Filter_Selection(document, filterText, source);
 }
 

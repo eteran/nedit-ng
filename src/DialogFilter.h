@@ -17,12 +17,9 @@ protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
 
-private:
-	void buttonBox_accepted();
-	void connectSlots();
-
 public:
 	QString currentText() const;
+	void addHistoryItem(const QString &s);
 
 private:
 	Ui::DialogFilter ui;

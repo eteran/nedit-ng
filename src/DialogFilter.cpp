@@ -12,19 +12,11 @@
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 	ui.setupUi(this);
-	connectSlots();
 
 	Dialog::shrinkToFit(this);
 
 	// seed the history with a blank string, makes later logic simpler
 	history_ << QStringLiteral("");
-}
-
-/**
- * @brief Connects the slots for the dialog's buttons and other UI elements.
- */
-void DialogFilter::connectSlots() {
-	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogFilter::buttonBox_accepted);
 }
 
 /**
@@ -74,21 +66,21 @@ void DialogFilter::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief Handles the acceptance of the dialog.
- */
-void DialogFilter::buttonBox_accepted() {
-
-	const QString s = ui.textFilter->text();
-	if (!s.isEmpty()) {
-		history_ << s;
-	}
-}
-
-/**
  * @brief Returns the current text from the filter input field.
  *
  * @return The text currently entered in the filter input field.
  */
 QString DialogFilter::currentText() const {
 	return ui.textFilter->text();
+}
+
+/**
+ * @brief Adds a new item to the filter history.
+ *
+ * @param s The filter text to add to the history.
+ */
+void DialogFilter::addHistoryItem(const QString &s) {
+	if (!s.isEmpty()) {
+		history_.insert(1, s);
+	}
 }
