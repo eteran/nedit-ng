@@ -6179,12 +6179,16 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 		return;
 	}
 
-	auto dialog = std::make_unique<DialogFilter>(this);
-	if (const int r = dialog->exec(); r == QDialog::Rejected) {
+	if (!dialogFilter_) {
+		dialogFilter_ = new DialogFilter(this);
+	}
+
+	if (const int r = dialogFilter_->exec(); r == QDialog::Rejected) {
 		return;
 	}
 
-	const QString filterText = dialog->currentText();
+	const QString filterText = dialogFilter_->currentText();
+	dialogFilter_->addHistoryItem(filterText);
 	action_Filter_Selection(document, filterText, source);
 }
 
@@ -6252,13 +6256,16 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
 		return;
 	}
 
-	auto dialog = std::make_unique<DialogExecuteCommand>(this);
-	if (const int r = dialog->exec(); r == QDialog::Rejected) {
+	if (!dialogExecuteCommand_) {
+		dialogExecuteCommand_ = new DialogExecuteCommand(this);
+	}
+
+	if (const int r = dialogExecuteCommand_->exec(); r == QDialog::Rejected) {
 		return;
 	}
 
-	const QString commandText = dialog->currentText();
-	dialog->addHistoryItem(commandText);
+	const QString commandText = dialogExecuteCommand_->currentText();
+	dialogExecuteCommand_->addHistoryItem(commandText);
 	action_Execute_Command(document, commandText);
 }
 

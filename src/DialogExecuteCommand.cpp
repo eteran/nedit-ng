@@ -74,7 +74,7 @@ void DialogExecuteCommand::showEvent(QShowEvent *event) {
  */
 void DialogExecuteCommand::addHistoryItem(const QString &s) {
 	if (!s.isEmpty()) {
-		history_ << s;
+		history_.insert(1, s);
 	}
 }
 
