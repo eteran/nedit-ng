@@ -6,7 +6,7 @@
 
 #include <string_view>
 
-enum SmartIndentReason {
+enum class SmartIndentReason {
 	NEWLINE_INDENT_NEEDED,
 	CHAR_TYPED
 };

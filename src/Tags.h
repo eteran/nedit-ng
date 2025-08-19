@@ -75,11 +75,11 @@ extern std::deque<File> TagsFileList; // list of loaded tags files
 extern std::deque<File> TipsFileList; // list of loaded calltips tag files
 
 extern SearchMode searchMode;
-extern QString tagName;
+extern QString TagName;
 
-extern QString tagFiles[MaxDupTags];
-extern QString tagSearch[MaxDupTags];
-extern int64_t tagPosInf[MaxDupTags];
+extern QString TagFiles[MaxDupTags];
+extern QString TagSearch[MaxDupTags];
+extern int64_t TagPosInf[MaxDupTags];
 
 extern bool globAnchored;
 extern CallTipPosition globPos;

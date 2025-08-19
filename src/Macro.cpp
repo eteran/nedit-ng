@@ -2810,7 +2810,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 		}
 	}
 
-	MainWindow::fromDocument(document)->lastFocus()->TextDKillCalltip(calltipID);
+	MainWindow::fromDocument(document)->lastFocus()->killCalltip(calltipID);
 
 	*result = make_value();
 	return MacroErrorCode::Success;

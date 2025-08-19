@@ -209,7 +209,7 @@ public:
 	int maximumFontWidth() const;
 	int minimumFontWidth() const;
 	int TextDGetCalltipID() const;
-	int TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
+	int showCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
 	int TextVisibleWidth() const;
 	int64_t getBufferLinesCount() const;
 	int64_t TextFirstVisibleLine() const;
@@ -246,7 +246,7 @@ public:
 	void setStyleBuffer(UTextBuffer *buffer);
 	void setWordDelimiters(std::string_view delimiters);
 	void setWrapMargin(int value);
-	void TextDKillCalltip(int id);
+	void killCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextSetCursorPos(TextCursor pos);
 

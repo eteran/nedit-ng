@@ -864,11 +864,11 @@ std::deque<File> TipsFileList;
 
 // TODO(eteran): we really should avoid global state like this
 SearchMode searchMode = SearchMode::TAG;
-QString tagName;
+QString TagName;
 
-QString tagFiles[MaxDupTags];
-QString tagSearch[MaxDupTags];
-int64_t tagPosInf[MaxDupTags];
+QString TagFiles[MaxDupTags];
+QString TagSearch[MaxDupTags];
+int64_t TagPosInf[MaxDupTags];
 
 bool globAnchored;
 CallTipPosition globPos;
@@ -1338,14 +1338,14 @@ void ShowMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 		int64_t endPos   = 0;
 
 		// 1. Open the target file
-		NormalizePathname(tagFiles[id]);
+		NormalizePathname(TagFiles[id]);
 
-		std::ifstream file(tagFiles[id].toStdString());
+		std::ifstream file(TagFiles[id].toStdString());
 		if (!file) {
 			QMessageBox::critical(
 				parent,
 				tr("Error opening File"),
-				tr("Error opening %1").arg(tagFiles[id]));
+				tr("Error opening %1").arg(TagFiles[id]));
 			return;
 		}
 
@@ -1353,22 +1353,22 @@ void ShowMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 		std::string fileString(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
 		// 3. Search for the tagged location (set startPos)
-		if (tagSearch[id].isEmpty()) {
+		if (TagSearch[id].isEmpty()) {
 			// It's a line number, just go for it
-			if ((MoveAheadNLines(fileString, startPos, tagPosInf[id] - 1)) >= 0) {
+			if ((MoveAheadNLines(fileString, startPos, TagPosInf[id] - 1)) >= 0) {
 				QMessageBox::critical(
 					parent,
 					tr("Tags Error"),
-					tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[id]).arg(tagPosInf[id]));
+					tr("%1\n not long enough for definition to be on line %2").arg(TagFiles[id]).arg(TagPosInf[id]));
 				return;
 			}
 		} else {
-			startPos = tagPosInf[id];
-			if (!FakeRegexSearch(fileString, tagSearch[id], &startPos, &endPos)) {
+			startPos = TagPosInf[id];
+			if (!FakeRegexSearch(fileString, TagSearch[id], &startPos, &endPos)) {
 				QMessageBox::critical(
 					parent,
 					tr("Tag not found"),
-					tr("Definition for %1 not found in %2").arg(tagName, tagFiles[id]));
+					tr("Definition for %1 not found in %2").arg(TagName, TagFiles[id]));
 				return;
 			}
 		}
@@ -1462,7 +1462,7 @@ QList<Tag> GetTag(const QString &name, SearchMode mode) {
  */
 int TagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {
-		return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
+		return area->showCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	}
 
 	return 0;

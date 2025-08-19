@@ -1152,10 +1152,10 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event
 	}
 
 	switch (event->reason) {
-	case CHAR_TYPED:
+	case SmartIndentReason::CHAR_TYPED:
 		executeModMacro(event);
 		break;
-	case NEWLINE_INDENT_NEEDED:
+	case SmartIndentReason::NEWLINE_INDENT_NEEDED:
 		executeNewlineMacro(event);
 		break;
 	}
@@ -4028,9 +4028,9 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 		if (status == 0) {
 			// Didn't find any matches
 			if (Tags::searchMode == Tags::SearchMode::TIP_FROM_TAG || Tags::searchMode == Tags::SearchMode::TIP) {
-				Tags::TagsShowCalltip(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
+				Tags::TagsShowCalltip(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::TagName));
 			} else {
-				QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(Tags::tagName, (Tags::TagsFileList.size() > 1) ? tr("files") : tr("file")));
+				QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(Tags::TagName, (Tags::TagsFileList.size() > 1) ? tr("files") : tr("file")));
 			}
 		}
 	} else {
@@ -7276,21 +7276,11 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 
 	/* look for a matching mark to re-use, or advance
 	   nMarks to create a new one */
-	label = label.toUpper();
-
-	auto it = markTable_.find(label);
-	if (it != markTable_.end()) {
-		// store the cursor location and selection position in the table
-		it->second.label     = label;
-		it->second.cursorPos = area->cursorPos();
-		it->second.sel       = info_->buffer->primary;
-	} else {
-		Bookmark bookmark;
-		bookmark.label     = label;
-		bookmark.cursorPos = area->cursorPos();
-		bookmark.sel       = info_->buffer->primary;
-		markTable_.emplace(label, bookmark);
-	}
+	label              = label.toUpper();
+	Bookmark &bookmark = markTable_[label];
+	bookmark.label     = label;
+	bookmark.cursorPos = area->cursorPos();
+	bookmark.sel       = info_->buffer->primary;
 }
 
 /**
@@ -7421,7 +7411,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		return -1;
 	}
 
-	Tags::tagName = string;
+	Tags::TagName = string;
 
 	const QList<Tags::Tag> tags = Tags::LookupTag(string, Tags::searchMode);
 
@@ -7444,22 +7434,22 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		}
 
 		if (QFileInfo(fileToSearch).isAbsolute()) {
-			Tags::tagFiles[nMatches] = fileToSearch;
+			Tags::TagFiles[nMatches] = fileToSearch;
 		} else {
-			Tags::tagFiles[nMatches] = QStringLiteral("%1%2").arg(tagPath, fileToSearch);
+			Tags::TagFiles[nMatches] = QStringLiteral("%1%2").arg(tagPath, fileToSearch);
 		}
 
-		Tags::tagSearch[nMatches] = searchString;
-		Tags::tagPosInf[nMatches] = startPos;
+		Tags::TagSearch[nMatches] = searchString;
+		Tags::TagPosInf[nMatches] = startPos;
 
-		const PathInfo fi = ParseFilename(Tags::tagFiles[nMatches]);
+		const PathInfo fi = ParseFilename(Tags::TagFiles[nMatches]);
 
 		// Is this match in the current file?  If so, use it!
 		if (Preferences::GetPrefSmartTags() && info_->filename == fi.filename && info_->path == fi.pathname) {
 			if (nMatches) {
-				Tags::tagFiles[0]  = Tags::tagFiles[nMatches];
-				Tags::tagSearch[0] = Tags::tagSearch[nMatches];
-				Tags::tagPosInf[0] = Tags::tagPosInf[nMatches];
+				Tags::TagFiles[0]  = Tags::TagFiles[nMatches];
+				Tags::TagSearch[0] = Tags::TagSearch[nMatches];
+				Tags::TagPosInf[0] = Tags::TagPosInf[nMatches];
 			}
 			nMatches = 1;
 			break;
@@ -7484,16 +7474,16 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 	// Only one of the matches is in the same dir. as this file.  Use it.
 	if (Preferences::GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
-		Tags::tagFiles[0]  = Tags::tagFiles[pathMatch];
-		Tags::tagSearch[0] = Tags::tagSearch[pathMatch];
-		Tags::tagPosInf[0] = Tags::tagPosInf[pathMatch];
+		Tags::TagFiles[0]  = Tags::TagFiles[pathMatch];
+		Tags::TagSearch[0] = Tags::TagSearch[pathMatch];
+		Tags::TagPosInf[0] = Tags::TagPosInf[pathMatch];
 		nMatches           = 1;
 	}
 
 	//  If all of the tag entries are the same file, just use the first.
 	if (Preferences::GetPrefSmartTags()) {
 		for (i = 1; i < nMatches; i++) {
-			if (Tags::tagFiles[i] != Tags::tagFiles[i - 1]) {
+			if (Tags::TagFiles[i] != Tags::TagFiles[i - 1]) {
 				break;
 			}
 		}
@@ -7510,19 +7500,19 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 			QString temp;
 
-			const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
+			const PathInfo fi = ParseFilename(Tags::TagFiles[i]);
 
-			if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
+			if ((i < nMatches - 1 && (Tags::TagFiles[i] == Tags::TagFiles[i + 1])) || (i > 0 && (Tags::TagFiles[i] == Tags::TagFiles[i - 1]))) {
 
-				if (!Tags::tagSearch[i].isEmpty() && (Tags::tagPosInf[i] != -1)) {
+				if (!Tags::TagSearch[i].isEmpty() && (Tags::TagPosInf[i] != -1)) {
 					// etags
-					temp = QString::asprintf("%2d. %s%s %8lli %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::tagPosInf[i]), qPrintable(Tags::tagSearch[i]));
-				} else if (!Tags::tagSearch[i].isEmpty()) {
+					temp = QString::asprintf("%2d. %s%s %8lli %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::TagPosInf[i]), qPrintable(Tags::TagSearch[i]));
+				} else if (!Tags::TagSearch[i].isEmpty()) {
 					// ctags search expr
-					temp = QString::asprintf("%2d. %s%s          %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), qPrintable(Tags::tagSearch[i]));
+					temp = QString::asprintf("%2d. %s%s          %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), qPrintable(Tags::TagSearch[i]));
 				} else {
 					// line number only
-					temp = QString::asprintf("%2d. %s%s %8lli", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::tagPosInf[i]));
+					temp = QString::asprintf("%2d. %s%s %8lli", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::TagPosInf[i]));
 				}
 			} else {
 				temp = QString::asprintf("%2d. %s%s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename));
@@ -7557,7 +7547,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
 
 	auto dialog = std::make_unique<DialogDuplicateTags>(this, area);
-	dialog->setTag(Tags::tagName);
+	dialog->setTag(Tags::TagName);
 	for (int i = 0; i < args.size(); ++i) {
 		dialog->addListItem(args[i], i);
 	}
@@ -7607,11 +7597,11 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
  * @brief Edit a tagged location in the document.
  *
  * @param area The text area in which the tag was found.
- * @param i The index of the tag in the Tags::tagFiles array.
+ * @param i The index of the tag in the Tags::TagFiles array.
  */
 void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
-	const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
+	const PathInfo fi = ParseFilename(Tags::TagFiles[i]);
 
 	// open the file containing the definition
 	DocumentWidget::editExistingFile(
@@ -7630,13 +7620,13 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 		QMessageBox::warning(
 			this,
 			tr("File not found"),
-			tr("File %1 not found").arg(Tags::tagFiles[i]));
+			tr("File %1 not found").arg(Tags::TagFiles[i]));
 		return;
 	}
 
-	const int64_t tagLineNumber = Tags::tagPosInf[i];
+	const int64_t tagLineNumber = Tags::TagPosInf[i];
 
-	if (Tags::tagSearch[i].isEmpty()) {
+	if (Tags::TagSearch[i].isEmpty()) {
 		// if the search string is empty, select the numbered line
 		selectNumberedLine(area, tagLineNumber);
 		return;
@@ -7646,11 +7636,11 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file
-	if (!Tags::FakeRegexSearch(documentToSearch->buffer()->BufAsString(), Tags::tagSearch[i], &startPos, &endPos)) {
+	if (!Tags::FakeRegexSearch(documentToSearch->buffer()->BufAsString(), Tags::TagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
 			this,
 			tr("Tag Error"),
-			tr("Definition for %1\nnot found in %2").arg(Tags::tagName, Tags::tagFiles[i]));
+			tr("Definition for %1\nnot found in %2").arg(Tags::TagName, Tags::TagFiles[i]));
 		return;
 	}
 

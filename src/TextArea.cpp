@@ -809,7 +809,7 @@ void TextArea::processCancel(EventFlags flags) {
 	const DragStates dragState = dragState_;
 
 	// If there's a calltip displayed, kill it.
-	TextDKillCalltip(0);
+	killCalltip(0);
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG) {
 		buffer_->BufUnselect();
@@ -1157,7 +1157,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 	unblankCursor();
 
 	// If there's a calltip displayed, kill it.
-	TextDKillCalltip(0);
+	killCalltip(0);
 	QAbstractScrollArea::focusOutEvent(event);
 }
 
@@ -3544,7 +3544,7 @@ void TextArea::updateCalltip(int calltipID) {
 		// Put it at the anchor position
 		if (!positionToXY(std::get<TextCursor>(calltip_.pos), &rel_x, &rel_y)) {
 			if (calltip_.alignMode == TipAlignMode::Strict) {
-				TextDKillCalltip(calltip_.ID);
+				killCalltip(calltip_.ID);
 			}
 			return;
 		}
@@ -3557,7 +3557,7 @@ void TextArea::updateCalltip(int calltipID) {
 		} else if (!positionToXY(cursorPos_, &rel_x, &rel_y)) {
 			// Window has scrolled and tip is now offscreen
 			if (calltip_.alignMode == TipAlignMode::Strict) {
-				TextDKillCalltip(calltip_.ID);
+				killCalltip(calltip_.ID);
 			}
 			return;
 		}
@@ -4647,7 +4647,7 @@ std::string TextArea::createIndentString(TextBuffer *buf, int64_t bufOffset, Tex
 	   indent more difficult for users and make everything more complicated */
 	if (smartIndent_ && (lineStartPos == 0 || buf == buffer_)) {
 		SmartIndentEvent smartIndent;
-		smartIndent.reason     = NEWLINE_INDENT_NEEDED;
+		smartIndent.reason     = SmartIndentReason::NEWLINE_INDENT_NEEDED;
 		smartIndent.pos        = lineEndPos + bufOffset;
 		smartIndent.request    = 0;
 		smartIndent.charsTyped = std::string_view();
@@ -8065,7 +8065,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
 	if (smartIndent_) {
 		SmartIndentEvent smartIndent;
-		smartIndent.reason     = CHAR_TYPED;
+		smartIndent.reason     = SmartIndentReason::CHAR_TYPED;
 		smartIndent.pos        = cursorPos_;
 		smartIndent.request    = 0;
 		smartIndent.charsTyped = str;
@@ -8179,7 +8179,7 @@ int TextArea::TextDGetCalltipID() const {
  * @note This function uses an ID to identify the calltip, but that doesn't
  * seem to be entirely necessary as the calltip is only displayed once at a time.
  */
-void TextArea::TextDKillCalltip(int id) {
+void TextArea::killCalltip(int id) {
 	if (calltip_.ID == 0) {
 		return;
 	}
@@ -8204,12 +8204,12 @@ void TextArea::TextDKillCalltip(int id) {
  * @param alignMode The alignment mode of the calltip.
  * @return The ID of the calltip.
  */
-int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
+int TextArea::showCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
 	static int32_t StaticCalltipID = 1;
 
 	// Destroy any previous calltip
-	TextDKillCalltip(0);
+	killCalltip(0);
 
 	if (!calltipWidget_) {
 		calltipWidget_ = new CallTipWidget(this, Qt::Tool | Qt::FramelessWindowHint);
