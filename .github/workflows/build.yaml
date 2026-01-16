@@ -77,7 +77,7 @@ jobs:
   build_macos:
     strategy:
       matrix:
-        QT_VERSION: [5.12.8, 6.7.0]
+        QT_VERSION: [6.7.0]
     runs-on: macos-15
     steps:
       - name: Install Qt
