@@ -69,6 +69,7 @@ protected:
 	void resizeEvent(QResizeEvent *) override;
 	void contextMenuEvent(QContextMenuEvent *) override;
 	void squeezeTextToLabel();
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
 	QString fullText_;
