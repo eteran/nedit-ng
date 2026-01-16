@@ -309,10 +309,30 @@ void ElidedLabel::mouseDoubleClickEvent(QMouseEvent *event) {
 	QTextLine line = layout.createLine();
 	layout.endLayout();
 
-	// Position the line like QLabel does
+	// Position the line at origin; we will account for QLabel's alignment
 	line.setPosition(QPointF(0, 0));
 
-	int index = line.xToCursor(event->pos().x());
+	// Map the mouse x-position from widget coordinates to text-local coordinates
+	const QRect cr        = contentsRect();
+	const qreal textWidth = line.naturalTextWidth();
+
+	qreal textX = cr.x();
+	const Qt::Alignment align = alignment();
+	const Qt::Alignment hAlign = align & Qt::AlignHorizontal_Mask;
+	if (hAlign == Qt::AlignRight) {
+		textX = cr.x() + cr.width() - textWidth;
+	} else if (hAlign == Qt::AlignHCenter) {
+		textX = cr.x() + (cr.width() - textWidth) / 2.0;
+	}
+
+	qreal xInText = event->pos().x() - textX;
+	if (xInText < 0) {
+		xInText = 0;
+	} else if (xInText > textWidth) {
+		xInText = textWidth;
+	}
+
+	int index = line.xToCursor(xInText);
 	if (index >= start && index < end) {
 		setSelection(0, filename.length());
 	} else {
