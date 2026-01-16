@@ -293,7 +293,7 @@ void ElidedLabel::mouseDoubleClickEvent(QMouseEvent *event) {
 	}
 
 	// Now determine if the click was inside the filename portion
-	// For simplicity, let's assume the filename is the last word in the text
+	// For simplicity, let's assume the filename is the first word in the text
 	QStringList words = fullText_.split(QLatin1Char(' '));
 	if (words.isEmpty()) {
 		QLabel::mouseDoubleClickEvent(event);
