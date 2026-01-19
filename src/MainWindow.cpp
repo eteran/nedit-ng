@@ -38,6 +38,7 @@
 #include "UserCommands.h"
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
+#include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/regex.h"
 #include "Util/utils.h"
@@ -2197,7 +2198,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
 	// Get the selected text, if there's no selection, do nothing
 	const QString selected = document->getAnySelection();
 	if (!selected.isEmpty()) {
-		openFile(document, selected);
+		openFile(document, ExpandTilde(selected));
 	} else {
 		QApplication::beep();
 	}
