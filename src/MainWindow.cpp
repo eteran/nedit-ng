@@ -2243,7 +2243,7 @@ void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
 	}
 
 	if (!copied.isEmpty()) {
-		openFile(document, copied);
+		openFile(document, ExpandTilde(copied));
 	} else {
 		QApplication::beep();
 	}
@@ -5626,8 +5626,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 			}
 
 			if (resp == QMessageBox::Close) {
-				closeAllDocumentsInWindow();
-				event->accept();
+				if (closeAllDocumentsInWindow()) {
+					event->accept();
+				} else {
+					event->ignore();
+				}
 			} else {
 				event->ignore();
 			}
