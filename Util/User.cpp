@@ -51,7 +51,7 @@ QString ExpandTilde(const QString &pathname) {
 		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
 			/* username was just an input by the user, this is no indication
 			 * for some (serious) problems */
-			return QString();
+			return pathname;
 		}
 	}
 
