@@ -807,7 +807,7 @@ std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataVal
 
 	document = MacroFocusDocument();
 
-	if(MainWindow *win = MainWindow::fromDocument(document)) {
+	if (MainWindow *win = MainWindow::fromDocument(document)) {
 		(win->*Func)();
 	}
 
