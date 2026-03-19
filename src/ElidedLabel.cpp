@@ -316,8 +316,8 @@ void ElidedLabel::mouseDoubleClickEvent(QMouseEvent *event) {
 	const QRect cr        = contentsRect();
 	const qreal textWidth = line.naturalTextWidth();
 
-	qreal textX = cr.x();
-	const Qt::Alignment align = alignment();
+	qreal textX                = cr.x();
+	const Qt::Alignment align  = alignment();
 	const Qt::Alignment hAlign = align & Qt::AlignHorizontal_Mask;
 	if (hAlign == Qt::AlignRight) {
 		textX = cr.x() + cr.width() - textWidth;
