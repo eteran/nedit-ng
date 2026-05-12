@@ -1,0 +1,67 @@
+id: io.github.eteran.nedit_ng
+runtime: org.kde.Platform
+runtime-version: '6.7'
+sdk: org.kde.Sdk
+command: nedit-ng
+rename-icon: nedit-ng
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=host
+  - --share=network
+  - --socket=cups
+  - --talk-name=org.freedesktop.Notifications
+
+cleanup:
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share/man
+  - '*.a'
+  - '*.la'
+
+modules:
+  - name: nedit-ng
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/app
+    sources:
+      - type: dir
+        path: ..
+      - type: file
+        path: io.github.eteran.nedit_ng.desktop
+      - type: file
+        path: io.github.eteran.nedit_ng.metainfo.xml
+      - type: file
+        path: icons/16x16.png
+        dest-filename: icon-16.png
+      - type: file
+        path: icons/32x32.png
+        dest-filename: icon-32.png
+      - type: file
+        path: icons/48x48.png
+        dest-filename: icon-48.png
+      - type: file
+        path: icons/64x64.png
+        dest-filename: icon-64.png
+      - type: file
+        path: icons/128x128.png
+        dest-filename: icon-128.png
+      - type: file
+        path: icons/256x256.png
+        dest-filename: icon-256.png
+    post-install:
+      - install -Dm644 io.github.eteran.nedit_ng.desktop
+          /app/share/applications/io.github.eteran.nedit_ng.desktop
+      - install -Dm644 io.github.eteran.nedit_ng.metainfo.xml
+          /app/share/metainfo/io.github.eteran.nedit_ng.metainfo.xml
+      - install -Dm644 icon-16.png  /app/share/icons/hicolor/16x16/apps/nedit-ng.png
+      - install -Dm644 icon-32.png  /app/share/icons/hicolor/32x32/apps/nedit-ng.png
+      - install -Dm644 icon-48.png  /app/share/icons/hicolor/48x48/apps/nedit-ng.png
+      - install -Dm644 icon-64.png  /app/share/icons/hicolor/64x64/apps/nedit-ng.png
+      - install -Dm644 icon-128.png /app/share/icons/hicolor/128x128/apps/nedit-ng.png
+      - install -Dm644 icon-256.png /app/share/icons/hicolor/256x256/apps/nedit-ng.png

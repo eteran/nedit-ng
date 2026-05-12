@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.eteran.nedit_ng</id>
+
+  <name>NEdit-ng</name>
+  <summary>Qt port of the Nirvana Editor</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+
+  <developer id="io.github.eteran">
+    <name>Evan Teran</name>
+  </developer>
+
+  <description>
+    <p>
+      NEdit-ng is a Qt port of the Nirvana Editor (NEdit) version 5.6. It is
+      intended to be a drop-in replacement for nedit, preserving the original
+      look, feel, and macro language while modernizing the codebase on top of
+      Qt.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Syntax highlighting for many languages</li>
+      <li>Tabbed multi-document editing</li>
+      <li>Regular expression search and replace</li>
+      <li>Macro language for extending and automating the editor</li>
+      <li>Rectangular block selection and editing</li>
+      <li>Shell command integration and configurable user menus</li>
+      <li>Ctags-based tag lookup</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.eteran.nedit_ng.desktop</launchable>
+
+  <url type="homepage">https://github.com/eteran/nedit-ng</url>
+  <url type="bugtracker">https://github.com/eteran/nedit-ng/issues</url>
+  <url type="vcs-browser">https://github.com/eteran/nedit-ng</url>
+
+  <categories>
+    <category>Utility</category>
+    <category>TextEditor</category>
+    <category>Development</category>
+  </categories>
+
+  <keywords>
+    <keyword>NEdit</keyword>
+    <keyword>Nirvana</keyword>
+    <keyword>editor</keyword>
+    <keyword>text</keyword>
+  </keywords>
+
+  <provides>
+    <binary>nedit-ng</binary>
+    <binary>nc-ng</binary>
+  </provides>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="2025.1" date="2025-01-01">
+      <description>
+        <p>Initial Flatpak packaging of NEdit-ng.</p>
+      </description>
+    </release>
+  </releases>
+</component>

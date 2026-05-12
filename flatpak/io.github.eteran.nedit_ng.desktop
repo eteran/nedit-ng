@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=NEdit-ng
+GenericName=Text Editor
+Comment=A Qt port of the Nirvana Editor (NEdit)
+Exec=nedit-ng %U
+Icon=io.github.eteran.nedit_ng
+Terminal=false
+Categories=Qt;Utility;TextEditor;Development;
+MimeType=text/plain;text/x-c;text/x-c++;text/x-python;text/x-shellscript;text/x-makefile;application/x-shellscript;
+StartupNotify=true
+StartupWMClass=nedit-ng
+Keywords=NEdit;Nirvana;Editor;Text;
