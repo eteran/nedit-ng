@@ -109,3 +109,21 @@ jobs:
         with:
           name: nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}
           path: nedit-ng-macos-intel-qt${{matrix.QT_VERSION}}/
+
+  build_flatpak:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
+      options: --privileged
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Build flatpak
+        uses: flathub-infra/flatpak-github-actions/flatpak-builder@master
+        with:
+          bundle: io.github.eteran.nedit_ng.flatpak
+          manifest-path: flatpak/io.github.eteran.nedit_ng.yml
+          cache-key: flatpak-builder-${{ github.sha }}
