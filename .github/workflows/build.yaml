@@ -127,3 +127,11 @@ jobs:
           bundle: io.github.eteran.nedit_ng.flatpak
           manifest-path: flatpak/io.github.eteran.nedit_ng.yml
           cache-key: flatpak-builder-${{ github.sha }}
+          upload-artifact: false
+
+      - name: Upload flatpak bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: io.github.eteran.nedit_ng
+          path: io.github.eteran.nedit_ng.flatpak
+          archive: false
