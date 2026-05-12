@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 	// On linux (and perhaps other UNIX's), we should support -version even
 	// when X11 is not running
 #ifdef Q_OS_LINUX
-	if (qEnvironmentVariableIsEmpty("DISPLAY")) {
+	if (qEnvironmentVariableIsEmpty("DISPLAY") && qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
 		// Respond to -V or -version even if there is no display
 		for (int i = 1; i < argc && strcmp(argv[i], "--") != 0; i++) {
 
