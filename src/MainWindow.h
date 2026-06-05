@@ -251,6 +251,45 @@ public:
 	void action_Upper_case(DocumentWidget *document);
 	void action_Shift_Open_Selected(DocumentWidget *document);
 
+	void checkIFindCase(DocumentWidget *document, bool searchCaseSense);
+	void checkIFindRegex(DocumentWidget *document, bool searchRegex);
+	void checkIFindReverse(DocumentWidget *document, bool value);
+	void action_Statistics_Line(DocumentWidget *document, bool state);
+	void action_Incremental_Search_Line(DocumentWidget *document, bool state);
+	void action_Show_Line_Numbers(DocumentWidget *document, bool state);
+	void action_Highlight_Syntax(DocumentWidget *document, bool state);
+	void action_Apply_Backlighting(DocumentWidget *document, bool state);
+	void action_Make_Backup_Copy(DocumentWidget *document, bool state);
+	void action_Incremental_Backup(DocumentWidget *document, bool state);
+	void action_Matching_Syntax(DocumentWidget *document, bool state);
+	void action_Overtype(DocumentWidget *document, bool state);
+	void action_Read_Only(DocumentWidget *document, bool state);
+	void action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bool state);
+	void action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document, bool state);
+	void action_Default_Search_Verbose(DocumentWidget *document, bool state);
+	void action_Default_Search_Wrap_Around(DocumentWidget *document, bool state);
+	void action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *document, bool state);
+	void action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document, bool state);
+	void action_Default_Apply_Backlighting(DocumentWidget *document, bool state);
+	void action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *document, bool state);
+	void action_Default_Tab_Show_Tab_Bar(DocumentWidget *document, bool state);
+	void action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(DocumentWidget *document, bool state);
+	void action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget *document, bool state);
+	void action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *document, bool state);
+	void action_Default_Show_Tooltips(DocumentWidget *document, bool state);
+	void action_Default_Statistics_Line(DocumentWidget *document, bool state);
+	void action_Default_Incremental_Search_Line(DocumentWidget *document, bool state);
+	void action_Default_Show_Line_Numbers(DocumentWidget *document, bool state);
+	void action_Default_Make_Backup_Copy(DocumentWidget *document, bool state);
+	void action_Default_Incremental_Backup(DocumentWidget *document, bool state);
+	void action_Default_Matching_Syntax_Based(DocumentWidget *document, bool state);
+	void action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget *document, bool state);
+	void action_Default_Popups_Under_Pointer(DocumentWidget *document, bool state);
+	void action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidget *document, bool state);
+	void action_Default_Warnings_Files_Modified_Externally(DocumentWidget *document, bool state);
+	void action_Default_Warnings_Check_Modified_File_Contents(DocumentWidget *document, bool state);
+	void action_Default_Warnings_On_Exit(DocumentWidget *document, bool state);
+
 	// has no visual shortcut at all
 	void action_Next_Document();
 	void action_Prev_Document();

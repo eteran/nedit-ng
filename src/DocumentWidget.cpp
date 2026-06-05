@@ -7248,7 +7248,7 @@ bool DocumentWidget::userLocked() const {
  * @param value `true` to lock the document, false to unlock it.
  */
 void DocumentWidget::setUserLocked(bool value) {
-	EmitEvent("set_locked", QString::number(value));
+	EmitEvent("set_locked", info_->lockReasons.isUserLocked() ? QStringLiteral("1") : QStringLiteral("0"));
 
 	info_->lockReasons.setUserLocked(value);
 

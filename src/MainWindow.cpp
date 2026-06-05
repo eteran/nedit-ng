@@ -3026,6 +3026,420 @@ void MainWindow::editIFind_returnPressed() {
 	}
 }
 
+void MainWindow::checkIFindCase(DocumentWidget *document, bool searchCaseSense) {
+	Q_UNUSED(document);
+	/* Save the state of the Case Sensitive button
+	 * depending on the state of the Regex button
+	 */
+
+	if (ui.checkIFindRegex->isChecked()) {
+		iSearchLastRegexCase_ = searchCaseSense;
+	} else {
+		iSearchLastLiteralCase_ = searchCaseSense;
+	}
+
+	// When search parameters (direction or search type), redo the search
+	editIFind_textChanged(ui.editIFind->text());
+}
+
+void MainWindow::checkIFindRegex(DocumentWidget *document, bool searchRegex) {
+
+	Q_UNUSED(document);
+
+	const bool searchCaseSense = ui.checkIFindCase->isChecked();
+
+	// In sticky mode, restore the state of the Case Sensitive button
+	if (Preferences::GetPrefStickyCaseSenseBtn()) {
+		if (searchRegex) {
+			iSearchLastLiteralCase_ = searchCaseSense;
+			no_signals(ui.checkIFindCase)->setChecked(iSearchLastRegexCase_);
+		} else {
+			iSearchLastRegexCase_ = searchCaseSense;
+			no_signals(ui.checkIFindCase)->setChecked(iSearchLastLiteralCase_);
+		}
+	}
+	// The iSearch bar has no Whole Word button to enable/disable.
+
+	// When search parameters (direction or search type), redo the search
+	editIFind_textChanged(ui.editIFind->text());
+}
+
+void MainWindow::checkIFindReverse(DocumentWidget *document, bool value) {
+	Q_UNUSED(document)
+	Q_UNUSED(value)
+
+	// When search parameters (direction or search type), redo the search
+	editIFind_textChanged(ui.editIFind->text());
+}
+
+void MainWindow::action_Statistics_Line(DocumentWidget *document, bool state) {
+	document->showStatsLine(state);
+
+	if (document->isTopDocument()) {
+		updateStatus(document, nullptr);
+	}
+}
+
+void MainWindow::action_Incremental_Search_Line(DocumentWidget *document, bool state) {
+	Q_UNUSED(document);
+
+	showISearchLine_ = state;
+	ui.incrementalSearchFrame->setVisible(state);
+}
+
+void MainWindow::action_Show_Line_Numbers(DocumentWidget *document, bool state) {
+	Q_UNUSED(document);
+	showLineNumbers(state);
+}
+
+void MainWindow::action_Highlight_Syntax(DocumentWidget *document, bool state) {
+	document->highlightSyntax_ = state;
+
+	if (document->highlightSyntax_) {
+		document->startHighlighting(Verbosity::Verbose);
+	} else {
+		document->stopHighlighting();
+	}
+}
+
+void MainWindow::action_Apply_Backlighting(DocumentWidget *document, bool state) {
+	document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
+}
+
+void MainWindow::action_Make_Backup_Copy(DocumentWidget *document, bool state) {
+	document->info_->saveOldVersion = state;
+}
+
+void MainWindow::action_Incremental_Backup(DocumentWidget *document, bool state) {
+	document->info_->autoSave = state;
+}
+
+void MainWindow::action_Matching_Syntax(DocumentWidget *document, bool state) {
+	document->info_->matchSyntaxBased = state;
+}
+
+void MainWindow::action_Overtype(DocumentWidget *document, bool state) {
+	document->setOverstrike(state);
+}
+
+/**
+ * @brief Handle the "Read Only" action for a document.
+ * This sets the user-locked state of the document and updates the window title and read-only status accordingly.
+ *
+ * @param document The document widget on which to perform the action.
+ * @param state The new state of the "Read Only" action (true if read-only should be enabled, false otherwise).
+ */
+void MainWindow::action_Read_Only(DocumentWidget *document, bool state) {
+	document->setUserLocked(state);
+#if 0
+
+	document->info_->lockReasons.setUserLocked(state);
+	updateWindowTitle(document);
+	updateWindowReadOnly(document);
+#endif
+}
+
+void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference, make the other windows' menus agree
+	Preferences::SetPrefSortOpenPrevMenu(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefShowPathInWindowsMenu(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
+	}
+
+	MainWindow::updateWindowMenus();
+}
+
+void MainWindow::action_Default_Search_Verbose(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefSearchDlogs(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Search_Wrap_Around(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefSearchWraps(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefBeepOnSearchWrap(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefKeepSearchDlogs(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Apply_Backlighting(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefBacklightChars(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefOpenInTab(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
+
+		if (!Preferences::GetPrefOpenInTab()) {
+			window->ui.action_New_Window->setText(tr("New &Tab"));
+		} else {
+			window->ui.action_New_Window->setText(tr("New &Window"));
+		}
+	}
+}
+
+void MainWindow::action_Default_Tab_Show_Tab_Bar(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefTabBar(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
+		window->tabWidget()->tabBar()->setVisible(state);
+	}
+}
+
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefTabBarHideOne(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
+		window->tabWidget()->setTabBarAutoHide(state);
+	}
+}
+
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefGlobalTabNavigate(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefSortTabs(state);
+
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
+
+	for (MainWindow *window : windows) {
+		no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
+	}
+
+	// If we just enabled sorting, sort all tabs
+	if (state) {
+		for (MainWindow *window : windows) {
+			window->sortTabBar();
+			window->tabWidget()->tabBar()->setMovable(false);
+		}
+	} else {
+		for (MainWindow *window : windows) {
+			window->tabWidget()->tabBar()->setMovable(true);
+		}
+	}
+}
+
+void MainWindow::action_Default_Show_Tooltips(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefToolTips(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Statistics_Line(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefStatsLine(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Incremental_Search_Line(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefISearchLine(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Show_Line_Numbers(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefLineNums(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Make_Backup_Copy(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefSaveOldVersion(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Incremental_Backup(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefAutoSave(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Matching_Syntax_Based(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefMatchSyntaxBased(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefAppendLF(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Popups_Under_Pointer(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefRepositionDialogs(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefAutoScroll(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Warnings_Files_Modified_Externally(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnFileMods(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
+		window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(Preferences::GetPrefWarnFileMods());
+	}
+}
+
+void MainWindow::action_Default_Warnings_Check_Modified_File_Contents(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnRealFileMods(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
+	}
+}
+
+void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document, bool state) {
+
+	Q_UNUSED(document);
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnExit(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
+	}
+}
+
 /*
 ** The next few callbacks handle the states of find/replace toggle
 ** buttons, which depend on the state of the "Regex" button, and the
@@ -3047,16 +3461,9 @@ void MainWindow::editIFind_returnPressed() {
 */
 void MainWindow::checkIFindCase_toggled(bool searchCaseSense) {
 
-	/* Save the state of the Case Sensitive button
-	   depending on the state of the Regex button*/
-	if (ui.checkIFindRegex->isChecked()) {
-		iSearchLastRegexCase_ = searchCaseSense;
-	} else {
-		iSearchLastLiteralCase_ = searchCaseSense;
+	if (DocumentWidget *document = currentDocument()) {
+		checkIFindCase(document, searchCaseSense);
 	}
-
-	// When search parameters (direction or search type), redo the search
-	editIFind_textChanged(ui.editIFind->text());
 }
 
 /**
@@ -3065,23 +3472,9 @@ void MainWindow::checkIFindCase_toggled(bool searchCaseSense) {
  * @param searchRegex
  */
 void MainWindow::checkIFindRegex_toggled(bool searchRegex) {
-
-	const bool searchCaseSense = ui.checkIFindCase->isChecked();
-
-	// In sticky mode, restore the state of the Case Sensitive button
-	if (Preferences::GetPrefStickyCaseSenseBtn()) {
-		if (searchRegex) {
-			iSearchLastLiteralCase_ = searchCaseSense;
-			no_signals(ui.checkIFindCase)->setChecked(iSearchLastRegexCase_);
-		} else {
-			iSearchLastRegexCase_ = searchCaseSense;
-			no_signals(ui.checkIFindCase)->setChecked(iSearchLastLiteralCase_);
-		}
+	if (DocumentWidget *document = currentDocument()) {
+		checkIFindRegex(document, searchRegex);
 	}
-	// The iSearch bar has no Whole Word button to enable/disable.
-
-	// When search parameters (direction or search type), redo the search
-	editIFind_textChanged(ui.editIFind->text());
 }
 
 /**
@@ -3090,11 +3483,9 @@ void MainWindow::checkIFindRegex_toggled(bool searchRegex) {
  * @param value
  */
 void MainWindow::checkIFindReverse_toggled(bool value) {
-
-	Q_UNUSED(value)
-
-	// When search parameters (direction or search type), redo the search
-	editIFind_textChanged(ui.editIFind->text());
+	if (DocumentWidget *document = currentDocument()) {
+		checkIFindReverse(document, value);
+	}
 }
 
 /*
@@ -3898,11 +4289,7 @@ DocumentWidget *MainWindow::documentAt(int index) const {
 void MainWindow::action_Statistics_Line_toggled(bool state) {
 
 	for (DocumentWidget *document : openDocuments()) {
-		document->showStatsLine(state);
-
-		if (document->isTopDocument()) {
-			updateStatus(document, nullptr);
-		}
+		action_Statistics_Line(document, state);
 	}
 }
 
@@ -3911,8 +4298,9 @@ void MainWindow::action_Statistics_Line_toggled(bool state) {
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
 void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
-	showISearchLine_ = state;
-	ui.incrementalSearchFrame->setVisible(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Incremental_Search_Line(document, state);
+	}
 }
 
 /**
@@ -3921,7 +4309,9 @@ void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
-	showLineNumbers(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Show_Line_Numbers(document, state);
+	}
 }
 
 /**
@@ -4025,14 +4415,7 @@ void MainWindow::action_Text_Fonts_triggered() {
  */
 void MainWindow::action_Highlight_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-
-		document->highlightSyntax_ = state;
-
-		if (document->highlightSyntax_) {
-			document->startHighlighting(Verbosity::Verbose);
-		} else {
-			document->stopHighlighting();
-		}
+		action_Highlight_Syntax(document, state);
 	}
 }
 
@@ -4043,7 +4426,7 @@ void MainWindow::action_Highlight_Syntax_toggled(bool state) {
  */
 void MainWindow::action_Apply_Backlighting_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
+		action_Apply_Backlighting(document, state);
 	}
 }
 
@@ -4054,7 +4437,7 @@ void MainWindow::action_Apply_Backlighting_toggled(bool state) {
  */
 void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->info_->saveOldVersion = state;
+		action_Make_Backup_Copy(document, state);
 	}
 }
 
@@ -4065,7 +4448,7 @@ void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
  */
 void MainWindow::action_Incremental_Backup_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->info_->autoSave = state;
+		action_Incremental_Backup(document, state);
 	}
 }
 
@@ -4096,7 +4479,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
  */
 void MainWindow::action_Matching_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->info_->matchSyntaxBased = state;
+		action_Matching_Syntax(document, state);
 	}
 }
 
@@ -4107,7 +4490,7 @@ void MainWindow::action_Matching_Syntax_toggled(bool state) {
  */
 void MainWindow::action_Overtype_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->setOverstrike(state);
+		action_Overtype(document, state);
 	}
 }
 
@@ -4118,9 +4501,7 @@ void MainWindow::action_Overtype_toggled(bool state) {
  */
 void MainWindow::action_Read_Only_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		document->info_->lockReasons.setUserLocked(state);
-		updateWindowTitle(document);
-		updateWindowReadOnly(document);
+		action_Read_Only(document, state);
 	}
 }
 
@@ -4348,10 +4729,8 @@ void MainWindow::action_Default_Window_Background_Menu_triggered() {
  */
 void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
 
-	// Set the preference, make the other windows' menus agree
-	Preferences::SetPrefSortOpenPrevMenu(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Sort_Open_Prev_Menu(document, state);
 	}
 }
 
@@ -4361,14 +4740,9 @@ void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefShowPathInWindowsMenu(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Show_Path_In_Windows_Menu(document, state);
 	}
-
-	MainWindow::updateWindowMenus();
 }
 
 /**
@@ -4391,11 +4765,8 @@ void MainWindow::action_Default_Customize_Window_Title_triggered() {
  * @param state
  */
 void MainWindow::action_Default_Search_Verbose_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefSearchDlogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Search_Verbose(document, state);
 	}
 }
 
@@ -4405,11 +4776,8 @@ void MainWindow::action_Default_Search_Verbose_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Search_Wrap_Around_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefSearchWraps(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Search_Wrap_Around(document, state);
 	}
 }
 
@@ -4419,11 +4787,8 @@ void MainWindow::action_Default_Search_Wrap_Around_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefBeepOnSearchWrap(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Search_Beep_On_Search_Wrap(document, state);
 	}
 }
 
@@ -4433,11 +4798,8 @@ void MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefKeepSearchDlogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Search_Keep_Dialogs_Up(document, state);
 	}
 }
 
@@ -4525,11 +4887,8 @@ void MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered() {
  * @param state
  */
 void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefBacklightChars(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Apply_Backlighting(document, state);
 	}
 }
 
@@ -4539,17 +4898,8 @@ void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefOpenInTab(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
-
-		if (!Preferences::GetPrefOpenInTab()) {
-			window->ui.action_New_Window->setText(tr("New &Tab"));
-		} else {
-			window->ui.action_New_Window->setText(tr("New &Window"));
-		}
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Tab_Open_File_In_New_Tab(document, state);
 	}
 }
 
@@ -4559,12 +4909,8 @@ void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefTabBar(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
-		window->tabWidget()->tabBar()->setVisible(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Tab_Show_Tab_Bar(document, state);
 	}
 }
 
@@ -4574,12 +4920,8 @@ void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefTabBarHideOne(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
-		window->tabWidget()->setTabBarAutoHide(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(document, state);
 	}
 }
 
@@ -4589,11 +4931,8 @@ void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_
  * @param state
  */
 void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefGlobalTabNavigate(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Tab_Next_Prev_Tabs_Across_Windows(document, state);
 	}
 }
 
@@ -4603,26 +4942,8 @@ void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool s
  * @param state
  */
 void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefSortTabs(state);
-
-	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
-	for (MainWindow *window : windows) {
-		no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
-	}
-
-	// If we just enabled sorting, sort all tabs
-	if (state) {
-		for (MainWindow *window : windows) {
-			window->sortTabBar();
-			window->tabWidget()->tabBar()->setMovable(false);
-		}
-	} else {
-		for (MainWindow *window : windows) {
-			window->tabWidget()->tabBar()->setMovable(true);
-		}
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Tab_Sort_Tabs_Alphabetically(document, state);
 	}
 }
 
@@ -4632,11 +4953,8 @@ void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state)
  * @param state
  */
 void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefToolTips(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Show_Tooltips(document, state);
 	}
 }
 
@@ -4646,11 +4964,8 @@ void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefStatsLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Statistics_Line(document, state);
 	}
 }
 
@@ -4660,11 +4975,8 @@ void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefISearchLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Incremental_Search_Line(document, state);
 	}
 }
 
@@ -4674,11 +4986,8 @@ void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefLineNums(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Show_Line_Numbers(document, state);
 	}
 }
 
@@ -4688,11 +4997,8 @@ void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefSaveOldVersion(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Make_Backup_Copy(document, state);
 	}
 }
 
@@ -4702,11 +5008,8 @@ void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAutoSave(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Incremental_Backup(document, state);
 	}
 }
 
@@ -4743,11 +5046,8 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
  * @param state
  */
 void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefMatchSyntaxBased(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Matching_Syntax_Based(document, state);
 	}
 }
 
@@ -4757,11 +5057,8 @@ void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAppendLF(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Terminate_with_Line_Break_on_Save(document, state);
 	}
 }
 
@@ -4771,11 +5068,8 @@ void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool s
  * @param state
  */
 void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefRepositionDialogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Popups_Under_Pointer(document, state);
 	}
 }
 
@@ -4785,11 +5079,8 @@ void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAutoScroll(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Auto_Scroll_Near_Window_Top_Bottom(document, state);
 	}
 }
 
@@ -4799,12 +5090,8 @@ void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool 
  * @param state
  */
 void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefWarnFileMods(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
-		window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(Preferences::GetPrefWarnFileMods());
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Warnings_Files_Modified_Externally(document, state);
 	}
 }
 
@@ -4815,10 +5102,8 @@ void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool 
  */
 void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
 
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefWarnRealFileMods(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Warnings_Check_Modified_File_Contents(document, state);
 	}
 }
 
@@ -4829,10 +5114,8 @@ void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bo
  */
 void MainWindow::action_Default_Warnings_On_Exit_toggled(bool state) {
 
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefWarnExit(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
+	if (DocumentWidget *document = currentDocument()) {
+		action_Default_Warnings_On_Exit(document, state);
 	}
 }
 

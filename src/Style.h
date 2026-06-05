@@ -2,6 +2,8 @@
 #ifndef STYLE_H_
 #define STYLE_H_
 
+#include <cstddef>
+
 class Style {
 public:
 	Style()                         = default;
