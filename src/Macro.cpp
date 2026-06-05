@@ -5109,22 +5109,22 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_auto_indent", setAutoIndentMS},
 	{"set_em_tab_dist", setEmTabDistMS},
 	{"set_fonts", setFontsMS},
-	{"set_incremental_backup", MenuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
-	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_language_mode", setLanguageModeMS},
-
 
 	{"set_highlight_syntax", menuEventUToggle<&MainWindow::action_Highlight_Syntax, &MainWindow::action_Highlight_Syntax>},
 	{"set_locked", menuEventUToggle<&MainWindow::action_Read_Only, &MainWindow::action_Read_Only>},
+	{"set_incremental_backup", menuEventUToggle<&MainWindow::action_Incremental_Backup, &MainWindow::action_Incremental_Backup>},
+	{"set_statistics_line", menuEventUToggle<&MainWindow::action_Statistics_Line, &MainWindow::action_Statistics_Line>},
 
+	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_make_backup_copy", MenuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
 	{"set_overtype_mode", MenuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
 	{"set_show_line_numbers", MenuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
-	{"set_show_matching", setShowMatchingMS},
 	{"set_match_syntax_based", MenuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
-	{"set_statistics_line", MenuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine>},
-	{"set_tab_dist", setTabDistMS},
 	{"set_use_tabs", MenuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
+
+	{"set_show_matching", setShowMatchingMS},
+	{"set_tab_dist", setTabDistMS},
 	{"set_wrap_margin", setWrapMarginMS},
 	{"set_wrap_text", setWrapTextMS},
 

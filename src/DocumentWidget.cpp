@@ -4563,6 +4563,7 @@ bool DocumentWidget::backlightChars() const {
 	return backlightChars_;
 }
 
+#if 0
 /**
  * @brief Set whether to show the statistics line in the document widget.
  *
@@ -4589,6 +4590,7 @@ void DocumentWidget::setShowStatisticsLine(bool value) {
 bool DocumentWidget::showStatisticsLine() const {
 	return showStats_;
 }
+#endif
 
 /**
  * @brief Check if syntax-based matching is enabled in the document widget.
@@ -7141,9 +7143,6 @@ void DocumentWidget::setUseTabs(bool value) {
 	info_->buffer->BufSetUseTabs(value);
 }
 
-
-
-
 /**
  * @brief Check if a backup copy should be made when saving the document.
  *
@@ -7178,29 +7177,6 @@ void DocumentWidget::setMakeBackupCopy(bool value) {
  */
 bool DocumentWidget::incrementalBackup() const {
 	return info_->autoSave;
-}
-
-/**
- * @brief Set whether incremental backup (auto-save) should be enabled for the document.
- *
- * @param value `true` to enable incremental backup, false to disable it.
- */
-void DocumentWidget::setIncrementalBackup(bool value) {
-
-	EmitEvent("set_incremental_backup", QString::number(value));
-
-	info_->autoSave = value;
-
-	if (!isTopDocument()) {
-		return;
-	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
 }
 
 /**

@@ -103,6 +103,10 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
+	// TODO(eteran): make these no longer needed
+	bool incrementalBackup() const;
+
+public:
 	DocumentWidget *open(const QString &fullpath);
 	FileFormats fileFormat() const;
 	HighlightPattern *findPatternOfWindow(const QString &name) const;
@@ -130,7 +134,6 @@ public:
 	bool fileChanged() const;
 	bool filenameSet() const;
 	bool inSmartIndentMacros() const;
-	bool incrementalBackup() const;
 	bool isReadOnly() const;
 	bool isTopDocument() const;
 	bool makeBackupCopy() const;
@@ -196,7 +199,6 @@ public:
 	void setInsertTabs(bool value);
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
-	void setIncrementalBackup(bool value);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
 	void setMakeBackupCopy(bool value);
 	void setMatchSyntaxBased(bool value);

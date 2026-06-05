@@ -3078,6 +3078,10 @@ void MainWindow::action_Statistics_Line(DocumentWidget *document, bool state) {
 	if (document->isTopDocument()) {
 		updateStatus(document, nullptr);
 	}
+
+	if (document->isTopDocument()) {
+		no_signals(ui.action_Statistics_Line)->setChecked(state);
+	}
 }
 
 void MainWindow::action_Incremental_Search_Line(DocumentWidget *document, bool state) {
@@ -3100,6 +3104,10 @@ void MainWindow::action_Highlight_Syntax(DocumentWidget *document, bool state) {
 	} else {
 		document->stopHighlighting();
 	}
+
+	if (document->isTopDocument()) {
+		no_signals(ui.action_Highlight_Syntax)->setChecked(state);
+	}
 }
 
 void MainWindow::action_Apply_Backlighting(DocumentWidget *document, bool state) {
@@ -3112,6 +3120,10 @@ void MainWindow::action_Make_Backup_Copy(DocumentWidget *document, bool state) {
 
 void MainWindow::action_Incremental_Backup(DocumentWidget *document, bool state) {
 	document->info_->autoSave = state;
+
+	if (document->isTopDocument()) {
+		no_signals(ui.action_Incremental_Backup)->setChecked(state);
+	}
 }
 
 void MainWindow::action_Matching_Syntax(DocumentWidget *document, bool state) {
@@ -3442,8 +3454,12 @@ void MainWindow::checkIFindRegex(DocumentWidget *document) {
 }
 void MainWindow::checkIFindReverse(DocumentWidget *document) {
 }
+
 void MainWindow::action_Statistics_Line(DocumentWidget *document) {
+	EmitEvent("set_statistics_line");
+	action_Statistics_Line(document, !document->showStats_);
 }
+
 void MainWindow::action_Incremental_Search_Line(DocumentWidget *document) {
 }
 void MainWindow::action_Show_Line_Numbers(DocumentWidget *document) {
@@ -3458,8 +3474,12 @@ void MainWindow::action_Apply_Backlighting(DocumentWidget *document) {
 }
 void MainWindow::action_Make_Backup_Copy(DocumentWidget *document) {
 }
+
 void MainWindow::action_Incremental_Backup(DocumentWidget *document) {
+	EmitEvent("set_incremental_backup");
+	action_Incremental_Backup(document, !document->info_->autoSave);
 }
+
 void MainWindow::action_Matching_Syntax(DocumentWidget *document) {
 }
 void MainWindow::action_Overtype(DocumentWidget *document) {
@@ -4369,8 +4389,13 @@ DocumentWidget *MainWindow::documentAt(int index) const {
  */
 void MainWindow::action_Statistics_Line_toggled(bool state) {
 
+	Q_UNUSED(state)
+
+	// TODO(eteran): this needs to be fixed, right now it will emit the event multiple times if there are multiple documents open,
+	// and the state will be the same for all documents. We should probably have a separate action that applies to all documents,
+	// and then have the per-document action just toggle the state for that document without emitting an event.
 	for (DocumentWidget *document : openDocuments()) {
-		action_Statistics_Line(document, state);
+		action_Statistics_Line(document);
 	}
 }
 
@@ -4530,8 +4555,10 @@ void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Incremental_Backup_toggled(bool state) {
+	Q_UNUSED(state)
+
 	if (DocumentWidget *document = currentDocument()) {
-		action_Incremental_Backup(document, state);
+		action_Incremental_Backup(document);
 	}
 }
 
