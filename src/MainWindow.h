@@ -108,8 +108,6 @@ public:
 	void parseGeometry(QString geometry);
 	void replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 	void searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode SearchWrap);
-	void setIncrementalSearchLine(bool value);
-	void setShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
 	void showLineNumbers(bool state);
 	void sortTabBar();
@@ -251,9 +249,6 @@ public:
 	void action_Upper_case(DocumentWidget *document);
 	void action_Shift_Open_Selected(DocumentWidget *document);
 
-	void checkIFindCase(DocumentWidget *document);
-	void checkIFindRegex(DocumentWidget *document);
-	void checkIFindReverse(DocumentWidget *document);
 	void action_Statistics_Line(DocumentWidget *document);
 	void action_Incremental_Search_Line(DocumentWidget *document);
 	void action_Show_Line_Numbers(DocumentWidget *document);
@@ -263,6 +258,7 @@ public:
 	void action_Incremental_Backup(DocumentWidget *document);
 	void action_Matching_Syntax(DocumentWidget *document);
 	void action_Overtype(DocumentWidget *document);
+	void action_Use_Tabs(DocumentWidget *document);
 	void action_Read_Only(DocumentWidget *document);
 	void action_Default_Sort_Open_Prev_Menu(DocumentWidget *document);
 	void action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document);
@@ -302,6 +298,7 @@ public:
 	void action_Incremental_Backup(DocumentWidget *document, bool state);
 	void action_Matching_Syntax(DocumentWidget *document, bool state);
 	void action_Overtype(DocumentWidget *document, bool state);
+	void action_Use_Tabs(DocumentWidget *document, bool state);
 	void action_Read_Only(DocumentWidget *document, bool state);
 	void action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bool state);
 	void action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document, bool state);

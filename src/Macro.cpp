@@ -608,79 +608,6 @@ SearchType searchType(Arguments arguments, size_t index) {
 	return Preferences::GetPrefSearch();
 }
 
-/**
- * @brief Gets either the logical NOT of a bool, or the first argument represented as a bool.
- *
- * @param arguments The list of arguments to read from.
- * @param previous The previous boolean value to toggle.
- * @param error Where to store any error that occurs during processing.
- * @return The boolean value to toggle to, or an empty optional if an error occurred.
- */
-std::optional<bool> ToggleOrBool(Arguments arguments, bool previous, std::error_code *error) {
-	switch (arguments.size()) {
-	case 1: {
-		int next;
-		if (const std::error_code ec = ReadArguments(arguments, 0, &next)) {
-			*error = ec;
-			return {};
-		}
-		return next;
-	}
-	case 0:
-		return !previous;
-	default:
-		*error = MacroErrorCode::WrongNumberOfToggleArguments;
-		return {};
-	}
-}
-
-/**
- * @brief Toggles a boolean setting on a DocumentWidget.
- *
- * @param document The DocumentWidget to operate on.
- * @param arguments The list of arguments to read from.
- * @param result Where to store the result of the operation.
- * @return std::error_code indicating success or failure.
- */
-template <void (DocumentWidget::*Set)(bool), bool (DocumentWidget::*Get)() const>
-std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroFocusDocument();
-
-	std::error_code ec;
-	if (std::optional<bool> next = ToggleOrBool(arguments, (document->*Get)(), &ec)) {
-		(document->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-/**
- * @brief Toggles a boolean setting on a DocumentWidget.
- *
- * @param document The DocumentWidget to operate on.
- * @param arguments The list of arguments to read from.
- * @param result Where to store the result of the operation.
- * @return std::error_code indicating success or failure.
- */
-template <void (MainWindow::*Set)(bool), bool (MainWindow::*Get)() const>
-std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroFocusDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	std::error_code ec;
-	if (std::optional<bool> next = ToggleOrBool(arguments, (win->*Get)(), &ec)) {
-		(win->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
 template <void (TextArea::*Func)(TextArea::EventFlags)>
 std::error_code TextEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -5115,13 +5042,12 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_locked", menuEventUToggle<&MainWindow::action_Read_Only, &MainWindow::action_Read_Only>},
 	{"set_incremental_backup", menuEventUToggle<&MainWindow::action_Incremental_Backup, &MainWindow::action_Incremental_Backup>},
 	{"set_statistics_line", menuEventUToggle<&MainWindow::action_Statistics_Line, &MainWindow::action_Statistics_Line>},
-
-	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
-	{"set_make_backup_copy", MenuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
-	{"set_overtype_mode", MenuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
-	{"set_show_line_numbers", MenuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
-	{"set_match_syntax_based", MenuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
-	{"set_use_tabs", MenuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
+	{"set_incremental_search_line", menuEventUToggle<&MainWindow::action_Incremental_Search_Line, &MainWindow::action_Incremental_Search_Line>},
+	{"set_make_backup_copy", menuEventUToggle<&MainWindow::action_Make_Backup_Copy, &MainWindow::action_Make_Backup_Copy>},
+	{"set_overtype_mode", menuEventUToggle<&MainWindow::action_Overtype, &MainWindow::action_Overtype>},
+	{"set_show_line_numbers", menuEventUToggle<&MainWindow::action_Show_Line_Numbers, &MainWindow::action_Show_Line_Numbers>},
+	{"set_match_syntax_based", menuEventUToggle<&MainWindow::action_Matching_Syntax, &MainWindow::action_Matching_Syntax>},
+	{"set_use_tabs", menuEventUToggle<&MainWindow::action_Use_Tabs, &MainWindow::action_Use_Tabs>},
 
 	{"set_show_matching", setShowMatchingMS},
 	{"set_tab_dist", setTabDistMS},

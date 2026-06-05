@@ -72,6 +72,20 @@ QPointer<DocumentWidget> LastFocusDocument;
 QVector<QString> PrevOpen;
 
 /**
+ * @brief Updates the checked state of a menu action based on the state of the document.
+ *
+ * @param document The document widget for which the menu state should be updated.
+ * @param action The menu action whose checked state should be updated.
+ * @param state The new state that determines whether the action should be checked or not.
+ */
+template <class T>
+void UpdateMenuCheckedState(DocumentWidget *document, T *action, bool state) {
+	if (document->isTopDocument()) {
+		no_signals(action)->setChecked(state);
+	}
+}
+
+/**
  * @brief Create a shortcut object.
  *
  * @param seq The key sequence for the shortcut.
@@ -3079,21 +3093,22 @@ void MainWindow::action_Statistics_Line(DocumentWidget *document, bool state) {
 		updateStatus(document, nullptr);
 	}
 
-	if (document->isTopDocument()) {
-		no_signals(ui.action_Statistics_Line)->setChecked(state);
-	}
+	UpdateMenuCheckedState(document, ui.action_Statistics_Line, state);
 }
 
 void MainWindow::action_Incremental_Search_Line(DocumentWidget *document, bool state) {
-	Q_UNUSED(document);
 
 	showISearchLine_ = state;
 	ui.incrementalSearchFrame->setVisible(state);
+
+	UpdateMenuCheckedState(document, ui.action_Incremental_Search_Line, state);
 }
 
 void MainWindow::action_Show_Line_Numbers(DocumentWidget *document, bool state) {
 	Q_UNUSED(document);
 	showLineNumbers(state);
+
+	no_signals(ui.action_Show_Line_Numbers)->setChecked(state);
 }
 
 void MainWindow::action_Highlight_Syntax(DocumentWidget *document, bool state) {
@@ -3105,33 +3120,43 @@ void MainWindow::action_Highlight_Syntax(DocumentWidget *document, bool state) {
 		document->stopHighlighting();
 	}
 
-	if (document->isTopDocument()) {
-		no_signals(ui.action_Highlight_Syntax)->setChecked(state);
-	}
+	UpdateMenuCheckedState(document, ui.action_Highlight_Syntax, state);
 }
 
 void MainWindow::action_Apply_Backlighting(DocumentWidget *document, bool state) {
 	document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
+
+	UpdateMenuCheckedState(document, ui.action_Apply_Backlighting, state);
 }
 
 void MainWindow::action_Make_Backup_Copy(DocumentWidget *document, bool state) {
 	document->info_->saveOldVersion = state;
+
+	UpdateMenuCheckedState(document, ui.action_Make_Backup_Copy, state);
 }
 
 void MainWindow::action_Incremental_Backup(DocumentWidget *document, bool state) {
 	document->info_->autoSave = state;
 
-	if (document->isTopDocument()) {
-		no_signals(ui.action_Incremental_Backup)->setChecked(state);
-	}
+	UpdateMenuCheckedState(document, ui.action_Incremental_Backup, state);
 }
 
 void MainWindow::action_Matching_Syntax(DocumentWidget *document, bool state) {
 	document->info_->matchSyntaxBased = state;
+
+	UpdateMenuCheckedState(document, ui.action_Matching_Syntax, state);
 }
 
 void MainWindow::action_Overtype(DocumentWidget *document, bool state) {
 	document->setOverstrike(state);
+
+	UpdateMenuCheckedState(document, ui.action_Overtype, state);
+}
+
+void MainWindow::action_Use_Tabs(DocumentWidget *document, bool state) {
+	document->setUseTabs(state);
+
+	// NOTE(eteran): not associated with any menu item.
 }
 
 /**
@@ -3448,21 +3473,19 @@ void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document, bool 
 	}
 }
 
-void MainWindow::checkIFindCase(DocumentWidget *document) {
-}
-void MainWindow::checkIFindRegex(DocumentWidget *document) {
-}
-void MainWindow::checkIFindReverse(DocumentWidget *document) {
-}
-
 void MainWindow::action_Statistics_Line(DocumentWidget *document) {
 	EmitEvent("set_statistics_line");
 	action_Statistics_Line(document, !document->showStats_);
 }
 
 void MainWindow::action_Incremental_Search_Line(DocumentWidget *document) {
+	EmitEvent("set_incremental_search_line");
+	action_Incremental_Search_Line(document, !showISearchLine_);
 }
+
 void MainWindow::action_Show_Line_Numbers(DocumentWidget *document) {
+	EmitEvent("set_show_line_numbers");
+	action_Show_Line_Numbers(document, !showLineNumbers_);
 }
 
 void MainWindow::action_Highlight_Syntax(DocumentWidget *document) {
@@ -3471,8 +3494,13 @@ void MainWindow::action_Highlight_Syntax(DocumentWidget *document) {
 }
 
 void MainWindow::action_Apply_Backlighting(DocumentWidget *document) {
+	EmitEvent("set_apply_backlighting");
+	action_Apply_Backlighting(document, !document->backlightChars_);
 }
+
 void MainWindow::action_Make_Backup_Copy(DocumentWidget *document) {
+	EmitEvent("set_make_backup_copy");
+	action_Make_Backup_Copy(document, !document->info_->saveOldVersion);
 }
 
 void MainWindow::action_Incremental_Backup(DocumentWidget *document) {
@@ -3481,8 +3509,18 @@ void MainWindow::action_Incremental_Backup(DocumentWidget *document) {
 }
 
 void MainWindow::action_Matching_Syntax(DocumentWidget *document) {
+	EmitEvent("set_match_syntax_based");
+	action_Matching_Syntax(document, !document->info_->matchSyntaxBased);
 }
+
+void MainWindow::action_Use_Tabs(DocumentWidget *document) {
+	EmitEvent("set_use_tabs");
+	action_Use_Tabs(document, !document->useTabs());
+}
+
 void MainWindow::action_Overtype(DocumentWidget *document) {
+	EmitEvent("set_overtype_mode");
+	action_Overtype(document, !document->overstrike());
 }
 
 void MainWindow::action_Read_Only(DocumentWidget *document) {
@@ -3491,54 +3529,103 @@ void MainWindow::action_Read_Only(DocumentWidget *document) {
 }
 
 void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document) {
+	action_Default_Sort_Open_Prev_Menu(document, !Preferences::GetPrefSortOpenPrevMenu());
 }
+
 void MainWindow::action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document) {
+	action_Default_Show_Path_In_Windows_Menu(document, !Preferences::GetPrefShowPathInWindowsMenu());
 }
+
 void MainWindow::action_Default_Search_Verbose(DocumentWidget *document) {
+	action_Default_Search_Verbose(document, !Preferences::GetPrefSearchDialogs());
 }
+
 void MainWindow::action_Default_Search_Wrap_Around(DocumentWidget *document) {
+	action_Default_Search_Wrap_Around(document, Preferences::GetPrefSearchWraps() != WrapMode::Wrap);
 }
+
 void MainWindow::action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *document) {
+	action_Default_Search_Beep_On_Search_Wrap(document, !Preferences::GetPrefBeepOnSearchWrap());
 }
+
 void MainWindow::action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document) {
+	action_Default_Search_Keep_Dialogs_Up(document, !Preferences::GetPrefKeepSearchDlogs());
 }
+
 void MainWindow::action_Default_Apply_Backlighting(DocumentWidget *document) {
+	action_Default_Apply_Backlighting(document, !Preferences::GetPrefBacklightChars());
 }
+
 void MainWindow::action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *document) {
+	action_Default_Tab_Open_File_In_New_Tab(document, !Preferences::GetPrefOpenInTab());
 }
+
 void MainWindow::action_Default_Tab_Show_Tab_Bar(DocumentWidget *document) {
+	action_Default_Tab_Show_Tab_Bar(document, !Preferences::GetPrefTabBar());
 }
+
 void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(DocumentWidget *document) {
+	action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(document, !Preferences::GetPrefTabBarHideOne());
 }
+
 void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget *document) {
+	action_Default_Tab_Next_Prev_Tabs_Across_Windows(document, !Preferences::GetPrefGlobalTabNavigate());
 }
+
 void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *document) {
+	action_Default_Tab_Sort_Tabs_Alphabetically(document, !Preferences::GetPrefSortTabs());
 }
+
 void MainWindow::action_Default_Show_Tooltips(DocumentWidget *document) {
+	action_Default_Show_Tooltips(document, !Preferences::GetPrefToolTips());
 }
+
 void MainWindow::action_Default_Statistics_Line(DocumentWidget *document) {
+	action_Default_Statistics_Line(document, !Preferences::GetPrefStatsLine());
 }
+
 void MainWindow::action_Default_Incremental_Search_Line(DocumentWidget *document) {
+	action_Default_Incremental_Search_Line(document, !Preferences::GetPrefISearchLine());
 }
+
 void MainWindow::action_Default_Show_Line_Numbers(DocumentWidget *document) {
+	action_Default_Show_Line_Numbers(document, !Preferences::GetPrefLineNums());
 }
+
 void MainWindow::action_Default_Make_Backup_Copy(DocumentWidget *document) {
+	action_Default_Make_Backup_Copy(document, !Preferences::GetPrefSaveOldVersion());
 }
+
 void MainWindow::action_Default_Incremental_Backup(DocumentWidget *document) {
+	action_Default_Incremental_Backup(document, !Preferences::GetPrefAutoSave());
 }
+
 void MainWindow::action_Default_Matching_Syntax_Based(DocumentWidget *document) {
+	action_Default_Matching_Syntax_Based(document, !Preferences::GetPrefMatchSyntaxBased());
 }
+
 void MainWindow::action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget *document) {
+	action_Default_Terminate_with_Line_Break_on_Save(document, !Preferences::GetPrefAppendLF());
 }
+
 void MainWindow::action_Default_Popups_Under_Pointer(DocumentWidget *document) {
+	action_Default_Popups_Under_Pointer(document, !Preferences::GetPrefRepositionDialogs());
 }
+
 void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidget *document) {
+	action_Default_Auto_Scroll_Near_Window_Top_Bottom(document, !Preferences::GetPrefAutoScroll());
 }
+
 void MainWindow::action_Default_Warnings_Files_Modified_Externally(DocumentWidget *document) {
+	action_Default_Warnings_Files_Modified_Externally(document, !Preferences::GetPrefWarnFileMods());
 }
+
 void MainWindow::action_Default_Warnings_Check_Modified_File_Contents(DocumentWidget *document) {
+	action_Default_Warnings_Check_Modified_File_Contents(document, !Preferences::GetPrefWarnRealFileMods());
 }
+
 void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document) {
+	action_Default_Warnings_On_Exit(document, !Preferences::GetPrefWarnExit());
 }
 
 /*
@@ -4404,8 +4491,11 @@ void MainWindow::action_Statistics_Line_toggled(bool state) {
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
 void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
+
+	Q_UNUSED(state)
+
 	if (DocumentWidget *document = currentDocument()) {
-		action_Incremental_Search_Line(document, state);
+		action_Incremental_Search_Line(document);
 	}
 }
 
@@ -4519,8 +4609,7 @@ void MainWindow::action_Text_Fonts_triggered() {
  *
  * @param state
  */
-void MainWindow::action_Highlight_Syntax_toggled(bool state) {
-	Q_UNUSED(state)
+void MainWindow::action_Highlight_Syntax_toggled([[maybe_unused]] bool state) {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Highlight_Syntax(document);
@@ -4532,9 +4621,9 @@ void MainWindow::action_Highlight_Syntax_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Apply_Backlighting_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Apply_Backlighting(document, state);
+		action_Apply_Backlighting(document);
 	}
 }
 
@@ -4543,9 +4632,9 @@ void MainWindow::action_Apply_Backlighting_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Make_Backup_Copy_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Make_Backup_Copy(document, state);
+		action_Make_Backup_Copy(document);
 	}
 }
 
@@ -4554,8 +4643,7 @@ void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Incremental_Backup_toggled(bool state) {
-	Q_UNUSED(state)
+void MainWindow::action_Incremental_Backup_toggled([[maybe_unused]] bool state) {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Incremental_Backup(document);
@@ -4587,7 +4675,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
  *
  * @param state
  */
-void MainWindow::action_Matching_Syntax_toggled(bool state) {
+void MainWindow::action_Matching_Syntax_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Matching_Syntax(document, state);
 	}
@@ -4598,9 +4686,9 @@ void MainWindow::action_Matching_Syntax_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Overtype_toggled(bool state) {
+void MainWindow::action_Overtype_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Overtype(document, state);
+		action_Overtype(document);
 	}
 }
 
@@ -4609,7 +4697,7 @@ void MainWindow::action_Overtype_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Read_Only_toggled(bool state) {
+void MainWindow::action_Read_Only_toggled([[maybe_unused]] bool state) {
 	Q_UNUSED(state)
 
 	if (DocumentWidget *document = currentDocument()) {
@@ -4839,10 +4927,10 @@ void MainWindow::action_Default_Window_Background_Menu_triggered() {
  *
  * @param state
  */
-void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
+void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled([[maybe_unused]] bool state) {
 
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Sort_Open_Prev_Menu(document, state);
+		action_Default_Sort_Open_Prev_Menu(document);
 	}
 }
 
@@ -4851,9 +4939,9 @@ void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
+void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Show_Path_In_Windows_Menu(document, state);
+		action_Default_Show_Path_In_Windows_Menu(document);
 	}
 }
 
@@ -4876,9 +4964,9 @@ void MainWindow::action_Default_Customize_Window_Title_triggered() {
  *
  * @param state
  */
-void MainWindow::action_Default_Search_Verbose_toggled(bool state) {
+void MainWindow::action_Default_Search_Verbose_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Search_Verbose(document, state);
+		action_Default_Search_Verbose(document);
 	}
 }
 
@@ -4998,9 +5086,9 @@ void MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered() {
  *
  * @param state
  */
-void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Default_Apply_Backlighting_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Apply_Backlighting(document, state);
+		action_Default_Apply_Backlighting(document);
 	}
 }
 
@@ -5009,9 +5097,9 @@ void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Tab_Open_File_In_New_Tab(document, state);
+		action_Default_Tab_Open_File_In_New_Tab(document);
 	}
 }
 
@@ -5020,9 +5108,9 @@ void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
+void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Tab_Show_Tab_Bar(document, state);
+		action_Default_Tab_Show_Tab_Bar(document);
 	}
 }
 
@@ -5031,9 +5119,9 @@ void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(document, state);
+		action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(document);
 	}
 }
 
@@ -5042,9 +5130,9 @@ void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_
  *
  * @param state
  */
-void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Tab_Next_Prev_Tabs_Across_Windows(document, state);
+		action_Default_Tab_Next_Prev_Tabs_Across_Windows(document);
 	}
 }
 
@@ -5053,9 +5141,9 @@ void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool s
  *
  * @param state
  */
-void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Tab_Sort_Tabs_Alphabetically(document, state);
+		action_Default_Tab_Sort_Tabs_Alphabetically(document);
 	}
 }
 
@@ -5064,9 +5152,9 @@ void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state)
  *
  * @param state
  */
-void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
+void MainWindow::action_Default_Show_Tooltips_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Show_Tooltips(document, state);
+		action_Default_Show_Tooltips(document);
 	}
 }
 
@@ -5075,9 +5163,9 @@ void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Default_Statistics_Line_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Statistics_Line(document, state);
+		action_Default_Statistics_Line(document);
 	}
 }
 
@@ -5086,9 +5174,9 @@ void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Search_Line_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Incremental_Search_Line(document, state);
+		action_Default_Incremental_Search_Line(document);
 	}
 }
 
@@ -5097,9 +5185,9 @@ void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
+void MainWindow::action_Default_Show_Line_Numbers_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Show_Line_Numbers(document, state);
+		action_Default_Show_Line_Numbers(document);
 	}
 }
 
@@ -5108,9 +5196,9 @@ void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Default_Make_Backup_Copy_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Make_Backup_Copy(document, state);
+		action_Default_Make_Backup_Copy(document);
 	}
 }
 
@@ -5119,9 +5207,9 @@ void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Backup_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Incremental_Backup(document, state);
+		action_Default_Incremental_Backup(document);
 	}
 }
 
@@ -5157,9 +5245,9 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
  *
  * @param state
  */
-void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
+void MainWindow::action_Default_Matching_Syntax_Based_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Matching_Syntax_Based(document, state);
+		action_Default_Matching_Syntax_Based(document);
 	}
 }
 
@@ -5168,9 +5256,9 @@ void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Terminate_with_Line_Break_on_Save(document, state);
+		action_Default_Terminate_with_Line_Break_on_Save(document);
 	}
 }
 
@@ -5179,9 +5267,9 @@ void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool s
  *
  * @param state
  */
-void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
+void MainWindow::action_Default_Popups_Under_Pointer_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Popups_Under_Pointer(document, state);
+		action_Default_Popups_Under_Pointer(document);
 	}
 }
 
@@ -5190,9 +5278,9 @@ void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
  *
  * @param state
  */
-void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Auto_Scroll_Near_Window_Top_Bottom(document, state);
+		action_Default_Auto_Scroll_Near_Window_Top_Bottom(document);
 	}
 }
 
@@ -5201,9 +5289,9 @@ void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool 
  *
  * @param state
  */
-void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
+void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Warnings_Files_Modified_Externally(document, state);
+		action_Default_Warnings_Files_Modified_Externally(document);
 	}
 }
 
@@ -5212,10 +5300,10 @@ void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool 
  *
  * @param state
  */
-void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
+void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled([[maybe_unused]] bool state) {
 
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Warnings_Check_Modified_File_Contents(document, state);
+		action_Default_Warnings_Check_Modified_File_Contents(document);
 	}
 }
 
@@ -5224,10 +5312,10 @@ void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bo
  *
  * @param state
  */
-void MainWindow::action_Default_Warnings_On_Exit_toggled(bool state) {
+void MainWindow::action_Default_Warnings_On_Exit_toggled([[maybe_unused]] bool state) {
 
 	if (DocumentWidget *document = currentDocument()) {
-		action_Default_Warnings_On_Exit(document, state);
+		action_Default_Warnings_On_Exit(document);
 	}
 }
 
@@ -6905,19 +6993,6 @@ bool MainWindow::getIncrementalSearchLine() const {
 /**
  * @brief
  *
- * @param value
- */
-void MainWindow::setIncrementalSearchLine(bool value) {
-
-	EmitEvent("set_incremental_search_line", QString::number(value));
-
-	showISearchLine_ = value;
-	no_signals(ui.action_Incremental_Search_Line)->setChecked(value);
-}
-
-/**
- * @brief
- *
  * @param document
  * @param searchString
  * @param direction
@@ -8057,19 +8132,6 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
 	}
 
 	return false;
-}
-
-/**
- * @brief
- *
- * @param show
- */
-void MainWindow::setShowLineNumbers(bool show) {
-
-	EmitEvent("set_show_line_numbers", show ? QStringLiteral("1") : QStringLiteral("0"));
-
-	no_signals(ui.action_Show_Line_Numbers)->setChecked(show);
-	showLineNumbers_ = show;
 }
 
 /**

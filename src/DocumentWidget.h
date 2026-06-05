@@ -142,7 +142,6 @@ public:
 	bool overstrike() const;
 	void readMacroFile(const QString &filename, bool warnNotExist);
 	bool readMacroString(const QString &string, const QString &errIn);
-	bool showStatisticsLine() const;
 	bool useTabs() const;
 	dev_t device() const;
 	ino_t inode() const;
@@ -200,13 +199,10 @@ public:
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
-	void setMakeBackupCopy(bool value);
-	void setMatchSyntaxBased(bool value);
 	void setOverstrike(bool overstrike);
 	void setPath(const QDir &path);
 	void setPath(const QString &pathname);
 	void setShowMatching(ShowMatchingStyle state);
-	void setShowStatisticsLine(bool value);
 	void setTabDistance(int distance);
 	void setUseTabs(bool value);
 	void setWrapMargin(int margin);

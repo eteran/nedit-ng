@@ -4563,35 +4563,6 @@ bool DocumentWidget::backlightChars() const {
 	return backlightChars_;
 }
 
-#if 0
-/**
- * @brief Set whether to show the statistics line in the document widget.
- *
- * @param value `true` to show the stats line, false to hide it.
- */
-void DocumentWidget::setShowStatisticsLine(bool value) {
-
-	EmitEvent("set_statistics_line", value ? QStringLiteral("1") : QStringLiteral("0"));
-
-	// stats line is a shell-level item, so we toggle the button state
-	// regardless of it's 'topness'
-	if (auto win = MainWindow::fromDocument(this)) {
-		no_signals(win->ui.action_Statistics_Line)->setChecked(value);
-	}
-
-	showStats_ = value;
-}
-
-/**
- * @brief Check if the statistics line is currently shown in the document widget.
- *
- * @return `true` if the stats line is shown, `false` otherwise.
- */
-bool DocumentWidget::showStatisticsLine() const {
-	return showStats_;
-}
-#endif
-
 /**
  * @brief Check if syntax-based matching is enabled in the document widget.
  *
@@ -4599,24 +4570,6 @@ bool DocumentWidget::showStatisticsLine() const {
  */
 bool DocumentWidget::matchSyntaxBased() const {
 	return info_->matchSyntaxBased;
-}
-
-/**
- * @brief Set whether to use syntax-based matching in the document widget.
- *
- * @param value `true` to enable syntax-based matching, false to disable it.
- */
-void DocumentWidget::setMatchSyntaxBased(bool value) {
-
-	EmitEvent("set_match_syntax_based", value ? QStringLiteral("1") : QStringLiteral("0"));
-
-	if (isTopDocument()) {
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
-		}
-	}
-
-	info_->matchSyntaxBased = value;
 }
 
 /**
@@ -7150,24 +7103,6 @@ void DocumentWidget::setUseTabs(bool value) {
  */
 bool DocumentWidget::makeBackupCopy() const {
 	return info_->saveOldVersion;
-}
-
-/**
- * @brief Set whether a backup copy should be made when saving the document.
- *
- * @param value `true` to make a backup copy, `false` otherwise.
- */
-void DocumentWidget::setMakeBackupCopy(bool value) {
-
-	EmitEvent("set_make_backup_copy", value ? QStringLiteral("1") : QStringLiteral("0"));
-
-	if (isTopDocument()) {
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
-		}
-	}
-
-	info_->saveOldVersion = value;
 }
 
 /**
