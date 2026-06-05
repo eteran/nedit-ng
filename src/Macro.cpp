@@ -653,6 +653,14 @@ std::error_code TextEventArg(DocumentWidget *document, Arguments arguments, Data
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which extracts the string argument and command source, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a string argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
 std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -672,6 +680,14 @@ std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the string argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a string argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &)>
 std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -691,6 +707,14 @@ std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which extracts the command source argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a command source argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, CommandSource)>
 std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -709,6 +733,14 @@ std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the boolean argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a boolean argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func1)(DocumentWidget *), void (MainWindow::*Func2)(DocumentWidget *, bool)>
 std::error_code menuEventUToggle(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -741,6 +773,14 @@ std::error_code menuEventUToggle(DocumentWidget *document, Arguments arguments, 
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the command source argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a command source argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *)>
 std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -759,12 +799,23 @@ std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which calls the appropriate MainWindow function with no arguments.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro (not used in this function).
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution
+ */
 template <void (MainWindow::*Func)()>
 std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	(void)arguments;
-
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
+
+	if (!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
 	if (MainWindow *win = MainWindow::fromDocument(document)) {
 		(win->*Func)();
