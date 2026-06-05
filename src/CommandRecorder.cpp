@@ -8,8 +8,8 @@
 
 namespace {
 
-/* List of actions intended to be attached to mouse buttons, which the user
-   must be warned can't be recorded in a learn/replay sequence */
+// List of actions intended to be attached to mouse buttons, which the user must
+// be warned can't be recorded in a learn/replay sequence
 const QLatin1String MouseActions[] = {
 	QLatin1String("grab_focus"),
 	QLatin1String("extend_adjust"),
@@ -28,8 +28,8 @@ const QLatin1String MouseActions[] = {
 	QLatin1String("process_bdrag"),
 	QLatin1String("mouse_pan")};
 
-/* List of actions to not record because they
-   generate further actions, more suitable for recording */
+// List of actions to not record because they generate
+// further actions, more suitable for recording
 const QLatin1String RedundantActions[] = {
 	QLatin1String("open_dialog"),
 	QLatin1String("save_as_dialog"),

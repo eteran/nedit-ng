@@ -78,10 +78,15 @@ QVector<QString> PrevOpen;
  * @param action The menu action whose checked state should be updated.
  * @param state The new state that determines whether the action should be checked or not.
  */
-template <class T>
-void UpdateMenuCheckedState(DocumentWidget *document, T *action, bool state) {
+void UpdateMenuCheckedState(DocumentWidget *document, QAction *action, bool state) {
 	if (document->isTopDocument()) {
 		no_signals(action)->setChecked(state);
+	}
+}
+
+void UpdateMenuCheckedStateAllWindows(QAction *Ui::MainWindow::*action, bool state) {
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.*action)->setChecked(state);
 	}
 }
 
@@ -728,8 +733,8 @@ void MainWindow::setupMenuDefaults() {
 	no_signals(ui.action_Show_Line_Numbers)->setChecked(Preferences::GetPrefLineNums());
 	no_signals(ui.action_Highlight_Syntax)->setChecked(Preferences::GetPrefHighlightSyntax());
 	no_signals(ui.action_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
-	no_signals(ui.action_Make_Backup_Copy)->setChecked(Preferences::GetPrefAutoSave());
-	no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefSaveOldVersion());
+	no_signals(ui.action_Make_Backup_Copy)->setChecked(Preferences::GetPrefSaveOldVersion());
+	no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefAutoSave());
 	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
 	setupGlobalPreferenceDefaults();
@@ -1353,7 +1358,7 @@ std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 		if (auto window = qobject_cast<MainWindow *>(widget)) {
 
 			// only include visible windows, since we make windows scheduled for
-			// delete inVisible
+			// delete invisible
 			if (window->isVisible() || includeInvisible) {
 				windows.push_back(window);
 			}
@@ -3170,19 +3175,16 @@ void MainWindow::action_Default_Sort_Open_Prev_Menu([[maybe_unused]] DocumentWid
 
 	// Set the preference, make the other windows' menus agree
 	Preferences::SetPrefSortOpenPrevMenu(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
-	}
+
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Sort_Open_Prev_Menu, state);
 }
 
 void MainWindow::action_Default_Show_Path_In_Windows_Menu([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefShowPathInWindowsMenu(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
-	}
 
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Show_Path_In_Windows_Menu, state);
 	MainWindow::updateWindowMenus();
 }
 
@@ -3190,45 +3192,35 @@ void MainWindow::action_Default_Search_Verbose([[maybe_unused]] DocumentWidget *
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchDlogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Search_Verbose, state);
 }
 
 void MainWindow::action_Default_Search_Wrap_Around([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchWraps(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Search_Wrap_Around, state);
 }
 
 void MainWindow::action_Default_Search_Beep_On_Search_Wrap([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBeepOnSearchWrap(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Search_Beep_On_Search_Wrap, state);
 }
 
 void MainWindow::action_Default_Search_Keep_Dialogs_Up([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefKeepSearchDlogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Search_Keep_Dialogs_Up, state);
 }
 
 void MainWindow::action_Default_Apply_Backlighting([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBacklightChars(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Apply_Backlighting, state);
 }
 
 void MainWindow::action_Default_Tab_Open_File_In_New_Tab([[maybe_unused]] DocumentWidget *document, bool state) {
@@ -3270,9 +3262,7 @@ void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows([[maybe_unused
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefGlobalTabNavigate(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows, state);
 }
 
 void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically([[maybe_unused]] DocumentWidget *document, bool state) {
@@ -3303,90 +3293,70 @@ void MainWindow::action_Default_Show_Tooltips([[maybe_unused]] DocumentWidget *d
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefToolTips(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Show_Tooltips, state);
 }
 
 void MainWindow::action_Default_Statistics_Line([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefStatsLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Statistics_Line, state);
 }
 
 void MainWindow::action_Default_Incremental_Search_Line([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefISearchLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Incremental_Search_Line, state);
 }
 
 void MainWindow::action_Default_Show_Line_Numbers([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefLineNums(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Show_Line_Numbers, state);
 }
 
 void MainWindow::action_Default_Make_Backup_Copy([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSaveOldVersion(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Make_Backup_Copy, state);
 }
 
 void MainWindow::action_Default_Incremental_Backup([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoSave(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Incremental_Backup, state);
 }
 
 void MainWindow::action_Default_Matching_Syntax_Based([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefMatchSyntaxBased(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Matching_Syntax_Based, state);
 }
 
 void MainWindow::action_Default_Terminate_with_Line_Break_on_Save([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAppendLF(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Terminate_with_Line_Break_on_Save, state);
 }
 
 void MainWindow::action_Default_Popups_Under_Pointer([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefRepositionDialogs(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Popups_Under_Pointer, state);
 }
 
 void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoScroll(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom, state);
 }
 
 void MainWindow::action_Default_Warnings_Files_Modified_Externally([[maybe_unused]] DocumentWidget *document, bool state) {
@@ -3403,18 +3373,14 @@ void MainWindow::action_Default_Warnings_Check_Modified_File_Contents([[maybe_un
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnRealFileMods(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Warnings_Check_Modified_File_Contents, state);
 }
 
 void MainWindow::action_Default_Warnings_On_Exit([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnExit(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
-	}
+	UpdateMenuCheckedStateAllWindows(&Ui::MainWindow::action_Default_Warnings_On_Exit, state);
 }
 
 void MainWindow::action_Statistics_Line(DocumentWidget *document) {
@@ -4682,7 +4648,7 @@ void MainWindow::action_Default_Program_Smart_Indent_triggered() {
 		// active language mode
 		DocumentWidget *document = currentDocument();
 		if (!document) {
-			qWarning("Nedit: no current document");
+			qWarning("NEdit: no current document");
 			return;
 		}
 
