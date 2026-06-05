@@ -1142,9 +1142,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) 
  * @param area The text area where the smart indentation event occurred.
  * @param data The smart indentation event containing information about the event.
  */
-void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event) {
-
-	Q_UNUSED(area)
+void DocumentWidget::smartIndentCallback([[maybe_unused]] TextArea *area, [[maybe_unused]] SmartIndentEvent *event) {
 
 	if (!info_->smartIndentData) {
 		return;

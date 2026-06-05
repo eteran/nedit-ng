@@ -1183,10 +1183,8 @@ std::vector<PatternSet> ReadDefaultPatternSets() {
  * @note This function must be kept efficient, as it is called for every
  * character typed in the text buffer.
  */
-void SyntaxHighlightModifyCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, [[maybe_unused]] int64_t nRestyled, [[maybe_unused]] std::string_view deletedText, void *user) {
 
-	Q_UNUSED(nRestyled)
-	Q_UNUSED(deletedText)
 	Q_ASSERT(user);
 
 	auto document = static_cast<DocumentWidget *>(user);

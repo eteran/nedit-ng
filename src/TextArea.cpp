@@ -1026,8 +1026,7 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
  *
  * @param value The new value of the horizontal scroll bar.
  */
-void TextArea::horizontalScrollBar_valueChanged(int value) {
-	Q_UNUSED(value)
+void TextArea::horizontalScrollBar_valueChanged([[maybe_unused]] int value) {
 
 	// NOTE(eteran): the original code seemed to do some cleverness
 	//               involving copying the parts that were "moved"
@@ -1473,9 +1472,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
  *
  * @param event The resize event that triggered this method.
  */
-void TextArea::resizeEvent(QResizeEvent *event) {
-
-	Q_UNUSED(event)
+void TextArea::resizeEvent([[maybe_unused]] QResizeEvent *event) {
 
 	// update the size sensitive variables
 	handleResize(/*widthChanged=*/true);
@@ -2801,14 +2798,11 @@ void TextArea::repaintLineNumbers() {
  * calculate the rect that would be repainted and trigger an update of that
  * region. We will then repaint that region during the paint event
  */
-void TextArea::redisplayLine(int visLineNum, int leftCharIndex, int rightCharIndex) {
+void TextArea::redisplayLine(int visLineNum, [[maybe_unused]] int leftCharIndex, [[maybe_unused]] int rightCharIndex) {
 
 	// NOTE(eteran): the original code would only update **exactly** what was
 	// needed. I haven't been able to get this quite right in the Qt port.
 	// So we update the whole line (the visible portion).
-	Q_UNUSED(leftCharIndex)
-	Q_UNUSED(rightCharIndex)
-
 	const QRect viewRect = viewport()->contentsRect();
 
 	// If line is not displayed, skip it
@@ -7019,8 +7013,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
  *
  * @note This function is a placeholder and not yet implemented.
  */
-void TextArea::movePrimarySelection(bool isColumnar) {
-	Q_UNUSED(isColumnar)
+void TextArea::movePrimarySelection([[maybe_unused]] bool isColumnar) {
 
 	// TODO(eteran): implement MovePrimarySelection
 	qWarning("MovePrimarySelection is not implemented");
@@ -7113,9 +7106,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
  * @param event The mouse event that triggered this action.
  * @param flags Flags indicating the type of action (e.g., NoBellFlag).
  */
-void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
-
-	Q_UNUSED(event)
+void TextArea::exchangeAP([[maybe_unused]] QMouseEvent *event, EventFlags flags) {
 	EMIT_EVENT_0("exchange");
 
 	const TextBuffer::Selection secondary = buffer_->secondary;
@@ -7797,8 +7788,7 @@ void TextArea::resetCursorBlink(bool startsBlanked) {
  *
  * @note This function is overridden to prevent the tab key from changing focus
  */
-bool TextArea::focusNextPrevChild(bool next) {
-	Q_UNUSED(next)
+bool TextArea::focusNextPrevChild([[maybe_unused]] bool next) {
 	return false;
 }
 
@@ -8674,8 +8664,7 @@ void TextArea::makeSelectionVisible() {
  *
  * @param flags The event flags.
  */
-void TextArea::zoomOutAP(TextArea::EventFlags flags) {
-	Q_UNUSED(flags)
+void TextArea::zoomOutAP([[maybe_unused]] TextArea::EventFlags flags) {
 	const QList<int> sizes = Font::pointSizes(font_);
 
 	const int currentSize = font_.pointSize();
@@ -8693,8 +8682,7 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
  *
  * @param flags The event flags.
  */
-void TextArea::zoomInAP(TextArea::EventFlags flags) {
-	Q_UNUSED(flags)
+void TextArea::zoomInAP([[maybe_unused]] TextArea::EventFlags flags) {
 	const QList<int> sizes = Font::pointSizes(font_);
 
 	const int currentSize = font_.pointSize();
@@ -8774,7 +8762,7 @@ int TextArea::fixedFontWidth() const {
  *
  * @param buffer The text buffer to update the selection for.
  */
-void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer) {
+void TextArea::updatePrimarySelection([[maybe_unused]] const std::shared_ptr<TextBuffer> &buffer) {
 #ifdef Q_OS_UNIX
 	if (QApplication::clipboard()->supportsSelection()) {
 		const bool selected = buffer->primary.selected_;
@@ -8790,6 +8778,5 @@ void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer)
 		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
 	}
 #else
-	Q_UNUSED(buffer);
 #endif
 }
