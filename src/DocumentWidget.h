@@ -129,7 +129,6 @@ public:
 	bool checkReadOnly() const;
 	bool fileChanged() const;
 	bool filenameSet() const;
-	bool highlightSyntax() const;
 	bool inSmartIndentMacros() const;
 	bool incrementalBackup() const;
 	bool isReadOnly() const;
@@ -142,7 +141,6 @@ public:
 	bool readMacroString(const QString &string, const QString &errIn);
 	bool showStatisticsLine() const;
 	bool useTabs() const;
-	bool userLocked() const;
 	dev_t device() const;
 	ino_t inode() const;
 	int findDefinitionHelperCommon(TextArea *area, const QString &value, Tags::SearchMode search_type);
@@ -198,7 +196,6 @@ public:
 	void setInsertTabs(bool value);
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
-	void setHighlightSyntax(bool value);
 	void setIncrementalBackup(bool value);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
 	void setMakeBackupCopy(bool value);
@@ -210,7 +207,6 @@ public:
 	void setShowStatisticsLine(bool value);
 	void setTabDistance(int distance);
 	void setUseTabs(bool value);
-	void setUserLocked(bool value);
 	void setWrapMargin(int margin);
 	void shellBannerTimeoutProc();
 	void shellCmdToMacroString(const QString &command, const QString &input);

@@ -7141,38 +7141,8 @@ void DocumentWidget::setUseTabs(bool value) {
 	info_->buffer->BufSetUseTabs(value);
 }
 
-/**
- * @brief Check if syntax highlighting is enabled for the document.
- *
- * @return `true` if syntax highlighting is enabled, `false` otherwise.
- */
-bool DocumentWidget::highlightSyntax() const {
-	return highlightSyntax_;
-}
 
-/**
- * @brief Set whether syntax highlighting should be enabled for the document.
- *
- * @param value `true` to enable syntax highlighting, false to disable it.
- */
-void DocumentWidget::setHighlightSyntax(bool value) {
 
-	EmitEvent("set_highlight_syntax", QString::number(value));
-
-	highlightSyntax_ = value;
-
-	if (isTopDocument()) {
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
-		}
-	}
-
-	if (highlightSyntax_) {
-		startHighlighting(Verbosity::Verbose);
-	} else {
-		stopHighlighting();
-	}
-}
 
 /**
  * @brief Check if a backup copy should be made when saving the document.
@@ -7231,39 +7201,6 @@ void DocumentWidget::setIncrementalBackup(bool value) {
 	}
 
 	no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
-}
-
-/**
- * @brief Check if the document is locked by the user.
- *
- * @return `true` if the document is user-locked, `false` otherwise.
- */
-bool DocumentWidget::userLocked() const {
-	return info_->lockReasons.isUserLocked();
-}
-
-/**
- * @brief Set whether the document should be locked by the user.
- *
- * @param value `true` to lock the document, false to unlock it.
- */
-void DocumentWidget::setUserLocked(bool value) {
-	EmitEvent("set_locked", info_->lockReasons.isUserLocked() ? QStringLiteral("1") : QStringLiteral("0"));
-
-	info_->lockReasons.setUserLocked(value);
-
-	if (!isTopDocument()) {
-		return;
-	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isAnyLocked());
-	Q_EMIT updateWindowTitle(this);
-	Q_EMIT updateWindowReadOnly(this);
 }
 
 /**

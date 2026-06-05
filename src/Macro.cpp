@@ -729,7 +729,7 @@ std::error_code TextEventArg(DocumentWidget *document, Arguments arguments, Data
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
 std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	QString string;
@@ -748,7 +748,7 @@ std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataV
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &)>
 std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	QString string;
@@ -767,7 +767,7 @@ std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataV
 template <void (MainWindow::*Func)(DocumentWidget *, CommandSource)>
 std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	if (!arguments.empty()) {
@@ -782,10 +782,42 @@ std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
+template <void (MainWindow::*Func1)(DocumentWidget *), void (MainWindow::*Func2)(DocumentWidget *, bool)>
+std::error_code menuEventUToggle(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
+	switch (arguments.size()) {
+	case 0:
+		if (auto win = MainWindow::fromDocument(document)) {
+			(win->*Func1)(document);
+		}
+		break;
+
+	case 1: {
+		int next;
+		if (const std::error_code ec = ReadArguments(arguments, 0, &next)) {
+			return ec;
+		}
+
+		if (auto win = MainWindow::fromDocument(document)) {
+			(win->*Func2)(document, next);
+		}
+		break;
+	}
+	default:
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 template <void (MainWindow::*Func)(DocumentWidget *)>
 std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	if (!arguments.empty()) {
@@ -5077,11 +5109,14 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_auto_indent", setAutoIndentMS},
 	{"set_em_tab_dist", setEmTabDistMS},
 	{"set_fonts", setFontsMS},
-	{"set_highlight_syntax", MenuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
 	{"set_incremental_backup", MenuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
 	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_language_mode", setLanguageModeMS},
-	{"set_locked", MenuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
+
+
+	{"set_highlight_syntax", menuEventUToggle<&MainWindow::action_Highlight_Syntax, &MainWindow::action_Highlight_Syntax>},
+	{"set_locked", menuEventUToggle<&MainWindow::action_Read_Only, &MainWindow::action_Read_Only>},
+
 	{"set_make_backup_copy", MenuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
 	{"set_overtype_mode", MenuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
 	{"set_show_line_numbers", MenuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},

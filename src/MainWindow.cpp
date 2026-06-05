@@ -3130,13 +3130,9 @@ void MainWindow::action_Overtype(DocumentWidget *document, bool state) {
  * @param state The new state of the "Read Only" action (true if read-only should be enabled, false otherwise).
  */
 void MainWindow::action_Read_Only(DocumentWidget *document, bool state) {
-	document->setUserLocked(state);
-#if 0
-
 	document->info_->lockReasons.setUserLocked(state);
 	updateWindowTitle(document);
 	updateWindowReadOnly(document);
-#endif
 }
 
 void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bool state) {
@@ -3438,6 +3434,91 @@ void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document, bool 
 	for (MainWindow *window : MainWindow::allWindows()) {
 		no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
 	}
+}
+
+void MainWindow::checkIFindCase(DocumentWidget *document) {
+}
+void MainWindow::checkIFindRegex(DocumentWidget *document) {
+}
+void MainWindow::checkIFindReverse(DocumentWidget *document) {
+}
+void MainWindow::action_Statistics_Line(DocumentWidget *document) {
+}
+void MainWindow::action_Incremental_Search_Line(DocumentWidget *document) {
+}
+void MainWindow::action_Show_Line_Numbers(DocumentWidget *document) {
+}
+
+void MainWindow::action_Highlight_Syntax(DocumentWidget *document) {
+	EmitEvent("set_highlight_syntax");
+	action_Highlight_Syntax(document, !document->highlightSyntax_);
+}
+
+void MainWindow::action_Apply_Backlighting(DocumentWidget *document) {
+}
+void MainWindow::action_Make_Backup_Copy(DocumentWidget *document) {
+}
+void MainWindow::action_Incremental_Backup(DocumentWidget *document) {
+}
+void MainWindow::action_Matching_Syntax(DocumentWidget *document) {
+}
+void MainWindow::action_Overtype(DocumentWidget *document) {
+}
+
+void MainWindow::action_Read_Only(DocumentWidget *document) {
+	EmitEvent("set_locked");
+	action_Read_Only(document, !document->info_->lockReasons.isUserLocked());
+}
+
+void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Search_Verbose(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Search_Wrap_Around(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Apply_Backlighting(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Tab_Show_Tab_Bar(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Show_Tooltips(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Statistics_Line(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Incremental_Search_Line(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Show_Line_Numbers(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Make_Backup_Copy(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Incremental_Backup(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Matching_Syntax_Based(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Popups_Under_Pointer(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Warnings_Files_Modified_Externally(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Warnings_Check_Modified_File_Contents(DocumentWidget *document) {
+}
+void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document) {
 }
 
 /*
@@ -4414,8 +4495,10 @@ void MainWindow::action_Text_Fonts_triggered() {
  * @param state
  */
 void MainWindow::action_Highlight_Syntax_toggled(bool state) {
+	Q_UNUSED(state)
+
 	if (DocumentWidget *document = currentDocument()) {
-		action_Highlight_Syntax(document, state);
+		action_Highlight_Syntax(document);
 	}
 }
 
@@ -4500,8 +4583,10 @@ void MainWindow::action_Overtype_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Read_Only_toggled(bool state) {
+	Q_UNUSED(state)
+
 	if (DocumentWidget *document = currentDocument()) {
-		action_Read_Only(document, state);
+		action_Read_Only(document);
 	}
 }
 
