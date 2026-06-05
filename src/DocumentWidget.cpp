@@ -524,6 +524,17 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	return document;
 }
 
+QTimer *DocumentWidget::createFlashTimer() {
+	auto timer = new QTimer(this);
+	timer->setSingleShot(true);
+	timer->setInterval(FlashInterval);
+
+	connect(timer, &QTimer::timeout, this, [this]() {
+		eraseFlash();
+	});
+	return timer;
+}
+
 /**
  *
  * @brief Create a new document widget for an existing document which shares the same
@@ -579,13 +590,7 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 
 	showStatsLine(showStats_);
 
-	flashTimer_ = new QTimer(this);
-	flashTimer_->setInterval(FlashInterval);
-	flashTimer_->setSingleShot(true);
-
-	connect(flashTimer_, &QTimer::timeout, this, [this]() {
-		eraseFlash();
-	});
+	flashTimer_ = createFlashTimer();
 
 	auto area = createTextArea(I_(buffer));
 
@@ -662,13 +667,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	showStatsLine(showStats_);
 
-	flashTimer_ = new QTimer(this);
-	flashTimer_->setInterval(FlashInterval);
-	flashTimer_->setSingleShot(true);
-
-	connect(flashTimer_, &QTimer::timeout, this, [this]() {
-		eraseFlash();
-	});
+	flashTimer_ = createFlashTimer();
 
 	auto area = createTextArea(I_(buffer));
 

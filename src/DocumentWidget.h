@@ -216,6 +216,7 @@ public:
 	void updateSignals(MainWindow *from, MainWindow *to);
 
 private:
+	QTimer *createFlashTimer();
 	MacroContinuationCode continueWorkProc();
 	PatternSet *findPatternsForWindow(Verbosity verbosity);
 	QString backupFileName() const;
