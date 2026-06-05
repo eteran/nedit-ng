@@ -60,6 +60,8 @@
 #define FDOPEN fdopen
 #endif
 
+#define I_(x) (info_->x)
+
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy
@@ -585,9 +587,9 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 		eraseFlash();
 	});
 
-	auto area = createTextArea(info_->buffer);
+	auto area = createTextArea(I_(buffer));
 
-	info_->buffer->BufAddModifyCB(ModifiedCallback, this);
+	I_(buffer)->BufAddModifyCB(ModifiedCallback, this);
 
 	static int n = 0;
 	area->setObjectName(tr("TextArea_Clone_%1").arg(n++));
@@ -607,8 +609,8 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	ui.setupUi(this);
 
-	info_           = std::make_shared<DocumentInfo>();
-	info_->filename = name;
+	info_        = std::make_shared<DocumentInfo>();
+	I_(filename) = name;
 
 	// track what the last created document was so that focus_document("last")
 	// works correctly
@@ -616,9 +618,9 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	setAcceptDrops(true);
 
 	// Every document has a backing buffer
-	info_->buffer = std::make_shared<TextBuffer>();
-	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
-	info_->buffer->BufSetSelectionUpdate(TextArea::updatePrimarySelection);
+	I_(buffer) = std::make_shared<TextBuffer>();
+	I_(buffer)->BufAddModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
+	I_(buffer)->BufSetSelectionUpdate(TextArea::updatePrimarySelection);
 
 	// create the text widget
 	if (Settings::splitHorizontally) {
@@ -639,17 +641,17 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 #endif
 
 	// initialize the members
-	info_->indentStyle       = Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	info_->autoSave          = Preferences::GetPrefAutoSave();
-	info_->saveOldVersion    = Preferences::GetPrefSaveOldVersion();
-	info_->wrapMode          = Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE);
-	info_->showMatchingStyle = Preferences::GetPrefShowMatching();
-	info_->matchSyntaxBased  = Preferences::GetPrefMatchSyntaxBased();
-	highlightSyntax_         = Preferences::GetPrefHighlightSyntax();
-	backlightChars_          = Preferences::GetPrefBacklightChars();
-	fontName_                = Preferences::GetPrefFontName();
-	font_                    = Preferences::GetPrefDefaultFont();
-	showStats_               = Preferences::GetPrefStatsLine();
+	I_(indentStyle)       = Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+	I_(autoSave)          = Preferences::GetPrefAutoSave();
+	I_(saveOldVersion)    = Preferences::GetPrefSaveOldVersion();
+	I_(wrapMode)          = Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE);
+	I_(showMatchingStyle) = Preferences::GetPrefShowMatching();
+	I_(matchSyntaxBased)  = Preferences::GetPrefMatchSyntaxBased();
+	highlightSyntax_      = Preferences::GetPrefHighlightSyntax();
+	backlightChars_       = Preferences::GetPrefBacklightChars();
+	fontName_             = Preferences::GetPrefFontName();
+	font_                 = Preferences::GetPrefDefaultFont();
+	showStats_            = Preferences::GetPrefStatsLine();
 
 	if (backlightChars_) {
 		const QString cTypes = Preferences::GetPrefBacklightCharTypes();
@@ -668,13 +670,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 		eraseFlash();
 	});
 
-	auto area = createTextArea(info_->buffer);
+	auto area = createTextArea(I_(buffer));
 
-	info_->buffer->BufAddModifyCB(ModifiedCallback, this);
+	I_(buffer)->BufAddModifyCB(ModifiedCallback, this);
 
 	// Set the requested hardware tab distance and useTabs in the text buffer
-	info_->buffer->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE), true);
-	info_->buffer->BufSetUseTabs(Preferences::GetPrefInsertTabs(PLAIN_LANGUAGE_MODE));
+	I_(buffer)->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE), true);
+	I_(buffer)->BufSetUseTabs(Preferences::GetPrefInsertTabs(PLAIN_LANGUAGE_MODE));
 
 	static int n = 0;
 	area->setObjectName(tr("TextArea_%1").arg(n++));
@@ -698,8 +700,8 @@ DocumentWidget::~DocumentWidget() {
 	// Free syntax highlighting patterns, if any. w/o re-displaying
 	freeHighlightingData();
 
-	info_->buffer->BufRemoveModifyCB(ModifiedCallback, this);
-	info_->buffer->BufRemoveModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
+	I_(buffer)->BufRemoveModifyCB(ModifiedCallback, this);
+	I_(buffer)->BufRemoveModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
 }
 
 /**
@@ -772,11 +774,11 @@ void DocumentWidget::setWindowModified(bool modified) {
 		return;
 	}
 
-	if (!info_->fileChanged && modified) {
+	if (!I_(fileChanged) && modified) {
 		win->ui.action_Close->setEnabled(true);
-		info_->fileChanged = true;
-	} else if (info_->fileChanged && !modified) {
-		info_->fileChanged = false;
+		I_(fileChanged) = true;
+	} else if (I_(fileChanged) && !modified) {
+		I_(fileChanged) = false;
 	}
 
 	Q_EMIT updateWindowTitle(this);
@@ -797,7 +799,7 @@ void DocumentWidget::refreshTabState() {
 	const int index       = tabWidget->indexOf(this);
 
 	QString labelString;
-	QString filename = info_->filename;
+	QString filename = I_(filename);
 	if (Settings::truncateLongNamesInTabs != 0) {
 
 		const int absTruncate = std::abs(Settings::truncateLongNamesInTabs);
@@ -817,7 +819,7 @@ void DocumentWidget::refreshTabState() {
 
 	static const auto saveIcon = QIcon::fromTheme(QStringLiteral("document-save"));
 	if (!saveIcon.isNull()) {
-		tabWidget->setTabIcon(index, info_->fileChanged ? saveIcon : QIcon());
+		tabWidget->setTabIcon(index, I_(fileChanged) ? saveIcon : QIcon());
 		labelString = filename;
 	} else {
 		/* Set tab label to document's filename. Position of "*" (modified)
@@ -826,9 +828,9 @@ void DocumentWidget::refreshTabState() {
 		const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 		if (alignment != Qt::AlignRight) {
-			labelString = QStringLiteral("%1%2").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%1%2").arg(I_(fileChanged) ? tr("*") : QString(), filename);
 		} else {
-			labelString = QStringLiteral("%2%1").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%2%1").arg(I_(fileChanged) ? tr("*") : QString(), filename);
 		}
 	}
 
@@ -927,7 +929,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 	constexpr size_t CharsToCheck = 200;
 
 	// Do a regular expression search on for recognition pattern
-	const std::string first200 = info_->buffer->BufGetRange(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + CharsToCheck);
+	const std::string first200 = I_(buffer)->BufGetRange(I_(buffer)->BufStartOfBuffer(), I_(buffer)->BufStartOfBuffer() + CharsToCheck);
 	if (!first200.empty()) {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
@@ -951,14 +953,14 @@ size_t DocumentWidget::matchLanguageMode() const {
 	/* Look at file extension ("@@/" starts a ClearCase version extended path,
 	   which gets appended after the file extension, and therefore must be
 	   stripped off to recognize the extension to make ClearCase users happy) */
-	int fileNameLen = info_->filename.size();
+	int fileNameLen = I_(filename).size();
 
-	const int versionExtendedPathIndex = ClearCase::GetVersionExtendedPathIndex(info_->filename);
+	const int versionExtendedPathIndex = ClearCase::GetVersionExtendedPathIndex(I_(filename));
 	if (versionExtendedPathIndex != -1) {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
-	const QString file = info_->filename.left(fileNameLen);
+	const QString file = I_(filename).left(fileNameLen);
 
 	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 		Q_FOREACH (const QString &ext, Preferences::LanguageModes[i].extensions) {
@@ -979,7 +981,7 @@ size_t DocumentWidget::matchLanguageMode() const {
  */
 void DocumentWidget::movedCallback(TextArea *area) {
 
-	if (info_->ignoreModify) {
+	if (I_(ignoreModify)) {
 		return;
 	}
 
@@ -1003,7 +1005,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
  */
 void DocumentWidget::dragStartCallback([[maybe_unused]] TextArea *area) {
 	// don't record all of the intermediate drag steps for undo
-	info_->ignoreModify = true;
+	I_(ignoreModify) = true;
 }
 
 /**
@@ -1043,10 +1045,10 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	// number of distinct editing operations user can do before NEdit gens. new backup file
 	const int autoSaveOpLimit = Preferences::GetPrefAutoSaveOpLimit();
 
-	const bool selected = info_->buffer->primary.hasSelection();
+	const bool selected = I_(buffer)->primary.hasSelection();
 
 	// update the table of bookmarks
-	if (!info_->ignoreModify) {
+	if (!I_(ignoreModify)) {
 		updateMarkTable(pos, nInserted, nDeleted);
 	}
 
@@ -1056,8 +1058,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	}
 
 	// Check and dim/undim selection related menu items
-	if (info_->wasSelected != selected) {
-		info_->wasSelected = selected;
+	if (I_(wasSelected) != selected) {
+		I_(wasSelected) = selected;
 
 		/* do not refresh window-level items (window, menu-bar etc) when
 		 * modifying non-top document */
@@ -1074,7 +1076,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 	/* When the program needs to make a change to a text area without without
 	   recording it for undo or marking file as changed it sets ignoreModify */
-	if (info_->ignoreModify || (nDeleted == 0 && nInserted == 0)) {
+	if (I_(ignoreModify) || (nDeleted == 0 && nInserted == 0)) {
 		return;
 	}
 
@@ -1086,10 +1088,10 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	saveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 	// Trigger automatic backup if operation or character limits reached
-	if (info_->autoSave && (info_->autoSaveCharCount > autoSaveCharLimit || info_->autoSaveOpCount > autoSaveOpLimit)) {
+	if (I_(autoSave) && (I_(autoSaveCharCount) > autoSaveCharLimit || I_(autoSaveOpCount) > autoSaveOpLimit)) {
 		writeBackupFile();
-		info_->autoSaveCharCount = 0;
-		info_->autoSaveOpCount   = 0;
+		I_(autoSaveCharCount) = 0;
+		I_(autoSaveOpCount)   = 0;
 	}
 
 	// Indicate that the window has now been modified
@@ -1124,7 +1126,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) {
 
 	// restore recording of undo information
-	info_->ignoreModify = false;
+	I_(ignoreModify) = false;
 
 	// Do nothing if drag operation was canceled
 	if (event->nCharsInserted == 0) {
@@ -1144,7 +1146,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) 
  */
 void DocumentWidget::smartIndentCallback([[maybe_unused]] TextArea *area, [[maybe_unused]] SmartIndentEvent *event) {
 
-	if (!info_->smartIndentData) {
+	if (!I_(smartIndentData)) {
 		return;
 	}
 
@@ -1274,21 +1276,21 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	/* Decide on desired values for language-specific parameters.  If a
 	   parameter was set to its default value, set it to the new default,
 	   otherwise, leave it alone */
-	const bool wrapModeIsDef  = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
-	const bool tabDistIsDef   = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
-	const bool tabInsertIsDef = (static_cast<int>(info_->buffer->BufGetUseTabs()) == Preferences::GetPrefInsertTabs(oldMode));
+	const bool wrapModeIsDef  = (I_(wrapMode) == Preferences::GetPrefWrap(oldMode));
+	const bool tabDistIsDef   = (I_(buffer)->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
+	const bool tabInsertIsDef = (static_cast<int>(I_(buffer)->BufGetUseTabs()) == Preferences::GetPrefInsertTabs(oldMode));
 
 	const int oldEmTabDist            = textAreas[0]->getEmulateTabs();
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
 	const bool emTabDistIsDef   = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
-	const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+	const bool indentStyleIsDef = I_(indentStyle) == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && I_(indentStyle) == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
 	const bool highlightIsDef   = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
-	const WrapStyle wrapMode    = wrapModeIsDef || forceDefaults ? Preferences::GetPrefWrap(mode) : info_->wrapMode;
-	const int tabDist           = tabDistIsDef || forceDefaults ? Preferences::GetPrefTabDist(mode) : info_->buffer->BufGetTabDistance();
-	const int insertTabs        = tabInsertIsDef || forceDefaults ? Preferences::GetPrefInsertTabs(mode) : info_->buffer->BufGetUseTabs();
+	const WrapStyle wrapMode    = wrapModeIsDef || forceDefaults ? Preferences::GetPrefWrap(mode) : I_(wrapMode);
+	const int tabDist           = tabDistIsDef || forceDefaults ? Preferences::GetPrefTabDist(mode) : I_(buffer)->BufGetTabDistance();
+	const int insertTabs        = tabInsertIsDef || forceDefaults ? Preferences::GetPrefInsertTabs(mode) : I_(buffer)->BufGetUseTabs();
 	const int emTabDist         = emTabDistIsDef || forceDefaults ? Preferences::GetPrefEmTabDist(mode) : oldEmTabDist;
-	IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode) : info_->indentStyle;
+	IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode) : I_(indentStyle);
 	bool highlight              = highlightIsDef || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
@@ -1322,9 +1324,9 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	}
 
 	// Force a change of smart indent macros (SetAutoIndent will re-start)
-	if (info_->indentStyle == IndentStyle::Smart) {
+	if (I_(indentStyle) == IndentStyle::Smart) {
 		endSmartIndent();
-		info_->indentStyle = IndentStyle::Auto;
+		I_(indentStyle) = IndentStyle::Auto;
 	}
 
 	// set requested wrap, indent, and tabs
@@ -1352,12 +1354,12 @@ void DocumentWidget::setTabDistance(int distance) {
 
 	EmitEvent("set_tab_dist", QString::number(distance));
 
-	if (info_->buffer->BufGetTabDistance() != distance) {
+	if (I_(buffer)->BufGetTabDistance() != distance) {
 		TextCursor saveCursorPositions[MaxPanes];
 		int saveVScrollPositions[MaxPanes];
 		int saveHScrollPositions[MaxPanes];
 
-		info_->ignoreModify = true;
+		I_(ignoreModify) = true;
 
 		const std::vector<TextArea *> textAreas = textPanes();
 		const size_t paneCount                  = textAreas.size();
@@ -1373,7 +1375,7 @@ void DocumentWidget::setTabDistance(int distance) {
 			area->setModifyingTabDist(true);
 		}
 
-		info_->buffer->BufSetTabDistance(distance, true);
+		I_(buffer)->BufSetTabDistance(distance, true);
 
 		for (size_t index = 0; index < paneCount; ++index) {
 			TextArea *area = textAreas[index];
@@ -1384,7 +1386,7 @@ void DocumentWidget::setTabDistance(int distance) {
 			area->horizontalScrollBar()->setValue(saveHScrollPositions[index]);
 		}
 
-		info_->ignoreModify = false;
+		I_(ignoreModify) = false;
 	}
 }
 
@@ -1410,7 +1412,7 @@ void DocumentWidget::setEmTabDistance(int distance) {
 void DocumentWidget::setInsertTabs(bool value) {
 
 	EmitEvent("set_insert_tabs", QString::number(value));
-	info_->buffer->BufSetUseTabs(value);
+	I_(buffer)->BufSetUseTabs(value);
 }
 
 /**
@@ -1424,13 +1426,13 @@ void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 	const bool autoIndent  = (indentStyle == IndentStyle::Auto);
 	const bool smartIndent = (indentStyle == IndentStyle::Smart);
 
-	if (info_->indentStyle == IndentStyle::Smart && !smartIndent) {
+	if (I_(indentStyle) == IndentStyle::Smart && !smartIndent) {
 		endSmartIndent();
-	} else if (smartIndent && info_->indentStyle != IndentStyle::Smart) {
+	} else if (smartIndent && I_(indentStyle) != IndentStyle::Smart) {
 		beginSmartIndent(Verbosity::Verbose);
 	}
 
-	info_->indentStyle = indentStyle;
+	I_(indentStyle) = indentStyle;
 
 	for (TextArea *area : textPanes()) {
 		area->setAutoIndent(autoIndent);
@@ -1469,7 +1471,7 @@ void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 		area->setContinuousWrap(contWrap);
 	}
 
-	info_->wrapMode = wrapStyle;
+	I_(wrapMode) = wrapStyle;
 
 	if (!isTopDocument()) {
 		return;
@@ -1537,10 +1539,10 @@ bool DocumentWidget::isTopDocument() const {
  */
 QString DocumentWidget::getWindowsMenuEntry() const {
 
-	auto fullTitle = tr("%1%2").arg(info_->filename, info_->fileChanged ? tr("*") : QString());
+	auto fullTitle = tr("%1%2").arg(I_(filename), I_(fileChanged) ? tr("*") : QString());
 
-	if (Preferences::GetPrefShowPathInWindowsMenu() && info_->filenameSet) {
-		fullTitle.append(tr(" - %1").arg(info_->path));
+	if (Preferences::GetPrefShowPathInWindowsMenu() && I_(filenameSet)) {
+		fullTitle.append(tr(" - %1").arg(I_(path)));
 	}
 
 	return fullTitle;
@@ -1664,13 +1666,13 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
  */
 void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText) {
 
-	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
-	const int isRedo = (!info_->redo.empty() && info_->redo.front().inUndo);
+	const int isUndo = (!I_(undo).empty() && I_(undo).front().inUndo);
+	const int isRedo = (!I_(redo).empty() && I_(redo).front().inUndo);
 
 	/* redo operations become invalid once the user begins typing or does
 	   other editing.  If this is not a redo or undo operation and a redo
 	   list still exists, clear it and dim the redo menu item */
-	if (!(isUndo || isRedo) && !info_->redo.empty()) {
+	if (!(isUndo || isRedo) && !I_(redo).empty()) {
 		clearRedoList();
 	}
 
@@ -1681,7 +1683,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 		return;
 	}
 
-	UndoInfo *const currentUndo = info_->undo.empty() ? nullptr : &info_->undo.front();
+	UndoInfo *const currentUndo = I_(undo).empty() ? nullptr : &I_(undo).front();
 
 	const UndoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
 
@@ -1692,12 +1694,12 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	** is currently in an unmodified state, don't accumulate operations
 	** across the save, so the user can undo back to the unmodified state.
 	*/
-	if (info_->fileChanged) {
+	if (I_(fileChanged)) {
 
 		// normal sequential character insertion
 		if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
 			++currentUndo->endPos;
-			++info_->autoSaveCharCount;
+			++I_(autoSaveCharCount);
 			return;
 		}
 
@@ -1705,7 +1707,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 		if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
 			appendDeletedText(deletedText, nDeleted, Direction::Forward);
 			++currentUndo->endPos;
-			++info_->autoSaveCharCount;
+			++I_(autoSaveCharCount);
 			return;
 		}
 
@@ -1736,7 +1738,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	}
 
 	// increment the operation count for the autosave feature
-	++info_->autoSaveOpCount;
+	++I_(autoSaveOpCount);
 
 	/* if the this is currently unmodified, remove the previous
 	   restoresToSaved marker, and set it on this record */
@@ -1745,14 +1747,14 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	// to avoid having to loop here.
 	// as we have more entries in the undo/redo lists, the longer these loops
 	// get
-	if (!info_->fileChanged) {
+	if (!I_(fileChanged)) {
 		undo.restoresToSaved = true;
 
-		for (UndoInfo &u : info_->undo) {
+		for (UndoInfo &u : I_(undo)) {
 			u.restoresToSaved = false;
 		}
 
-		for (UndoInfo &u : info_->redo) {
+		for (UndoInfo &u : I_(redo)) {
 			u.restoresToSaved = false;
 		}
 	}
@@ -1774,8 +1776,8 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
  */
 void DocumentWidget::clearUndoList() {
 
-	info_->undo.clear();
-	Q_EMIT canUndoChanged(!info_->undo.empty());
+	I_(undo).clear();
+	Q_EMIT canUndoChanged(!I_(undo).empty());
 }
 
 /**
@@ -1785,8 +1787,8 @@ void DocumentWidget::clearUndoList() {
  */
 void DocumentWidget::clearRedoList() {
 
-	info_->redo.clear();
-	Q_EMIT canRedoChanged(!info_->redo.empty());
+	I_(redo).clear();
+	Q_EMIT canRedoChanged(!I_(redo).empty());
 }
 
 /**
@@ -1801,7 +1803,7 @@ void DocumentWidget::clearRedoList() {
  * @param direction The direction in which the text was deleted (forward or backward).
  */
 void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction) {
-	UndoInfo &undo = info_->undo.front();
+	UndoInfo &undo = I_(undo).front();
 
 	// re-allocate, adding space for the new character(s)
 	std::string comboText;
@@ -1830,14 +1832,14 @@ void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t del
  */
 void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 
-	info_->undo.emplace_front(std::move(undo));
+	I_(undo).emplace_front(std::move(undo));
 
 	// Trim the list if it exceeds any of the limits
-	if (info_->undo.size() > UNDO_OP_LIMIT) {
+	if (I_(undo).size() > UNDO_OP_LIMIT) {
 		trimUndoList(UNDO_OP_TRIMTO);
 	}
 
-	Q_EMIT canUndoChanged(!info_->undo.empty());
+	Q_EMIT canUndoChanged(!I_(undo).empty());
 }
 
 /**
@@ -1847,8 +1849,8 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
  */
 void DocumentWidget::addRedoItem(UndoInfo &&redo) {
 
-	info_->redo.emplace_front(std::move(redo));
-	Q_EMIT canRedoChanged(!info_->redo.empty());
+	I_(redo).emplace_front(std::move(redo));
+	Q_EMIT canRedoChanged(!I_(redo).empty());
 }
 
 /**
@@ -1856,12 +1858,12 @@ void DocumentWidget::addRedoItem(UndoInfo &&redo) {
  */
 void DocumentWidget::removeUndoItem() {
 
-	if (info_->undo.empty()) {
+	if (I_(undo).empty()) {
 		return;
 	}
 
-	info_->undo.pop_front();
-	Q_EMIT canUndoChanged(!info_->undo.empty());
+	I_(undo).pop_front();
+	Q_EMIT canUndoChanged(!I_(undo).empty());
 }
 
 /**
@@ -1869,12 +1871,12 @@ void DocumentWidget::removeUndoItem() {
  */
 void DocumentWidget::removeRedoItem() {
 
-	if (info_->redo.empty()) {
+	if (I_(redo).empty()) {
 		return;
 	}
 
-	info_->redo.pop_front();
-	Q_EMIT canRedoChanged(!info_->redo.empty());
+	I_(redo).pop_front();
+	Q_EMIT canRedoChanged(!I_(redo).empty());
 }
 
 /**
@@ -1884,15 +1886,15 @@ void DocumentWidget::removeRedoItem() {
  */
 void DocumentWidget::trimUndoList(size_t maxLength) {
 
-	if (info_->undo.size() <= maxLength) {
+	if (I_(undo).size() <= maxLength) {
 		return;
 	}
 
-	auto it = info_->undo.begin();
+	auto it = I_(undo).begin();
 	std::advance(it, maxLength);
 
 	// Trim off all subsequent entries
-	info_->undo.erase(it, info_->undo.end());
+	I_(undo).erase(it, I_(undo).end());
 }
 
 /**
@@ -1905,11 +1907,11 @@ void DocumentWidget::undo() {
 		return;
 	}
 
-	if (info_->undo.empty()) {
+	if (I_(undo).empty()) {
 		return;
 	}
 
-	UndoInfo &undo = info_->undo.front();
+	UndoInfo &undo = I_(undo).front();
 
 	/* BufReplaceEx will eventually call SaveUndoInformation.  This is mostly
 	   good because it makes accumulating redo operations easier, however
@@ -1919,10 +1921,10 @@ void DocumentWidget::undo() {
 	undo.inUndo = true;
 
 	// use the saved undo information to reverse changes
-	info_->buffer->BufReplace(undo.startPos, undo.endPos, undo.oldText);
+	I_(buffer)->BufReplace(undo.startPos, undo.endPos, undo.oldText);
 
 	const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
-	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
+	if (!I_(buffer)->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
 		if (const QPointer<TextArea> area = win->lastFocus()) {
@@ -1932,9 +1934,9 @@ void DocumentWidget::undo() {
 
 	if (Preferences::GetPrefUndoModifiesSelection()) {
 		if (restoredTextLength > 0) {
-			info_->buffer->BufSelect(undo.startPos, undo.startPos + restoredTextLength);
+			I_(buffer)->BufSelect(undo.startPos, undo.startPos + restoredTextLength);
 		} else {
-			info_->buffer->BufUnselect();
+			I_(buffer)->BufUnselect();
 		}
 	}
 
@@ -1965,11 +1967,11 @@ void DocumentWidget::redo() {
 		return;
 	}
 
-	if (info_->redo.empty()) {
+	if (I_(redo).empty()) {
 		return;
 	}
 
-	UndoInfo &redo = info_->redo.front();
+	UndoInfo &redo = I_(redo).front();
 
 	/* BufReplaceEx will eventually call SaveUndoInformation.  To indicate
 	   to SaveUndoInformation that this is the context of a redo operation,
@@ -1977,10 +1979,10 @@ void DocumentWidget::redo() {
 	redo.inUndo = true;
 
 	// use the saved redo information to reverse changes
-	info_->buffer->BufReplace(redo.startPos, redo.endPos, redo.oldText);
+	I_(buffer)->BufReplace(redo.startPos, redo.endPos, redo.oldText);
 
 	const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
-	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
+	if (!I_(buffer)->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
 		if (const QPointer<TextArea> area = win->lastFocus()) {
@@ -1991,9 +1993,9 @@ void DocumentWidget::redo() {
 	if (Preferences::GetPrefUndoModifiesSelection()) {
 
 		if (restoredTextLength > 0) {
-			info_->buffer->BufSelect(redo.startPos, redo.startPos + restoredTextLength);
+			I_(buffer)->BufSelect(redo.startPos, redo.startPos + restoredTextLength);
 		} else {
-			info_->buffer->BufUnselect();
+			I_(buffer)->BufUnselect();
 		}
 	}
 
@@ -2020,7 +2022,7 @@ void DocumentWidget::redo() {
  * @return `true` if the document is read-only or locked, `false` otherwise.
  */
 bool DocumentWidget::isReadOnly() const {
-	return info_->lockReasons.isAnyLocked();
+	return I_(lockReasons).isAnyLocked();
 }
 
 /**
@@ -2053,7 +2055,7 @@ void DocumentWidget::makeSelectionVisible(TextArea *area) {
 void DocumentWidget::removeBackupFile() const {
 
 	// Don't delete backup files when backups aren't activated.
-	if (!info_->autoSave) {
+	if (!I_(autoSave)) {
 		return;
 	}
 
@@ -2067,11 +2069,11 @@ void DocumentWidget::removeBackupFile() const {
  */
 QString DocumentWidget::backupFileName() const {
 
-	if (info_->filenameSet) {
-		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
+	if (I_(filenameSet)) {
+		return QStringLiteral("%1~%2").arg(I_(path), I_(filename));
 	}
 
-	return PrependHome(QStringLiteral("~%1").arg(info_->filename));
+	return PrependHome(QStringLiteral("~%1").arg(I_(filename)));
 }
 
 /**
@@ -2092,7 +2094,7 @@ void DocumentWidget::checkForChangesToFile() {
 	static QPointer<DocumentWidget> lastCheckWindow;
 	static std::chrono::high_resolution_clock::time_point lastCheckTime;
 
-	if (!info_->filenameSet) {
+	if (!I_(filenameSet)) {
 		return;
 	}
 
@@ -2125,16 +2127,16 @@ void DocumentWidget::checkForChangesToFile() {
 		const int error = errno;
 
 		// Return if we've already warned the user or we can't warn them now
-		if (info_->fileMissing || silent) {
+		if (I_(fileMissing) || silent) {
 			return;
 		}
 
 		/* Can't stat the file --
 		 * maybe it's been deleted. The filename is now invalid */
-		info_->fileMissing      = true;
-		info_->statbuf.st_mtime = 1;
-		info_->statbuf.st_dev   = 0;
-		info_->statbuf.st_ino   = 0;
+		I_(fileMissing)      = true;
+		I_(statbuf).st_mtime = 1;
+		I_(statbuf).st_dev   = 0;
+		I_(statbuf).st_ino   = 0;
 
 		/* Warn the user, if they like to be warned (Maybe this should be
 		 * its own preference setting: GetPrefWarnFileDeleted()) */
@@ -2150,7 +2152,7 @@ void DocumentWidget::checkForChangesToFile() {
 					tr("File not Found"),
 					tr("File '%1' (or directory in its path) no longer exists.\n"
 					   "Another program may have deleted or moved it.")
-						.arg(info_->filename),
+						.arg(I_(filename)),
 					QMessageBox::Save | QMessageBox::Cancel);
 				save = (resp == QMessageBox::Save);
 			} break;
@@ -2161,7 +2163,7 @@ void DocumentWidget::checkForChangesToFile() {
 					tr("Permission Denied"),
 					tr("You no longer have access to file '%1'.\n"
 					   "Another program may have changed the permissions of one of its parent directories.")
-						.arg(info_->filename),
+						.arg(I_(filename)),
 					QMessageBox::Save | QMessageBox::Cancel);
 				save = (resp == QMessageBox::Save);
 			} break;
@@ -2173,7 +2175,7 @@ void DocumentWidget::checkForChangesToFile() {
 					tr("Error while checking the status of file '%1':\n"
 					   "    '%2'\n"
 					   "Please make sure that no data is lost before closing this window.")
-						.arg(info_->filename, ErrorString(error)),
+						.arg(I_(filename), ErrorString(error)),
 					QMessageBox::Save | QMessageBox::Cancel);
 				save = (resp == QMessageBox::Save);
 			} break;
@@ -2187,7 +2189,7 @@ void DocumentWidget::checkForChangesToFile() {
 		// A missing or (re-)saved file can't be read-only.
 		// NOTE: A document without a file can be locked though.
 		// Make sure that the window was not destroyed behind our back!
-		info_->lockReasons.setPermLocked(false);
+		I_(lockReasons).setPermLocked(false);
 		Q_EMIT updateWindowTitle(this);
 		Q_EMIT updateWindowReadOnly(this);
 		return;
@@ -2195,19 +2197,19 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Check that the file's read-only status is still correct (but
 	   only if the file can still be opened successfully in read mode) */
-	if (info_->statbuf.st_mode != statbuf.st_mode || info_->statbuf.st_uid != statbuf.st_uid || info_->statbuf.st_gid != statbuf.st_gid) {
+	if (I_(statbuf).st_mode != statbuf.st_mode || I_(statbuf).st_uid != statbuf.st_uid || I_(statbuf).st_gid != statbuf.st_gid) {
 
-		info_->statbuf.st_mode = statbuf.st_mode;
-		info_->statbuf.st_uid  = statbuf.st_uid;
-		info_->statbuf.st_gid  = statbuf.st_gid;
+		I_(statbuf).st_mode = statbuf.st_mode;
+		I_(statbuf).st_uid  = statbuf.st_uid;
+		I_(statbuf).st_gid  = statbuf.st_gid;
 
 		QFile fp(fullname);
 		if (fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
 			const bool readOnly = !fp.isWritable();
 			fp.close();
 
-			if (info_->lockReasons.isPermLocked() != readOnly) {
-				info_->lockReasons.setPermLocked(readOnly);
+			if (I_(lockReasons).isPermLocked() != readOnly) {
+				I_(lockReasons).setPermLocked(readOnly);
 				Q_EMIT updateWindowTitle(this);
 				Q_EMIT updateWindowReadOnly(this);
 			}
@@ -2216,17 +2218,17 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */
-	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing)) {
+	if (!silent && ((I_(statbuf).st_mtime != 0 && I_(statbuf).st_mtime != statbuf.st_mtime) || I_(fileMissing))) {
 
-		info_->statbuf.st_mtime = 0; // Inhibit further warnings
-		info_->fileMissing      = false;
+		I_(statbuf).st_mtime = 0; // Inhibit further warnings
+		I_(fileMissing)      = false;
 		if (!Preferences::GetPrefWarnFileMods()) {
 			return;
 		}
 
 		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 			// Contents hasn't changed. Update the modification time.
-			info_->statbuf.st_mtime = statbuf.st_mtime;
+			I_(statbuf).st_mtime = statbuf.st_mtime;
 			return;
 		}
 
@@ -2238,10 +2240,10 @@ void DocumentWidget::checkForChangesToFile() {
 
 		Q_UNUSED(buttonCancel)
 
-		if (info_->fileChanged) {
-			messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(info_->filename));
+		if (I_(fileChanged)) {
+			messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(I_(filename)));
 		} else {
-			messageBox.setText(tr("%1 has been modified by another program.  Reload?").arg(info_->filename));
+			messageBox.setText(tr("%1 has been modified by another program.  Reload?").arg(I_(filename)));
 		}
 
 		messageBox.exec();
@@ -2259,12 +2261,12 @@ void DocumentWidget::checkForChangesToFile() {
  */
 QString DocumentWidget::fullPath() const {
 
-	if (info_->path.isEmpty()) {
+	if (I_(path).isEmpty()) {
 		return QString();
 	}
 
-	Q_ASSERT(info_->path.endsWith(QLatin1Char('/')));
-	return QStringLiteral("%1%2").arg(info_->path, info_->filename);
+	Q_ASSERT(I_(path).endsWith(QLatin1Char('/')));
+	return QStringLiteral("%1%2").arg(I_(path), I_(filename));
 }
 
 /**
@@ -2273,7 +2275,7 @@ QString DocumentWidget::fullPath() const {
  * @return A QString representing the filename of the document widget.
  */
 QString DocumentWidget::filename() const {
-	return info_->filename;
+	return I_(filename);
 }
 
 /**
@@ -2282,7 +2284,7 @@ QString DocumentWidget::filename() const {
  * @param filename The new filename to set for the document widget.
  */
 void DocumentWidget::setFilename(const QString &filename) {
-	info_->filename = filename;
+	I_(filename) = filename;
 }
 
 /**
@@ -2291,7 +2293,7 @@ void DocumentWidget::setFilename(const QString &filename) {
  * @return A QString representing the path of the document widget.
  */
 QString DocumentWidget::path() const {
-	return info_->path;
+	return I_(path);
 }
 
 /**
@@ -2322,16 +2324,16 @@ bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 
 	// For UNIX/macOS files, we can do a quick check to see if the on disk file
 	// has a different length, but for DOS files, it's not that simple...
-	switch (info_->fileFormat) {
+	switch (I_(fileFormat)) {
 	case FileFormats::Unix:
 	case FileFormats::Mac:
-		if (fileLen != info_->buffer->length()) {
+		if (fileLen != I_(buffer)->length()) {
 			return true;
 		}
 		break;
 	case FileFormats::Dos:
 		// However, if a DOS file is smaller on disk, it's certainly different
-		if (fileLen < info_->buffer->length()) {
+		if (fileLen < I_(buffer)->length()) {
 			return true;
 		}
 		break;
@@ -2345,7 +2347,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	MainWindow::allDocumentsBusy(tr("Comparing externally modified %1 ...").arg(info_->filename));
+	MainWindow::allDocumentsBusy(tr("Comparing externally modified %1 ...").arg(I_(filename)));
 
 	// make sure that we unbusy the windows when we're done
 	auto _ = gsl::finally([]() {
@@ -2369,11 +2371,11 @@ bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
-		if (bufPos == 0 && info_->fileFormat != FormatOfFile(std::string_view(fileString, static_cast<size_t>(nRead)))) {
+		if (bufPos == 0 && I_(fileFormat) != FormatOfFile(std::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
-		switch (info_->fileFormat) {
+		switch (I_(fileFormat)) {
 		case FileFormats::Mac:
 			ConvertFromMac(fileString, nRead);
 			break;
@@ -2384,7 +2386,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 			break;
 		}
 
-		if (const int rv = info_->buffer->compare(bufPos, fileString, nRead)) {
+		if (const int rv = I_(buffer)->compare(bufPos, fileString, nRead)) {
 			return rv;
 		}
 
@@ -2393,13 +2395,13 @@ bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 	}
 
 	if (pendingCR) {
-		if (const int rv = info_->buffer->compare(bufPos, pendingCR)) {
+		if (const int rv = I_(buffer)->compare(bufPos, pendingCR)) {
 			return rv;
 		}
 		bufPos += 1;
 	}
 
-	if (bufPos != info_->buffer->length()) {
+	if (bufPos != I_(buffer)->length()) {
 		return true;
 	}
 
@@ -2419,11 +2421,11 @@ void DocumentWidget::revertToSaved() {
 	}
 
 	// Can't revert untitled windows
-	if (!info_->filenameSet) {
+	if (!I_(filenameSet)) {
 		QMessageBox::warning(
 			this,
 			tr("Error"),
-			tr("Window '%1' was never saved, can't re-read").arg(info_->filename));
+			tr("Window '%1' was never saved, can't re-read").arg(I_(filename)));
 		return;
 	}
 
@@ -2445,24 +2447,24 @@ void DocumentWidget::revertToSaved() {
 	}
 
 	// re-read the file, update the window title if new file is different
-	const QString name = info_->filename;
-	const QString path = info_->path;
+	const QString name = I_(filename);
+	const QString path = I_(path);
 
 	removeBackupFile();
 	clearUndoList();
 
-	const int openFlags = info_->lockReasons.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
+	const int openFlags = I_(lockReasons).isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 	if (!doOpen(name, path, openFlags)) {
 		/* This is a bit sketchy.  The only error in doOpen that irreparably
 		   damages the window is "too much binary data".  It should be
 		   pretty rare to be reverting something that was fine only to find
 		   that now it has too much binary data. */
-		if (!info_->fileMissing) {
+		if (!I_(fileMissing)) {
 			closeDocument();
 		} else {
 			// Treat it like an externally modified file
-			info_->statbuf.st_mtime = 0;
-			info_->fileMissing      = false;
+			I_(statbuf).st_mtime = 0;
+			I_(fileMissing)      = false;
 		}
 		return;
 	}
@@ -2509,9 +2511,9 @@ bool DocumentWidget::writeBackupFile() {
 		QMessageBox::warning(
 			this,
 			tr("Error writing Backup"),
-			tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, ErrorString(errno)));
+			tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(I_(filename), ErrorString(errno)));
 
-		info_->autoSave = false;
+		I_(autoSave) = false;
 
 		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Incremental_Backup)->setChecked(false);
@@ -2520,7 +2522,7 @@ bool DocumentWidget::writeBackupFile() {
 	}
 
 	// get the text buffer contents
-	std::string fileString = info_->buffer->BufGetAll();
+	std::string fileString = I_(buffer)->BufGetAll();
 
 	// add a terminating newline if the file doesn't already have one
 	if (Preferences::GetPrefAppendLF()) {
@@ -2537,10 +2539,10 @@ bool DocumentWidget::writeBackupFile() {
 		QMessageBox::critical(
 			this,
 			tr("Error saving Backup"),
-			tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, ErrorString(errno)));
+			tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(I_(filename), ErrorString(errno)));
 
 		QFile::remove(name);
-		info_->autoSave = false;
+		I_(autoSave) = false;
 		return false;
 	}
 
@@ -2559,12 +2561,12 @@ bool DocumentWidget::saveDocument() {
 
 	/* Return success if the file is normal & unchanged or is a
 		read-only file. */
-	if ((!info_->fileChanged && !info_->fileMissing && info_->statbuf.st_mtime > 0) || info_->lockReasons.isAnyLockedIgnoringPerm()) {
+	if ((!I_(fileChanged) && !I_(fileMissing) && I_(statbuf).st_mtime > 0) || I_(lockReasons).isAnyLockedIgnoringPerm()) {
 		return true;
 	}
 
 	// Prompt for a filename if this is an Untitled window
-	if (!info_->filenameSet) {
+	if (!I_(filenameSet)) {
 		// empty string signals a prompt for filename
 		return saveDocumentAs(QString(), /*addWrap=*/false);
 	}
@@ -2582,7 +2584,7 @@ bool DocumentWidget::saveDocument() {
 							  "To preserve the modified file, cancel this operation and\n"
 							  "use Save As... to save this file under a different name,\n"
 							  "or Revert to Saved to revert to the modified version.")
-							   .arg(info_->filename));
+							   .arg(I_(filename)));
 
 		QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
@@ -2591,8 +2593,8 @@ bool DocumentWidget::saveDocument() {
 		messageBox.exec();
 		if (messageBox.clickedButton() != buttonContinue) {
 			// Cancel and mark file as externally modified
-			info_->statbuf.st_mtime = 0;
-			info_->fileMissing      = false;
+			I_(statbuf).st_mtime = 0;
+			I_(fileMissing)      = false;
 			return false;
 		}
 	}
@@ -2626,7 +2628,7 @@ bool DocumentWidget::doSave() {
 			const int result = QMessageBox::warning(
 				this,
 				tr("Writing Read-only File"),
-				tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(info_->filename),
+				tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(I_(filename)),
 				QMessageBox::Save | QMessageBox::Cancel);
 
 			if (result != QMessageBox::Save) {
@@ -2642,8 +2644,8 @@ bool DocumentWidget::doSave() {
 			 changes. If the file is created for the first time, it has
 			 zero size on disk, and the check would falsely conclude that the
 			 file has changed on disk, and would pop up a warning dialog */
-	if (Preferences::GetPrefAppendLF() && !info_->buffer->BufIsEmpty() && info_->buffer->back() != '\n') {
-		info_->buffer->BufAppend('\n');
+	if (Preferences::GetPrefAppendLF() && !I_(buffer)->BufIsEmpty() && I_(buffer)->back() != '\n') {
+		I_(buffer)->BufAppend('\n');
 	}
 
 	// open the file
@@ -2652,7 +2654,7 @@ bool DocumentWidget::doSave() {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Error saving File"));
 		messageBox.setIcon(QMessageBox::Warning);
-		messageBox.setText(tr("Unable to save %1:\n%2\n\nSave as a new file?").arg(info_->filename, file.errorString()));
+		messageBox.setText(tr("Unable to save %1:\n%2\n\nSave as a new file?").arg(I_(filename), file.errorString()));
 
 		QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
@@ -2668,10 +2670,10 @@ bool DocumentWidget::doSave() {
 	}
 
 	// get the text buffer contents and its length
-	std::string text = info_->buffer->BufGetAll();
+	std::string text = I_(buffer)->BufGetAll();
 
 	// If the file is to be saved in DOS or Macintosh format, reconvert
-	switch (info_->fileFormat) {
+	switch (I_(fileFormat)) {
 	case FileFormats::Dos:
 		ConvertToDos(text);
 		break;
@@ -2684,7 +2686,7 @@ bool DocumentWidget::doSave() {
 
 	// write to the file
 	if (file.write(text.data(), ssize(text)) == -1) {
-		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(info_->filename, file.errorString()));
+		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(I_(filename), file.errorString()));
 		file.close();
 		file.remove();
 		return false;
@@ -2696,16 +2698,16 @@ bool DocumentWidget::doSave() {
 	// update the modification time
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toUtf8().data(), &statbuf) == 0) {
-		info_->statbuf.st_mtime = statbuf.st_mtime;
-		info_->fileMissing      = false;
-		info_->statbuf.st_dev   = statbuf.st_dev;
-		info_->statbuf.st_ino   = statbuf.st_ino;
+		I_(statbuf).st_mtime = statbuf.st_mtime;
+		I_(fileMissing)      = false;
+		I_(statbuf).st_dev   = statbuf.st_dev;
+		I_(statbuf).st_ino   = statbuf.st_ino;
 	} else {
 		// This needs to produce an error message -- the file can't be accessed!
-		info_->statbuf.st_mtime = 0;
-		info_->fileMissing      = true;
-		info_->statbuf.st_dev   = 0;
-		info_->statbuf.st_ino   = 0;
+		I_(statbuf).st_mtime = 0;
+		I_(fileMissing)      = true;
+		I_(statbuf).st_dev   = 0;
+		I_(statbuf).st_ino   = 0;
 	}
 
 	return true;
@@ -2728,7 +2730,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	QString fullname;
 
 	if (newName.isNull()) {
-		fullname = MainWindow::promptForNewFile(this, &info_->fileFormat, &addWrap);
+		fullname = MainWindow::promptForNewFile(this, &I_(fileFormat), &addWrap);
 		if (fullname.isNull()) {
 			return false;
 		}
@@ -2744,7 +2746,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	const PathInfo fi = ParseFilename(fullname);
 
 	// If the requested file is this file, just save it and return
-	if (info_->filename == fi.filename && info_->path == fi.pathname) {
+	if (I_(filename) == fi.filename && I_(path) == fi.pathname) {
 		if (writeBckVersion()) {
 			return false;
 		}
@@ -2782,12 +2784,12 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	// Change the name of the file and save it under the new name
 	removeBackupFile();
 	setPath(fi.pathname);
-	info_->filename        = fi.filename;
-	info_->statbuf.st_mode = 0;
-	info_->statbuf.st_uid  = 0;
-	info_->statbuf.st_gid  = 0;
+	I_(filename)        = fi.filename;
+	I_(statbuf).st_mode = 0;
+	I_(statbuf).st_uid  = 0;
+	I_(statbuf).st_gid  = 0;
 
-	info_->lockReasons.clear();
+	I_(lockReasons).clear();
 	const int retVal = doSave();
 	Q_EMIT updateWindowReadOnly(this);
 	refreshTabState();
@@ -2798,10 +2800,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	/*  If name has changed, language mode may have changed as well, unless
 		it's an Untitled window for which the user already set a language
 		mode; it's probably the right one.  */
-	if (languageMode_ == PLAIN_LANGUAGE_MODE || info_->filenameSet) {
+	if (languageMode_ == PLAIN_LANGUAGE_MODE || I_(filenameSet)) {
 		determineLanguageMode(false);
 	}
-	info_->filenameSet = true;
+	I_(filenameSet) = true;
 
 	// Update the stats line and window title with the new filename
 	Q_EMIT updateWindowTitle(this);
@@ -2834,9 +2836,9 @@ void DocumentWidget::addWrapNewlines() {
 
 	// Modify the buffer to add wrapping
 	TextArea *area               = textAreas[0];
-	const std::string fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
+	const std::string fileString = area->TextGetWrapped(I_(buffer)->BufStartOfBuffer(), I_(buffer)->BufEndOfBuffer());
 
-	info_->buffer->BufSetAll(fileString);
+	I_(buffer)->BufSetAll(fileString);
 
 	// restore the insert and scroll positions of each pane
 	for (size_t i = 0; i < paneCount; ++i) {
@@ -2875,7 +2877,7 @@ bool DocumentWidget::writeBckVersion() {
 		// with error reporting
 
 		// Do only if version backups are turned on
-		if (!info_->saveOldVersion) {
+		if (!I_(saveOldVersion)) {
 			return false;
 		}
 
@@ -2936,7 +2938,7 @@ bool DocumentWidget::writeBckVersion() {
 
 			if (bytes_read < 0) {
 				QFile::remove(bckname);
-				Raise<BackupError>(info_->filename, tr("read() error"));
+				Raise<BackupError>(I_(filename), tr("read() error"));
 			}
 
 			if (bytes_read == 0) {
@@ -2970,7 +2972,7 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		if (messageBox.clickedButton() == buttonTurnOff) {
-			info_->saveOldVersion = false;
+			I_(saveOldVersion) = false;
 
 			if (auto win = MainWindow::fromDocument(this)) {
 				no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
@@ -2990,7 +2992,7 @@ bool DocumentWidget::writeBckVersion() {
  */
 bool DocumentWidget::fileWasModifiedExternally() const {
 
-	if (!info_->filenameSet) {
+	if (!I_(filenameSet)) {
 		return false;
 	}
 
@@ -3001,7 +3003,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	if (info_->statbuf.st_mtime == statbuf.st_mtime) {
+	if (I_(statbuf).st_mtime == statbuf.st_mtime) {
 		return false;
 	}
 
@@ -3023,11 +3025,11 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 	/* If the window is a normal & unmodified file or an empty new file,
 	   or if the user wants to ignore external modifications then
 	   just close it.  Otherwise ask for confirmation first. */
-	if (!info_->fileChanged &&
+	if (!I_(fileChanged) &&
 		/* Normal File */
-		((!info_->fileMissing && info_->statbuf.st_mtime > 0) ||
+		((!I_(fileMissing) && I_(statbuf).st_mtime > 0) ||
 		 /* New File */
-		 (info_->fileMissing && info_->statbuf.st_mtime == 0) ||
+		 (I_(fileMissing) && I_(statbuf).st_mtime == 0) ||
 		 /* File deleted/modified externally, ignored by user. */
 		 !Preferences::GetPrefWarnFileMods())) {
 
@@ -3041,7 +3043,7 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 			response = QMessageBox::warning(
 				this,
 				tr("Save File"),
-				tr("Save %1 before closing?").arg(info_->filename),
+				tr("Save %1 before closing?").arg(I_(filename)),
 				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 			break;
 		case CloseMode::Save:
@@ -3109,31 +3111,31 @@ void DocumentWidget::closeDocument() {
 
 		// clearing the existing name first ensures that uniqueUntitledName()
 		// will find the actual first available untitled name
-		info_->filename.clear();
+		I_(filename).clear();
 
 		const QString name = MainWindow::uniqueUntitledName();
-		info_->lockReasons.clear();
+		I_(lockReasons).clear();
 
-		info_->statbuf.st_mode  = 0;
-		info_->statbuf.st_uid   = 0;
-		info_->statbuf.st_gid   = 0;
-		info_->statbuf.st_mtime = 0;
-		info_->statbuf.st_dev   = 0;
-		info_->statbuf.st_ino   = 0;
-		info_->filename         = name;
+		I_(statbuf).st_mode  = 0;
+		I_(statbuf).st_uid   = 0;
+		I_(statbuf).st_gid   = 0;
+		I_(statbuf).st_mtime = 0;
+		I_(statbuf).st_dev   = 0;
+		I_(statbuf).st_ino   = 0;
+		I_(filename)         = name;
 		setPath(QString());
 
 		markTable_.clear();
 
 		// clear the buffer, but ignore changes
-		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(std::string_view());
-		info_->ignoreModify = false;
+		I_(ignoreModify) = true;
+		I_(buffer)->BufSetAll(std::string_view());
+		I_(ignoreModify) = false;
 
-		info_->filenameSet = false;
-		info_->fileChanged = false;
-		info_->fileMissing = true;
-		info_->fileFormat  = FileFormats::Unix;
+		I_(filenameSet) = false;
+		I_(fileChanged) = false;
+		I_(fileMissing) = true;
+		I_(fileFormat)  = FileFormats::Unix;
 
 		stopHighlighting();
 		endSmartIndent();
@@ -3245,13 +3247,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	}
 
 	// initialize lock reasons
-	info_->lockReasons.clear();
+	I_(lockReasons).clear();
 
 	// Update the window data structure
 	setPath(path);
-	info_->filename    = name;
-	info_->filenameSet = true;
-	info_->fileMissing = true;
+	I_(filename)    = name;
+	I_(filenameSet) = true;
+	I_(fileMissing) = true;
 
 	FILE *fp = nullptr;
 
@@ -3271,7 +3273,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 			// detect if the file is readable, but not writable
 			QFile file(fullname);
 			if (file.open(QIODevice::ReadWrite) || file.open(QIODevice::ReadOnly)) {
-				info_->lockReasons.setPermLocked(!file.isWritable());
+				I_(lockReasons).setPermLocked(!file.isWritable());
 			}
 
 		} else if (flags & EditFlags::CREATE && errno == ENOENT) {
@@ -3323,7 +3325,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 			setWindowModified(false);
 			if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
-				info_->lockReasons.setUserLocked(true);
+				I_(lockReasons).setUserLocked(true);
 			}
 
 			Q_EMIT updateWindowReadOnly(this);
@@ -3341,9 +3343,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	   last modification to the file */
 	QT_STATBUF statbuf;
 	if (QT_FSTAT(QT_FILENO(fp), &statbuf) != 0) {
-		info_->filenameSet = false; // Temp. prevent check for changes.
+		I_(filenameSet) = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
-		info_->filenameSet = true;
+		I_(filenameSet) = true;
 		return false;
 	}
 
@@ -3354,25 +3356,25 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
-		info_->filenameSet = false; // Temp. prevent check for changes.
+		I_(filenameSet) = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error opening File"), tr("Can't open directory %1").arg(name));
-		info_->filenameSet = true;
+		I_(filenameSet) = true;
 		return false;
 	}
 
 #ifdef S_ISBLK
 	if (S_ISBLK(statbuf.st_mode)) {
-		info_->filenameSet = false; // Temp. prevent check for changes.
+		I_(filenameSet) = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error opening File"), tr("Can't open block device %1").arg(name));
-		info_->filenameSet = true;
+		I_(filenameSet) = true;
 		return false;
 	}
 #endif
 
 	if (statbuf.st_size > (0x100000000ll)) {
-		info_->filenameSet = false; // Temp. prevent check for changes.
+		I_(filenameSet) = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error opening File"), tr("File size too large %1").arg(name));
-		info_->filenameSet = true;
+		I_(filenameSet) = true;
 		return false;
 	}
 
@@ -3387,9 +3389,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		if (file.size() != 0) {
 			uchar *memory = file.map(0, file.size());
 			if (!memory) {
-				info_->filenameSet = false; // Temp. prevent check for changes.
+				I_(filenameSet) = false; // Temp. prevent check for changes.
 				QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1\n%2").arg(name, file.errorString()));
-				info_->filenameSet = true;
+				I_(filenameSet) = true;
 				return false;
 			}
 
@@ -3399,19 +3401,19 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
-		 * info_->fileMissing is `false` and doOpen fails. */
-		info_->statbuf.st_mode  = statbuf.st_mode;
-		info_->statbuf.st_uid   = statbuf.st_uid;
-		info_->statbuf.st_gid   = statbuf.st_gid;
-		info_->statbuf.st_mtime = statbuf.st_mtime;
-		info_->statbuf.st_dev   = statbuf.st_dev;
-		info_->statbuf.st_ino   = statbuf.st_ino;
-		info_->fileMissing      = false;
+		 * I_(fileMissing) is `false` and doOpen fails. */
+		I_(statbuf).st_mode  = statbuf.st_mode;
+		I_(statbuf).st_uid   = statbuf.st_uid;
+		I_(statbuf).st_gid   = statbuf.st_gid;
+		I_(statbuf).st_mtime = statbuf.st_mtime;
+		I_(statbuf).st_dev   = statbuf.st_dev;
+		I_(statbuf).st_ino   = statbuf.st_ino;
+		I_(fileMissing)      = false;
 
 		// Detect and convert DOS and Macintosh format files
 		if (Preferences::GetPrefForceOSConversion()) {
-			info_->fileFormat = FormatOfFile(text);
-			switch (info_->fileFormat) {
+			I_(fileFormat) = FormatOfFile(text);
+			switch (I_(fileFormat)) {
 			case FileFormats::Dos:
 				ConvertFromDos(text);
 				break;
@@ -3424,21 +3426,21 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		}
 
 		// Display the file contents in the text widget
-		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(text);
-		info_->ignoreModify = false;
+		I_(ignoreModify) = true;
+		I_(buffer)->BufSetAll(text);
+		I_(ignoreModify) = false;
 
 		// Set window title and file changed flag
 		if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
-			info_->lockReasons.setUserLocked(true);
+			I_(lockReasons).setUserLocked(true);
 		}
 
-		if (info_->lockReasons.isPermLocked()) {
-			info_->fileChanged = false;
+		if (I_(lockReasons).isPermLocked()) {
+			I_(fileChanged) = false;
 			Q_EMIT updateWindowTitle(this);
 		} else {
 			setWindowModified(false);
-			if (info_->lockReasons.isAnyLocked()) {
+			if (I_(lockReasons).isAnyLocked()) {
 				Q_EMIT updateWindowTitle(this);
 			}
 		}
@@ -3446,9 +3448,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		Q_EMIT updateWindowReadOnly(this);
 		return true;
 	} catch (const std::bad_alloc &) {
-		info_->filenameSet = false; // Temp. prevent check for changes.
+		I_(filenameSet) = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error while opening File"), tr("File is too large to edit"));
-		info_->filenameSet = true;
+		I_(filenameSet) = true;
 		return false;
 	}
 }
@@ -3515,7 +3517,7 @@ void DocumentWidget::refreshMenuBar() {
 	win->updateUserMenus(this);
 
 	// refresh selection-sensitive menus
-	updateSelectionSensitiveMenus(info_->wasSelected);
+	updateSelectionSensitiveMenus(I_(wasSelected));
 }
 
 /**
@@ -3533,14 +3535,14 @@ void DocumentWidget::refreshMenuToggleStates() {
 	}
 
 	// File menu
-	win->ui.action_Print_Selection->setEnabled(info_->wasSelected);
+	win->ui.action_Print_Selection->setEnabled(I_(wasSelected));
 
 	// Edit menu
-	win->ui.action_Undo->setEnabled(!info_->undo.empty());
-	win->ui.action_Redo->setEnabled(!info_->redo.empty());
-	win->ui.action_Cut->setEnabled(info_->wasSelected);
-	win->ui.action_Copy->setEnabled(info_->wasSelected);
-	win->ui.action_Delete->setEnabled(info_->wasSelected);
+	win->ui.action_Undo->setEnabled(!I_(undo).empty());
+	win->ui.action_Redo->setEnabled(!I_(redo).empty());
+	win->ui.action_Cut->setEnabled(I_(wasSelected));
+	win->ui.action_Copy->setEnabled(I_(wasSelected));
+	win->ui.action_Delete->setEnabled(I_(wasSelected));
 
 	// Preferences menu
 	no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);
@@ -3548,18 +3550,18 @@ void DocumentWidget::refreshMenuToggleStates() {
 	no_signals(win->ui.action_Show_Line_Numbers)->setChecked(win->showLineNumbers_);
 	no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
 	no_signals(win->ui.action_Apply_Backlighting)->setChecked(backlightChars_);
-	no_signals(win->ui.action_Make_Backup_Copy)->setChecked(info_->saveOldVersion);
-	no_signals(win->ui.action_Incremental_Backup)->setChecked(info_->autoSave);
-	no_signals(win->ui.action_Overtype)->setChecked(info_->overstrike);
-	no_signals(win->ui.action_Matching_Syntax)->setChecked(info_->matchSyntaxBased);
-	no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isUserLocked());
+	no_signals(win->ui.action_Make_Backup_Copy)->setChecked(I_(saveOldVersion));
+	no_signals(win->ui.action_Incremental_Backup)->setChecked(I_(autoSave));
+	no_signals(win->ui.action_Overtype)->setChecked(I_(overstrike));
+	no_signals(win->ui.action_Matching_Syntax)->setChecked(I_(matchSyntaxBased));
+	no_signals(win->ui.action_Read_Only)->setChecked(I_(lockReasons).isUserLocked());
 
 	win->ui.action_Indent_Smart->setEnabled(SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
 	win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
-	setAutoIndent(info_->indentStyle);
-	setAutoWrap(info_->wrapMode);
-	setShowMatching(info_->showMatchingStyle);
+	setAutoIndent(I_(indentStyle));
+	setAutoWrap(I_(wrapMode));
+	setShowMatching(I_(showMatchingStyle));
 	setLanguageMode(languageMode_, /*forceNewDefaults=*/false);
 
 	// Windows Menu
@@ -3577,7 +3579,7 @@ void DocumentWidget::refreshMenuToggleStates() {
  */
 void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 
-	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
+	if (const std::unique_ptr<SmartIndentData> &winData = I_(smartIndentData)) {
 
 		DataValue result;
 		QString errMsg;
@@ -3636,7 +3638,7 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 
 	EmitEvent("set_show_matching", ToString(state));
 
-	info_->showMatchingStyle = state;
+	I_(showMatchingStyle) = state;
 	if (!isTopDocument()) {
 		return;
 	}
@@ -3666,7 +3668,7 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
  */
 void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 
-	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
+	if (const std::unique_ptr<SmartIndentData> &winData = I_(smartIndentData)) {
 
 		DataValue result;
 		QString errMsg;
@@ -3810,11 +3812,11 @@ void DocumentWidget::includeFile(const QString &name) {
 
 		/* insert the contents of the file in the selection or at the insert
 		   position in the window if no selection exists */
-		if (info_->buffer->primary.hasSelection()) {
-			info_->buffer->BufReplaceSelected(text);
+		if (I_(buffer)->primary.hasSelection()) {
+			I_(buffer)->BufReplaceSelected(text);
 		} else {
 			if (auto win = MainWindow::fromDocument(this)) {
-				info_->buffer->BufInsert(win->lastFocus()->cursorPos(), text);
+				I_(buffer)->BufInsert(win->lastFocus()->cursorPos(), text);
 			}
 		}
 	}
@@ -3834,7 +3836,7 @@ void DocumentWidget::includeFile(const QString &name) {
 std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
-	const bool matchSyntaxBased = info_->matchSyntaxBased;
+	const bool matchSyntaxBased = I_(matchSyntaxBased);
 
 	// If we don't match syntax based, fake a matching style.
 	if (!matchSyntaxBased) {
@@ -3861,7 +3863,7 @@ std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style s
 		const TextCursor beginPos = charPos + 1;
 
 		for (TextCursor pos = beginPos; pos < endLimit; ++pos) {
-			const char ch = info_->buffer->BufGetCharacter(pos);
+			const char ch = I_(buffer)->BufGetCharacter(pos);
 			if (ch == matchChar) {
 				if (matchSyntaxBased) {
 					style = getHighlightInfo(pos);
@@ -3890,7 +3892,7 @@ std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style s
 			const TextCursor beginPos = charPos - 1;
 
 			for (TextCursor pos = beginPos; pos >= startLimit; --pos) {
-				const char ch = info_->buffer->BufGetCharacter(pos);
+				const char ch = I_(buffer)->BufGetCharacter(pos);
 				if (ch == matchChar) {
 					if (matchSyntaxBased) {
 						style = getHighlightInfo(pos);
@@ -3931,10 +3933,10 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
 	TextRange range;
-	if (!info_->buffer->GetSimpleSelection(&range)) {
+	if (!I_(buffer)->GetSimpleSelection(&range)) {
 
 		range.end = area->cursorPos();
-		if (info_->overstrike) {
+		if (I_(overstrike)) {
 			range.end += 1;
 		}
 
@@ -3953,11 +3955,11 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 
 	// Search for it in the buffer
 	std::optional<TextCursor> matchPos = findMatchingChar(
-		info_->buffer->BufGetCharacter(range.start),
+		I_(buffer)->BufGetCharacter(range.start),
 		getHighlightInfo(range.start),
 		range.start,
-		info_->buffer->BufStartOfBuffer(),
-		info_->buffer->BufEndOfBuffer());
+		I_(buffer)->BufStartOfBuffer(),
+		I_(buffer)->BufEndOfBuffer());
 	if (!matchPos) {
 		QApplication::beep();
 		return;
@@ -3973,7 +3975,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 		   be automatically scrolled on screen and MakeSelectionVisible would do
 		   nothing) */
 		area->setAutoShowInsertPos(false);
-		info_->buffer->BufSelect(startPos, endPos + 1);
+		I_(buffer)->BufSelect(startPos, endPos + 1);
 		makeSelectionVisible(area);
 		area->setAutoShowInsertPos(true);
 	} else {
@@ -4132,7 +4134,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	const TextCursor pos = area->cursorPos();
 
 	TextRange range;
-	if (info_->buffer->GetSimpleSelection(&range)) {
+	if (I_(buffer)->GetSimpleSelection(&range)) {
 		flags = ACCUMULATE | REPLACE_SELECTION;
 	} else {
 		range.start = pos;
@@ -4182,7 +4184,7 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 	   wrapping newlines if necessary to make it match the displayed text */
 	if (selectedOnly) {
 
-		const TextBuffer::Selection *sel = &info_->buffer->primary;
+		const TextBuffer::Selection *sel = &I_(buffer)->primary;
 
 		if (!sel->hasSelection()) {
 			QApplication::beep();
@@ -4190,12 +4192,12 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 		}
 
 		if (sel->isRectangular()) {
-			fileString = info_->buffer->BufGetSelectionText();
+			fileString = I_(buffer)->BufGetSelectionText();
 		} else {
 			fileString = area->TextGetWrapped(sel->start(), sel->end());
 		}
 	} else {
-		fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
+		fileString = area->TextGetWrapped(I_(buffer)->BufStartOfBuffer(), I_(buffer)->BufEndOfBuffer());
 	}
 
 	// add a terminating newline if the file doesn't already have one
@@ -4204,7 +4206,7 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 	}
 
 	// Print the string
-	printString(fileString, info_->filename);
+	printString(fileString, I_(filename));
 }
 
 /**
@@ -4233,7 +4235,7 @@ void DocumentWidget::splitPane() {
 		return;
 	}
 
-	auto area = createTextArea(info_->buffer);
+	auto area = createTextArea(I_(buffer));
 
 	if (auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
 		area->setLineNumCols(activeArea->getLineNumCols());
@@ -4376,7 +4378,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 		}
 	}
 
-	info_->smartIndentData = std::move(siData);
+	I_(smartIndentData) = std::move(siData);
 }
 
 /**
@@ -4427,7 +4429,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 
 	// reset the dialog and display it
 	dialog->resetSelection();
-	dialog->setLabel(info_->filename);
+	dialog->setLabel(I_(filename));
 	dialog->setMultipleDocuments(fromWindow->tabCount() > 1);
 
 	if (const int r = dialog->exec(); r == QDialog::Rejected) {
@@ -4452,7 +4454,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 			targetWindow->show();
 		}
 	} else {
-		targetWindow->tabWidget()->addTab(this, info_->filename);
+		targetWindow->tabWidget()->addTab(this, I_(filename));
 
 		updateSignals(fromWindow, targetWindow);
 
@@ -4566,7 +4568,7 @@ bool DocumentWidget::backlightChars() const {
  * @return `true` if syntax-based matching is enabled, `false` otherwise.
  */
 bool DocumentWidget::matchSyntaxBased() const {
-	return info_->matchSyntaxBased;
+	return I_(matchSyntaxBased);
 }
 
 /**
@@ -4575,7 +4577,7 @@ bool DocumentWidget::matchSyntaxBased() const {
  * @return `true` if in overstrike mode, `false` if in insert mode.
  */
 bool DocumentWidget::overstrike() const {
-	return info_->overstrike;
+	return I_(overstrike);
 }
 
 /**
@@ -4597,7 +4599,7 @@ void DocumentWidget::setOverstrike(bool overstrike) {
 		area->setOverstrike(overstrike);
 	}
 
-	info_->overstrike = overstrike;
+	I_(overstrike) = overstrike;
 }
 
 /**
@@ -5070,18 +5072,18 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 	const TextCursor pos = area->cursorPos();
 
 	TextRange range;
-	if (!info_->buffer->GetSimpleSelection(&range)) {
-		range.start = info_->buffer->BufStartOfLine(pos);
-		range.end   = info_->buffer->BufEndOfLine(pos);
+	if (!I_(buffer)->GetSimpleSelection(&range)) {
+		range.start = I_(buffer)->BufStartOfLine(pos);
+		range.end   = I_(buffer)->BufEndOfLine(pos);
 		insertPos   = range.end;
 	} else {
-		insertPos = info_->buffer->BufEndOfLine(range.end);
+		insertPos = I_(buffer)->BufEndOfLine(range.end);
 	}
 
-	const std::string cmdText = info_->buffer->BufGetRange(range);
+	const std::string cmdText = I_(buffer)->BufGetRange(range);
 
 	// insert a newline after the entire line
-	info_->buffer->BufInsert(insertPos, '\n');
+	I_(buffer)->BufInsert(insertPos, '\n');
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -5136,14 +5138,14 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 
 	/* Get the selection and the range in character positions that it
 	   occupies.  Beep and return if no selection */
-	const std::string text = info_->buffer->BufGetSelectionText();
+	const std::string text = I_(buffer)->BufGetSelectionText();
 	if (text.empty()) {
 		QApplication::beep();
 		return;
 	}
 
-	const TextCursor left  = info_->buffer->primary.start();
-	const TextCursor right = info_->buffer->primary.end();
+	const TextCursor left  = I_(buffer)->primary.start();
+	const TextCursor right = I_(buffer)->primary.end();
 
 	issueCommand(
 		win,
@@ -5211,7 +5213,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	std::string text;
 	switch (input) {
 	case FROM_SELECTION:
-		text = info_->buffer->BufGetSelectionText();
+		text = I_(buffer)->BufGetSelectionText();
 		if (text.empty()) {
 			QApplication::beep();
 			return;
@@ -5219,13 +5221,13 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
 	case FROM_WINDOW:
-		text = info_->buffer->BufGetAll();
+		text = I_(buffer)->BufGetAll();
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
 	case FROM_EITHER:
-		text = info_->buffer->BufGetSelectionText();
+		text = I_(buffer)->BufGetSelectionText();
 		if (text.empty()) {
-			text = info_->buffer->BufGetAll();
+			text = I_(buffer)->BufGetAll();
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
@@ -5251,7 +5253,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 				QString(),
 				false,
 				QString(),
-				QDir(info_->path))) {
+				QDir(I_(path)))) {
 
 			inWindow    = MainWindow::fromDocument(document);
 			outWidget   = document->firstPane();
@@ -5265,20 +5267,20 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
 				range.start = TextCursor();
-				range.end   = info_->buffer->BufEndOfBuffer();
+				range.end   = I_(buffer)->BufEndOfBuffer();
 			} else if (input == FROM_SELECTION) {
-				info_->buffer->GetSimpleSelection(&range);
+				I_(buffer)->GetSimpleSelection(&range);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else if (input == FROM_EITHER) {
-				if (info_->buffer->GetSimpleSelection(&range)) {
+				if (I_(buffer)->GetSimpleSelection(&range)) {
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				} else {
 					range.start = TextCursor();
-					range.end   = info_->buffer->BufEndOfBuffer();
+					range.end   = I_(buffer)->BufEndOfBuffer();
 				}
 			}
 		} else {
-			if (info_->buffer->GetSimpleSelection(&range)) {
+			if (I_(buffer)->GetSimpleSelection(&range)) {
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else {
 				range.start = range.end = area->cursorPos();
@@ -5583,7 +5585,7 @@ void DocumentWidget::finishMacroCmdExecution() {
 	/* If macro closed its own window, window was made empty and untitled,
 	   but close was deferred until completion.  This is completion, so if
 	   the window is still empty, do the close */
-	if (closeOnCompletion && !info_->filenameSet && !info_->fileChanged) {
+	if (closeOnCompletion && !I_(filenameSet) && !I_(fileChanged)) {
 		closeDocument();
 	}
 }
@@ -5663,12 +5665,12 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// no flashing required
-	if (info_->showMatchingStyle == ShowMatchingStyle::None) {
+	if (I_(showMatchingStyle) == ShowMatchingStyle::None) {
 		return;
 	}
 
 	// don't flash matching characters if there's a selection
-	if (info_->buffer->primary.hasSelection()) {
+	if (I_(buffer)->primary.hasSelection()) {
 		return;
 	}
 
@@ -5679,7 +5681,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	const TextCursor pos = currentPos - 1;
-	const char ch        = info_->buffer->BufGetCharacter(pos);
+	const char ch        = I_(buffer)->BufGetCharacter(pos);
 	const Style style    = getHighlightInfo(pos);
 
 	// is the character one we want to flash?
@@ -5693,19 +5695,19 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	/* constrain the search to visible text only when in single-pane mode
 	   AND using delimiter flashing (otherwise search the whole buffer) */
-	const bool constrain = (textPanes().empty() && (info_->showMatchingStyle == ShowMatchingStyle::Delimiter));
+	const bool constrain = (textPanes().empty() && (I_(showMatchingStyle) == ShowMatchingStyle::Delimiter));
 
 	TextCursor startPos;
 	TextCursor endPos;
 	TextCursor searchPos;
 
 	if (matchIt->direction == Direction::Backward) {
-		startPos  = constrain ? area->firstVisiblePos() : info_->buffer->BufStartOfBuffer();
+		startPos  = constrain ? area->firstVisiblePos() : I_(buffer)->BufStartOfBuffer();
 		endPos    = pos;
 		searchPos = endPos;
 	} else {
 		startPos  = pos;
-		endPos    = constrain ? area->TextLastVisiblePos() : info_->buffer->BufEndOfBuffer();
+		endPos    = constrain ? area->TextLastVisiblePos() : I_(buffer)->BufEndOfBuffer();
 		searchPos = startPos;
 	}
 
@@ -5715,15 +5717,15 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 		return;
 	}
 
-	if (info_->showMatchingStyle == ShowMatchingStyle::Delimiter) {
+	if (I_(showMatchingStyle) == ShowMatchingStyle::Delimiter) {
 		// Highlight either the matching character ...
-		info_->buffer->BufHighlight(*matchPos, *matchPos + 1);
+		I_(buffer)->BufHighlight(*matchPos, *matchPos + 1);
 	} else {
 		// ... or the whole range.
 		if (matchIt->direction == Direction::Backward) {
-			info_->buffer->BufHighlight(*matchPos, pos + 1);
+			I_(buffer)->BufHighlight(*matchPos, pos + 1);
 		} else {
-			info_->buffer->BufHighlight(*matchPos + 1, pos);
+			I_(buffer)->BufHighlight(*matchPos + 1, pos);
 		}
 	}
 
@@ -5735,7 +5737,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
  * character.
  */
 void DocumentWidget::eraseFlash() {
-	info_->buffer->BufUnhighlight();
+	I_(buffer)->BufUnhighlight();
 }
 
 /**
@@ -6110,7 +6112,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
  * @param pos The first position encountered which needs re-parsing.
  */
 void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const {
-	TextBuffer *buf                                           = info_->buffer.get();
+	TextBuffer *buf                                           = I_(buffer).get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
 	const ReparseContext &context                         = highlightData->contextRequirements;
@@ -6232,7 +6234,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 	const QCursor prevCursor = cursor();
 	setCursor(Qt::WaitCursor);
 
-	const int64_t bufLength = info_->buffer->length();
+	const int64_t bufLength = I_(buffer)->length();
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
@@ -6244,7 +6246,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 		Highlight::ParseContext ctx;
 		ctx.prev_char         = &prev_char;
 		ctx.delimiters        = documentDelimiters();
-		ctx.text              = info_->buffer->BufAsString();
+		ctx.text              = I_(buffer)->BufAsString();
 		const char *stringPtr = ctx.text.data();
 
 		Highlight::ParseString(
@@ -7000,11 +7002,11 @@ bool DocumentWidget::readMacroString(const QString &string, const QString &errIn
  */
 void DocumentWidget::endSmartIndent() {
 
-	if (!info_->smartIndentData) {
+	if (!I_(smartIndentData)) {
 		return;
 	}
 
-	info_->smartIndentData = nullptr;
+	I_(smartIndentData) = nullptr;
 }
 
 /**
@@ -7013,7 +7015,7 @@ void DocumentWidget::endSmartIndent() {
  * @return `true` if the smart indent operation is in a macro, `false` otherwise.
  */
 bool DocumentWidget::inSmartIndentMacros() const {
-	return info_->smartIndentData && (info_->smartIndentData->inModMacro || info_->smartIndentData->inNewLineMacro);
+	return I_(smartIndentData) && (I_(smartIndentData)->inModMacro || I_(smartIndentData)->inNewLineMacro);
 }
 
 /**
@@ -7043,8 +7045,8 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 	}
 
 	// If the selection is in the window's own buffer get it from there
-	if (info_->buffer->primary.hasSelection()) {
-		return QString::fromStdString(info_->buffer->BufGetSelectionText());
+	if (I_(buffer)->primary.hasSelection()) {
+		return QString::fromStdString(I_(buffer)->BufGetSelectionText());
 	}
 
 	if (errorSound == ErrorSound::Beep) {
@@ -7079,7 +7081,7 @@ QString DocumentWidget::getWindowDelimiters() const {
  * @return `true` if tabs are used for indentation, `false` otherwise.
  */
 bool DocumentWidget::useTabs() const {
-	return info_->buffer->BufGetUseTabs();
+	return I_(buffer)->BufGetUseTabs();
 }
 
 /**
@@ -7090,7 +7092,7 @@ bool DocumentWidget::useTabs() const {
 void DocumentWidget::setUseTabs(bool value) {
 
 	EmitEvent("set_use_tabs", QString::number(value));
-	info_->buffer->BufSetUseTabs(value);
+	I_(buffer)->BufSetUseTabs(value);
 }
 
 /**
@@ -7099,7 +7101,7 @@ void DocumentWidget::setUseTabs(bool value) {
  * @return `true` if a backup copy should be made, `false` otherwise.
  */
 bool DocumentWidget::makeBackupCopy() const {
-	return info_->saveOldVersion;
+	return I_(saveOldVersion);
 }
 
 /**
@@ -7108,7 +7110,7 @@ bool DocumentWidget::makeBackupCopy() const {
  * @return `true` if incremental backup is enabled, `false` otherwise.
  */
 bool DocumentWidget::incrementalBackup() const {
-	return info_->autoSave;
+	return I_(autoSave);
 }
 
 /**
@@ -7125,7 +7127,7 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 	Bookmark &bookmark = markTable_[label];
 	bookmark.label     = label;
 	bookmark.cursorPos = area->cursorPos();
-	bookmark.sel       = info_->buffer->primary;
+	bookmark.sel       = I_(buffer)->primary;
 }
 
 /**
@@ -7145,25 +7147,25 @@ void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 
 	auto lineEnd = TextCursor(-1);
 
-	for (i = 1; i <= lineNum && lineEnd < info_->buffer->length(); i++) {
+	for (i = 1; i <= lineNum && lineEnd < I_(buffer)->length(); i++) {
 		lineStart = lineEnd + 1;
-		lineEnd   = info_->buffer->BufEndOfLine(lineStart);
+		lineEnd   = I_(buffer)->BufEndOfLine(lineStart);
 	}
 
 	// highlight the line
 	if (i > lineNum) {
 		// Line was found
-		if (lineEnd < info_->buffer->length()) {
-			info_->buffer->BufSelect(lineStart, lineEnd + 1);
+		if (lineEnd < I_(buffer)->length()) {
+			I_(buffer)->BufSelect(lineStart, lineEnd + 1);
 		} else {
 			// Don't select past the end of the buffer !
-			info_->buffer->BufSelect(lineStart, info_->buffer->BufEndOfBuffer());
+			I_(buffer)->BufSelect(lineStart, I_(buffer)->BufEndOfBuffer());
 		}
 	} else {
 		/* Line was not found -> position the selection & cursor at the end
 		   without making a real selection and beep */
-		lineStart = info_->buffer->BufEndOfBuffer();
-		info_->buffer->BufSelect(lineStart, lineStart);
+		lineStart = I_(buffer)->BufEndOfBuffer();
+		I_(buffer)->BufSelect(lineStart, lineStart);
 		QApplication::beep();
 	}
 
@@ -7192,7 +7194,7 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 
 	// reselect marked the selection, and move the cursor to the marked pos
 	const TextBuffer::Selection &sel    = bookmark.sel;
-	const TextBuffer::Selection &oldSel = info_->buffer->primary;
+	const TextBuffer::Selection &oldSel = I_(buffer)->primary;
 
 	const TextCursor cursorPos = bookmark.cursorPos;
 	if (extendSel) {
@@ -7202,16 +7204,16 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 		const TextCursor newStart = sel.hasSelection() ? sel.start() : cursorPos;
 		const TextCursor newEnd   = sel.hasSelection() ? sel.end() : cursorPos;
 
-		info_->buffer->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
+		I_(buffer)->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
 		if (sel.hasSelection()) {
 			if (sel.isRectangular()) {
-				info_->buffer->BufRectSelect(sel.start(), sel.end(), sel.rectStart(), sel.rectEnd());
+				I_(buffer)->BufRectSelect(sel.start(), sel.end(), sel.rectStart(), sel.rectEnd());
 			} else {
-				info_->buffer->BufSelect(sel.start(), sel.end());
+				I_(buffer)->BufSelect(sel.start(), sel.end());
 			}
 		} else {
-			info_->buffer->BufUnselect();
+			I_(buffer)->BufUnselect();
 		}
 	}
 
@@ -7233,7 +7235,7 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
  * @return The reasons why the document is locked, such as user lock, read-only mode, etc.
  */
 LockReasons DocumentWidget::lockReasons() const {
-	return info_->lockReasons;
+	return I_(lockReasons);
 }
 
 /**
@@ -7290,7 +7292,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		const PathInfo fi = ParseFilename(Tags::TagFiles[nMatches]);
 
 		// Is this match in the current file?  If so, use it!
-		if (Preferences::GetPrefSmartTags() && info_->filename == fi.filename && info_->path == fi.pathname) {
+		if (Preferences::GetPrefSmartTags() && I_(filename) == fi.filename && I_(path) == fi.pathname) {
 			if (nMatches) {
 				Tags::TagFiles[0]  = Tags::TagFiles[nMatches];
 				Tags::TagSearch[0] = Tags::TagSearch[nMatches];
@@ -7301,7 +7303,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		}
 
 		// Is this match in the same dir. as the current file?
-		if (info_->path == fi.pathname) {
+		if (I_(path) == fi.pathname) {
 			samePath++;
 			pathMatch = nMatches;
 		}
@@ -7510,7 +7512,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
  * @return The file format of the document.
  */
 FileFormats DocumentWidget::fileFormat() const {
-	return info_->fileFormat;
+	return I_(fileFormat);
 }
 
 /**
@@ -7528,11 +7530,11 @@ QFont DocumentWidget::defaultFont() const {
  * @param pathname The path to set for the document.
  */
 void DocumentWidget::setPath(const QString &pathname) {
-	info_->path = pathname;
+	I_(path) = pathname;
 
 	// do we have a "/" at the end? if not, add one
-	if (!info_->path.isEmpty() && !info_->path.endsWith(QLatin1Char('/'))) {
-		info_->path.append(QLatin1Char('/'));
+	if (!I_(path).isEmpty() && !I_(path).endsWith(QLatin1Char('/'))) {
+		I_(path).append(QLatin1Char('/'));
 	}
 }
 
@@ -7551,7 +7553,7 @@ void DocumentWidget::setPath(const QDir &pathname) {
  * @return The device identifier of the document's file.
  */
 dev_t DocumentWidget::device() const {
-	return info_->statbuf.st_dev;
+	return I_(statbuf).st_dev;
 }
 
 /**
@@ -7560,7 +7562,7 @@ dev_t DocumentWidget::device() const {
  * @return The inode number of the document's file.
  */
 ino_t DocumentWidget::inode() const {
-	return info_->statbuf.st_ino;
+	return I_(statbuf).st_ino;
 }
 
 /**
@@ -7569,7 +7571,7 @@ ino_t DocumentWidget::inode() const {
  * @return The TextBuffer associated with the document widget.
  */
 TextBuffer *DocumentWidget::buffer() const {
-	return info_->buffer.get();
+	return I_(buffer).get();
 }
 
 /**
@@ -7578,7 +7580,7 @@ TextBuffer *DocumentWidget::buffer() const {
  * @return `true` if the filename is set, `false` otherwise.
  */
 bool DocumentWidget::filenameSet() const {
-	return info_->filenameSet;
+	return I_(filenameSet);
 }
 
 /**
@@ -7587,7 +7589,7 @@ bool DocumentWidget::filenameSet() const {
  * @return `true` if the file has been changed, `false` otherwise.
  */
 bool DocumentWidget::fileChanged() const {
-	return info_->fileChanged;
+	return I_(fileChanged);
 }
 
 /**
@@ -7596,7 +7598,7 @@ bool DocumentWidget::fileChanged() const {
  * @return The current language mode of the document.
  */
 ShowMatchingStyle DocumentWidget::showMatchingStyle() const {
-	return info_->showMatchingStyle;
+	return I_(showMatchingStyle);
 }
 
 /**
@@ -7605,7 +7607,7 @@ ShowMatchingStyle DocumentWidget::showMatchingStyle() const {
  * @return The auto-indent style used in the document.
  */
 IndentStyle DocumentWidget::autoIndentStyle() const {
-	return info_->indentStyle;
+	return I_(indentStyle);
 }
 
 /**
@@ -7614,7 +7616,7 @@ IndentStyle DocumentWidget::autoIndentStyle() const {
  * @return The wrap mode used in the document.
  */
 WrapStyle DocumentWidget::wrapMode() const {
-	return info_->wrapMode;
+	return I_(wrapMode);
 }
 
 /**
@@ -7623,7 +7625,7 @@ WrapStyle DocumentWidget::wrapMode() const {
  * @param format The file format to set for the document.
  */
 void DocumentWidget::setFileFormat(FileFormats fileFormat) {
-	info_->fileFormat = fileFormat;
+	I_(fileFormat) = fileFormat;
 }
 
 /**

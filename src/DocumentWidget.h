@@ -292,17 +292,13 @@ protected:
 	void dropEvent(QDropEvent *event) override;
 
 public:
-	std::shared_ptr<DocumentInfo> info_;
-
-public:
-	bool replaceFailed_  = false;               // flags replacements failures during multi-file replacements
-	bool multiFileBusy_  = false;               // suppresses multiple beeps/dialogs during multi-file replacements
+	bool highlightSyntax_;                      // is syntax highlighting turned on?
+	bool multiFileBusy_ = false;                // suppresses multiple beeps/dialogs during multi-file replacements
+	bool replaceFailed_ = false;                // flags replacements failures during multi-file replacements
+	bool showStats_;                            // is stats line supposed to be shown
+	QString fontName_;                          // names of the text fonts in use
 	size_t languageMode_ = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
-
-public:
-	QString fontName_;                                   // names of the text fonts in use
-	bool highlightSyntax_;                               // is syntax highlighting turned on?
-	bool showStats_;                                     // is stats line supposed to be shown
+	std::shared_ptr<DocumentInfo> info_;
 	std::shared_ptr<MacroCommandData> macroCmdData_;     // same for macro commands
 	std::unique_ptr<RangesetTable> rangesetTable_;       // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_; // info for syntax highlighting
