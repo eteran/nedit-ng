@@ -3040,8 +3040,7 @@ void MainWindow::editIFind_returnPressed() {
 	}
 }
 
-void MainWindow::checkIFindCase(DocumentWidget *document, bool searchCaseSense) {
-	Q_UNUSED(document);
+void MainWindow::checkIFindCase([[maybe_unused]] DocumentWidget *document, bool searchCaseSense) {
 	/* Save the state of the Case Sensitive button
 	 * depending on the state of the Regex button
 	 */
@@ -3056,9 +3055,7 @@ void MainWindow::checkIFindCase(DocumentWidget *document, bool searchCaseSense) 
 	editIFind_textChanged(ui.editIFind->text());
 }
 
-void MainWindow::checkIFindRegex(DocumentWidget *document, bool searchRegex) {
-
-	Q_UNUSED(document);
+void MainWindow::checkIFindRegex([[maybe_unused]] DocumentWidget *document, bool searchRegex) {
 
 	const bool searchCaseSense = ui.checkIFindCase->isChecked();
 
@@ -3078,9 +3075,7 @@ void MainWindow::checkIFindRegex(DocumentWidget *document, bool searchRegex) {
 	editIFind_textChanged(ui.editIFind->text());
 }
 
-void MainWindow::checkIFindReverse(DocumentWidget *document, bool value) {
-	Q_UNUSED(document)
-	Q_UNUSED(value)
+void MainWindow::checkIFindReverse([[maybe_unused]] DocumentWidget *document, [[maybe_unused]] bool value) {
 
 	// When search parameters (direction or search type), redo the search
 	editIFind_textChanged(ui.editIFind->text());
@@ -3104,8 +3099,7 @@ void MainWindow::action_Incremental_Search_Line(DocumentWidget *document, bool s
 	UpdateMenuCheckedState(document, ui.action_Incremental_Search_Line, state);
 }
 
-void MainWindow::action_Show_Line_Numbers(DocumentWidget *document, bool state) {
-	Q_UNUSED(document);
+void MainWindow::action_Show_Line_Numbers([[maybe_unused]] DocumentWidget *document, bool state) {
 	showLineNumbers(state);
 
 	no_signals(ui.action_Show_Line_Numbers)->setChecked(state);
@@ -3172,9 +3166,7 @@ void MainWindow::action_Read_Only(DocumentWidget *document, bool state) {
 	updateWindowReadOnly(document);
 }
 
-void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Sort_Open_Prev_Menu([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference, make the other windows' menus agree
 	Preferences::SetPrefSortOpenPrevMenu(state);
@@ -3183,9 +3175,7 @@ void MainWindow::action_Default_Sort_Open_Prev_Menu(DocumentWidget *document, bo
 	}
 }
 
-void MainWindow::action_Default_Show_Path_In_Windows_Menu(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Show_Path_In_Windows_Menu([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefShowPathInWindowsMenu(state);
@@ -3196,9 +3186,7 @@ void MainWindow::action_Default_Show_Path_In_Windows_Menu(DocumentWidget *docume
 	MainWindow::updateWindowMenus();
 }
 
-void MainWindow::action_Default_Search_Verbose(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Search_Verbose([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchDlogs(state);
@@ -3207,9 +3195,7 @@ void MainWindow::action_Default_Search_Verbose(DocumentWidget *document, bool st
 	}
 }
 
-void MainWindow::action_Default_Search_Wrap_Around(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Search_Wrap_Around([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchWraps(state);
@@ -3218,9 +3204,7 @@ void MainWindow::action_Default_Search_Wrap_Around(DocumentWidget *document, boo
 	}
 }
 
-void MainWindow::action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Search_Beep_On_Search_Wrap([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBeepOnSearchWrap(state);
@@ -3229,9 +3213,7 @@ void MainWindow::action_Default_Search_Beep_On_Search_Wrap(DocumentWidget *docum
 	}
 }
 
-void MainWindow::action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Search_Keep_Dialogs_Up([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefKeepSearchDlogs(state);
@@ -3240,9 +3222,7 @@ void MainWindow::action_Default_Search_Keep_Dialogs_Up(DocumentWidget *document,
 	}
 }
 
-void MainWindow::action_Default_Apply_Backlighting(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Apply_Backlighting([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBacklightChars(state);
@@ -3251,9 +3231,7 @@ void MainWindow::action_Default_Apply_Backlighting(DocumentWidget *document, boo
 	}
 }
 
-void MainWindow::action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefOpenInTab(state);
@@ -3268,9 +3246,7 @@ void MainWindow::action_Default_Tab_Open_File_In_New_Tab(DocumentWidget *documen
 	}
 }
 
-void MainWindow::action_Default_Tab_Show_Tab_Bar(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Tab_Show_Tab_Bar([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBar(state);
@@ -3280,9 +3256,7 @@ void MainWindow::action_Default_Tab_Show_Tab_Bar(DocumentWidget *document, bool 
 	}
 }
 
-void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBarHideOne(state);
@@ -3292,9 +3266,7 @@ void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open(
 	}
 }
 
-void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefGlobalTabNavigate(state);
@@ -3303,9 +3275,7 @@ void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows(DocumentWidget
 	}
 }
 
-void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSortTabs(state);
@@ -3329,9 +3299,7 @@ void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically(DocumentWidget *doc
 	}
 }
 
-void MainWindow::action_Default_Show_Tooltips(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Show_Tooltips([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefToolTips(state);
@@ -3340,9 +3308,7 @@ void MainWindow::action_Default_Show_Tooltips(DocumentWidget *document, bool sta
 	}
 }
 
-void MainWindow::action_Default_Statistics_Line(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Statistics_Line([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefStatsLine(state);
@@ -3351,9 +3317,7 @@ void MainWindow::action_Default_Statistics_Line(DocumentWidget *document, bool s
 	}
 }
 
-void MainWindow::action_Default_Incremental_Search_Line(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Incremental_Search_Line([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefISearchLine(state);
@@ -3362,9 +3326,7 @@ void MainWindow::action_Default_Incremental_Search_Line(DocumentWidget *document
 	}
 }
 
-void MainWindow::action_Default_Show_Line_Numbers(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Show_Line_Numbers([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefLineNums(state);
@@ -3373,9 +3335,7 @@ void MainWindow::action_Default_Show_Line_Numbers(DocumentWidget *document, bool
 	}
 }
 
-void MainWindow::action_Default_Make_Backup_Copy(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Make_Backup_Copy([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSaveOldVersion(state);
@@ -3384,9 +3344,7 @@ void MainWindow::action_Default_Make_Backup_Copy(DocumentWidget *document, bool 
 	}
 }
 
-void MainWindow::action_Default_Incremental_Backup(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Incremental_Backup([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoSave(state);
@@ -3395,9 +3353,7 @@ void MainWindow::action_Default_Incremental_Backup(DocumentWidget *document, boo
 	}
 }
 
-void MainWindow::action_Default_Matching_Syntax_Based(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Matching_Syntax_Based([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefMatchSyntaxBased(state);
@@ -3406,9 +3362,7 @@ void MainWindow::action_Default_Matching_Syntax_Based(DocumentWidget *document, 
 	}
 }
 
-void MainWindow::action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAppendLF(state);
@@ -3417,9 +3371,7 @@ void MainWindow::action_Default_Terminate_with_Line_Break_on_Save(DocumentWidget
 	}
 }
 
-void MainWindow::action_Default_Popups_Under_Pointer(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Popups_Under_Pointer([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefRepositionDialogs(state);
@@ -3428,9 +3380,7 @@ void MainWindow::action_Default_Popups_Under_Pointer(DocumentWidget *document, b
 	}
 }
 
-void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoScroll(state);
@@ -3439,9 +3389,7 @@ void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom(DocumentWidge
 	}
 }
 
-void MainWindow::action_Default_Warnings_Files_Modified_Externally(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Warnings_Files_Modified_Externally([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnFileMods(state);
@@ -3451,9 +3399,7 @@ void MainWindow::action_Default_Warnings_Files_Modified_Externally(DocumentWidge
 	}
 }
 
-void MainWindow::action_Default_Warnings_Check_Modified_File_Contents(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Warnings_Check_Modified_File_Contents([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnRealFileMods(state);
@@ -3462,9 +3408,7 @@ void MainWindow::action_Default_Warnings_Check_Modified_File_Contents(DocumentWi
 	}
 }
 
-void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document, bool state) {
-
-	Q_UNUSED(document);
+void MainWindow::action_Default_Warnings_On_Exit([[maybe_unused]] DocumentWidget *document, bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnExit(state);
@@ -3474,7 +3418,6 @@ void MainWindow::action_Default_Warnings_On_Exit(DocumentWidget *document, bool 
 }
 
 void MainWindow::action_Statistics_Line(DocumentWidget *document) {
-	EmitEvent("set_statistics_line");
 	action_Statistics_Line(document, !document->showStats_);
 }
 
@@ -4180,9 +4123,7 @@ void MainWindow::updateTagsFileMenu() {
  * @param document
  * @param filename
  */
-void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString &filename) {
-
-	Q_UNUSED(document)
+void MainWindow::action_Unload_Tips_File([[maybe_unused]] DocumentWidget *document, const QString &filename) {
 	EmitEvent("unload_tips_file", filename);
 
 	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
@@ -4198,9 +4139,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
  * @param document
  * @param filename
  */
-void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString &filename) {
-
-	Q_UNUSED(document)
+void MainWindow::action_Unload_Tags_File([[maybe_unused]] DocumentWidget *document, const QString &filename) {
 	EmitEvent("unload_tags_file", filename);
 
 	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
@@ -4216,9 +4155,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
  * @param document
  * @param filename
  */
-void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &filename) {
-
-	Q_UNUSED(document)
+void MainWindow::action_Load_Tips_File([[maybe_unused]] DocumentWidget *document, const QString &filename) {
 	EmitEvent("load_tips_file", filename);
 
 	if (!Tags::AddTagsFile(filename, Tags::SearchMode::TIP)) {
@@ -4474,13 +4411,11 @@ DocumentWidget *MainWindow::documentAt(int index) const {
  *
  * @param state
  */
-void MainWindow::action_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Statistics_Line_toggled([[maybe_unused]] bool state) {
 
-	Q_UNUSED(state)
-
-	// TODO(eteran): this needs to be fixed, right now it will emit the event multiple times if there are multiple documents open,
-	// and the state will be the same for all documents. We should probably have a separate action that applies to all documents,
-	// and then have the per-document action just toggle the state for that document without emitting an event.
+	// NOTE(eteran): this is here instead of in the DocumentWidget version of the slot because we want to
+	// update the state of the menu item in all documents, but also only want the event to be reported once.
+	EmitEvent("set_statistics_line");
 	for (DocumentWidget *document : openDocuments()) {
 		action_Statistics_Line(document);
 	}
@@ -4490,10 +4425,7 @@ void MainWindow::action_Statistics_Line_toggled(bool state) {
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
-
-	Q_UNUSED(state)
-
+void MainWindow::action_Incremental_Search_Line_toggled([[maybe_unused]] bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Incremental_Search_Line(document);
 	}
@@ -4698,8 +4630,6 @@ void MainWindow::action_Overtype_toggled([[maybe_unused]] bool state) {
  * @param state
  */
 void MainWindow::action_Read_Only_toggled([[maybe_unused]] bool state) {
-	Q_UNUSED(state)
-
 	if (DocumentWidget *document = currentDocument()) {
 		action_Read_Only(document);
 	}
@@ -5793,8 +5723,7 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
  *
  * @param document
  */
-void MainWindow::action_Save_All(DocumentWidget *document) {
-	Q_UNUSED(document);
+void MainWindow::action_Save_All([[maybe_unused]] DocumentWidget *document) {
 
 	EmitEvent("save_all");
 
@@ -5933,11 +5862,9 @@ void MainWindow::action_New_Window_triggered() {
  *
  * @param document
  */
-void MainWindow::action_Exit(DocumentWidget *document) {
+void MainWindow::action_Exit([[maybe_unused]] DocumentWidget *document) {
 
 	EmitEvent("exit");
-
-	Q_UNUSED(document)
 
 	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -8093,10 +8020,7 @@ bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area,
 ** with menu item name "itemName".  Returns true on success and false on
 ** failure.
 */
-bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
-
-	Q_UNUSED(source)
-	Q_UNUSED(area)
+bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, [[maybe_unused]] TextArea *area, const QString &name, [[maybe_unused]] CommandSource source) {
 
 	if (MenuData *p = FindMenuItem(name, CommandTypes::Macro)) {
 		document->doMacro(
@@ -8118,10 +8042,7 @@ bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area,
  * @param fromMacro
  * @return
  */
-bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
-
-	Q_UNUSED(source)
-	Q_UNUSED(area)
+bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, [[maybe_unused]] TextArea *area, const QString &name, [[maybe_unused]] CommandSource source) {
 
 	if (MenuData *p = FindMenuItem(name, CommandTypes::Context)) {
 		document->doMacro(
@@ -8220,8 +8141,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
  *
  * @param document
  */
-void MainWindow::updateWindowHints(DocumentWidget *document) {
-	Q_UNUSED(document);
+void MainWindow::updateWindowHints([[maybe_unused]] DocumentWidget *document) {
 	// NOTE(eteran): I'm not against supporting this, but it breaks being able to resize
 	// the font nicely, at least in my WM... so NERFing this code until I can figure out
 	// a nice way to handle it.

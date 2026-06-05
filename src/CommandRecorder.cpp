@@ -155,9 +155,7 @@ CommandRecorder *CommandRecorder::instance() {
  * @param event The event that was received.
  * @return `true` if the event was handled, `false` otherwise.
  */
-bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
-
-	Q_UNUSED(obj)
+bool CommandRecorder::eventFilter([[maybe_unused]] QObject *obj, QEvent *event) {
 
 	if (event->type() == TextEditEvent::eventType) {
 		lastActionHook(static_cast<TextEditEvent *>(event));

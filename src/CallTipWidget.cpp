@@ -42,7 +42,6 @@ void CallTipWidget::setText(const QString &text) {
  *
  * @param event The show event
  */
-void CallTipWidget::showEvent(QShowEvent *event) {
-	Q_UNUSED(event)
+void CallTipWidget::showEvent([[maybe_unused]] QShowEvent *event) {
 	resize(minimumSize());
 }

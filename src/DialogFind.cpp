@@ -131,8 +131,7 @@ void DialogFind::updateFindButton() {
  *
  * @param text The text that was changed in the input field.
  */
-void DialogFind::textFind_textChanged(const QString &text) {
-	Q_UNUSED(text)
+void DialogFind::textFind_textChanged([[maybe_unused]] const QString &text) {
 	updateFindButton();
 }
 

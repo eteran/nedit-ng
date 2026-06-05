@@ -1001,8 +1001,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
  *
  * @param area The text area where the drag operation started.
  */
-void DocumentWidget::dragStartCallback(TextArea *area) {
-	Q_UNUSED(area)
+void DocumentWidget::dragStartCallback([[maybe_unused]] TextArea *area) {
 	// don't record all of the intermediate drag steps for undo
 	info_->ignoreModify = true;
 }

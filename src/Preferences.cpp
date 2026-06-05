@@ -342,9 +342,7 @@ void LoadLanguageModesString(const QString &string) {
 ** In addition this function covers settings that, while simple, require
 ** additional steps before they can be published.
 */
-void TranslatePrefFormats(uint32_t fileVersion) {
-
-	Q_UNUSED(fileVersion)
+void TranslatePrefFormats([[maybe_unused]] uint32_t fileVersion) {
 
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
