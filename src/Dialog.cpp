@@ -20,8 +20,7 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
  *
  * @param event The show event that triggered this method.
  */
-void Dialog::showEvent(QShowEvent *event) {
-	Q_UNUSED(event)
+void Dialog::showEvent([[maybe_unused]] QShowEvent *event) {
 
 	if (Preferences::GetPrefRepositionDialogs()) {
 		const QPoint pos = QCursor::pos();

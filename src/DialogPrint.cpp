@@ -135,7 +135,6 @@ void DialogPrint::buttonPrint_clicked() {
  *
  * @param event The show event that is triggered when the dialog is displayed.
  */
-void DialogPrint::showEvent(QShowEvent *event) {
-	Q_UNUSED(event)
+void DialogPrint::showEvent([[maybe_unused]] QShowEvent *event) {
 	resize(width(), minimumHeight());
 }

@@ -103,6 +103,10 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
+	// TODO(eteran): make these no longer needed
+	bool incrementalBackup() const;
+
+public:
 	DocumentWidget *open(const QString &fullpath);
 	FileFormats fileFormat() const;
 	HighlightPattern *findPatternOfWindow(const QString &name) const;
@@ -129,9 +133,7 @@ public:
 	bool checkReadOnly() const;
 	bool fileChanged() const;
 	bool filenameSet() const;
-	bool highlightSyntax() const;
 	bool inSmartIndentMacros() const;
-	bool incrementalBackup() const;
 	bool isReadOnly() const;
 	bool isTopDocument() const;
 	bool makeBackupCopy() const;
@@ -140,9 +142,7 @@ public:
 	bool overstrike() const;
 	void readMacroFile(const QString &filename, bool warnNotExist);
 	bool readMacroString(const QString &string, const QString &errIn);
-	bool showStatisticsLine() const;
 	bool useTabs() const;
-	bool userLocked() const;
 	dev_t device() const;
 	ino_t inode() const;
 	int findDefinitionHelperCommon(TextArea *area, const QString &value, Tags::SearchMode search_type);
@@ -198,19 +198,13 @@ public:
 	void setInsertTabs(bool value);
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
-	void setHighlightSyntax(bool value);
-	void setIncrementalBackup(bool value);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
-	void setMakeBackupCopy(bool value);
-	void setMatchSyntaxBased(bool value);
 	void setOverstrike(bool overstrike);
 	void setPath(const QDir &path);
 	void setPath(const QString &pathname);
 	void setShowMatching(ShowMatchingStyle state);
-	void setShowStatisticsLine(bool value);
 	void setTabDistance(int distance);
 	void setUseTabs(bool value);
-	void setUserLocked(bool value);
 	void setWrapMargin(int margin);
 	void shellBannerTimeoutProc();
 	void shellCmdToMacroString(const QString &command, const QString &input);
@@ -222,6 +216,7 @@ public:
 	void updateSignals(MainWindow *from, MainWindow *to);
 
 private:
+	QTimer *createFlashTimer();
 	MacroContinuationCode continueWorkProc();
 	PatternSet *findPatternsForWindow(Verbosity verbosity);
 	QString backupFileName() const;
@@ -298,17 +293,13 @@ protected:
 	void dropEvent(QDropEvent *event) override;
 
 public:
-	std::shared_ptr<DocumentInfo> info_;
-
-public:
-	bool replaceFailed_  = false;               // flags replacements failures during multi-file replacements
-	bool multiFileBusy_  = false;               // suppresses multiple beeps/dialogs during multi-file replacements
+	bool highlightSyntax_;                      // is syntax highlighting turned on?
+	bool multiFileBusy_ = false;                // suppresses multiple beeps/dialogs during multi-file replacements
+	bool replaceFailed_ = false;                // flags replacements failures during multi-file replacements
+	bool showStats_;                            // is stats line supposed to be shown
+	QString fontName_;                          // names of the text fonts in use
 	size_t languageMode_ = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
-
-public:
-	QString fontName_;                                   // names of the text fonts in use
-	bool highlightSyntax_;                               // is syntax highlighting turned on?
-	bool showStats_;                                     // is stats line supposed to be shown
+	std::shared_ptr<DocumentInfo> info_;
 	std::shared_ptr<MacroCommandData> macroCmdData_;     // same for macro commands
 	std::unique_ptr<RangesetTable> rangesetTable_;       // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_; // info for syntax highlighting

@@ -38,8 +38,7 @@ QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &par
  * @param index The index for which to retrieve the parent index.
  * @return The parent index of the specified index, or an invalid index if the index has no parent.
  */
-QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index)
+QModelIndex LanguageModeModel::parent([[maybe_unused]] const QModelIndex &index) const {
 	return {};
 }
 
@@ -97,8 +96,7 @@ QVariant LanguageModeModel::headerData(int section, Qt::Orientation orientation,
  * @param parent The parent index, defaults to an invalid index.
  * @return The number of columns in the model, which is always 1 for this model.
  */
-int LanguageModeModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent)
+int LanguageModeModel::columnCount([[maybe_unused]] const QModelIndex &parent) const {
 	return 1;
 }
 
@@ -108,8 +106,7 @@ int LanguageModeModel::columnCount(const QModelIndex &parent) const {
  * @param parent The parent index, defaults to an invalid index.
  * @return The number of rows in the model.
  */
-int LanguageModeModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent)
+int LanguageModeModel::rowCount([[maybe_unused]] const QModelIndex &parent) const {
 	return items_.size();
 }
 

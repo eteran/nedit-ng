@@ -235,8 +235,7 @@ void DialogReplace::checkKeep_toggled(bool checked) {
  *
  * @param text The text that was entered in the find field.
  */
-void DialogReplace::textFind_textChanged(const QString &text) {
-	Q_UNUSED(text)
+void DialogReplace::textFind_textChanged([[maybe_unused]] const QString &text) {
 	UpdateReplaceActionButtons();
 }
 

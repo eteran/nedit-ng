@@ -608,79 +608,6 @@ SearchType searchType(Arguments arguments, size_t index) {
 	return Preferences::GetPrefSearch();
 }
 
-/**
- * @brief Gets either the logical NOT of a bool, or the first argument represented as a bool.
- *
- * @param arguments The list of arguments to read from.
- * @param previous The previous boolean value to toggle.
- * @param error Where to store any error that occurs during processing.
- * @return The boolean value to toggle to, or an empty optional if an error occurred.
- */
-std::optional<bool> ToggleOrBool(Arguments arguments, bool previous, std::error_code *error) {
-	switch (arguments.size()) {
-	case 1: {
-		int next;
-		if (const std::error_code ec = ReadArguments(arguments, 0, &next)) {
-			*error = ec;
-			return {};
-		}
-		return next;
-	}
-	case 0:
-		return !previous;
-	default:
-		*error = MacroErrorCode::WrongNumberOfToggleArguments;
-		return {};
-	}
-}
-
-/**
- * @brief Toggles a boolean setting on a DocumentWidget.
- *
- * @param document The DocumentWidget to operate on.
- * @param arguments The list of arguments to read from.
- * @param result Where to store the result of the operation.
- * @return std::error_code indicating success or failure.
- */
-template <void (DocumentWidget::*Set)(bool), bool (DocumentWidget::*Get)() const>
-std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroFocusDocument();
-
-	std::error_code ec;
-	if (std::optional<bool> next = ToggleOrBool(arguments, (document->*Get)(), &ec)) {
-		(document->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-/**
- * @brief Toggles a boolean setting on a DocumentWidget.
- *
- * @param document The DocumentWidget to operate on.
- * @param arguments The list of arguments to read from.
- * @param result Where to store the result of the operation.
- * @return std::error_code indicating success or failure.
- */
-template <void (MainWindow::*Set)(bool), bool (MainWindow::*Get)() const>
-std::error_code MenuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroFocusDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	std::error_code ec;
-	if (std::optional<bool> next = ToggleOrBool(arguments, (win->*Get)(), &ec)) {
-		(win->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
 template <void (TextArea::*Func)(TextArea::EventFlags)>
 std::error_code TextEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -726,10 +653,18 @@ std::error_code TextEventArg(DocumentWidget *document, Arguments arguments, Data
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which extracts the string argument and command source, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a string argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
 std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	QString string;
@@ -745,10 +680,18 @@ std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the string argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a string argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, const QString &)>
 std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	QString string;
@@ -764,10 +707,18 @@ std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which extracts the command source argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a command source argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *, CommandSource)>
 std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	if (!arguments.empty()) {
@@ -782,10 +733,58 @@ std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the boolean argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a boolean argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
+template <void (MainWindow::*Func1)(DocumentWidget *), void (MainWindow::*Func2)(DocumentWidget *, bool)>
+std::error_code menuEventUToggle(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
+	switch (arguments.size()) {
+	case 0:
+		if (auto win = MainWindow::fromDocument(document)) {
+			(win->*Func1)(document);
+		}
+		break;
+
+	case 1: {
+		int next;
+		if (const std::error_code ec = ReadArguments(arguments, 0, &next)) {
+			return ec;
+		}
+
+		if (auto win = MainWindow::fromDocument(document)) {
+			(win->*Func2)(document, next);
+		}
+		break;
+	}
+	default:
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+/**
+ * @brief Helper function for menu events which originate from the user, which extracts the command source argument, and calls the appropriate MainWindow function.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro, which should contain a command source argument for the menu command.
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution.
+ */
 template <void (MainWindow::*Func)(DocumentWidget *)>
 std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	/* ensure that we are dealing with the document which currently has the focus */
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
 	if (!arguments.empty()) {
@@ -800,12 +799,23 @@ std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
+/**
+ * @brief Helper function for menu events which originate from macros, which calls the appropriate MainWindow function with no arguments.
+ *
+ * @param document The document which currently has the focus (passed in as an argument but may be overridden to ensure it is the focused document).
+ * @param arguments The arguments passed to the macro (not used in this function).
+ * @param result Where to store the result of the command (not used in this function).
+ * @return std::error_code indicating success or failure of the command execution
+ */
 template <void (MainWindow::*Func)()>
 std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	(void)arguments;
-
+	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
+
+	if (!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
 	if (MainWindow *win = MainWindow::fromDocument(document)) {
 		(win->*Func)();
@@ -1299,10 +1309,7 @@ std::error_code repeatMacroMS(DocumentWidget *document, Arguments arguments, Dat
 	return MacroErrorCode::Success;
 }
 
-std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
-	Q_UNUSED(result)
+std::error_code detachDocumentDialogMS(DocumentWidget *document, [[maybe_unused]] Arguments arguments, [[maybe_unused]] DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
@@ -1642,9 +1649,7 @@ std::error_code backgroundMenuCommandMS(DocumentWidget *document, Arguments argu
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code lengthMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString string;
 	if (const std::error_code ec = ReadArguments(arguments, 0, &string)) {
@@ -1658,9 +1663,7 @@ std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValu
 /*
 ** Built-in macro subroutines for min and max
 */
-std::error_code minMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code minMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	if (arguments.size() < 2) {
 		return MacroErrorCode::TooFewArguments;
@@ -1684,9 +1687,7 @@ std::error_code minMS(DocumentWidget *document, Arguments arguments, DataValue *
 	return MacroErrorCode::Success;
 }
 
-std::error_code maxMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code maxMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	if (arguments.size() < 2) {
 		return MacroErrorCode::TooFewArguments;
@@ -1934,8 +1935,7 @@ std::error_code getSelectionMS(DocumentWidget *document, Arguments arguments, Da
 ** Built-in macro subroutine for determining if implicit conversion of
 ** a string to number will succeed or fail
 */
-std::error_code validNumberMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(document)
+std::error_code validNumberMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::string string;
 
@@ -1950,9 +1950,7 @@ std::error_code validNumberMS(DocumentWidget *document, Arguments arguments, Dat
 /*
 ** Built-in macro subroutine for replacing a substring within another string
 */
-std::error_code replaceSubstringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code replaceSubstringMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	int from;
 	int to;
@@ -1984,9 +1982,7 @@ std::error_code replaceSubstringMS(DocumentWidget *document, Arguments arguments
 ** Built-in macro subroutine for getting a substring of a string.
 ** Called as substring(string, from [, to])
 */
-std::error_code substringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code substringMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// Validate arguments and convert to int
 	if (arguments.size() != 2 && arguments.size() != 3) {
@@ -2036,9 +2032,7 @@ std::error_code substringMS(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
-std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code toupperMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 	std::string string;
 
 	// Validate arguments and convert to int
@@ -2055,9 +2049,7 @@ std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataVal
 	return MacroErrorCode::Success;
 }
 
-std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code tolowerMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 	std::string string;
 
 	// Validate arguments and convert to int
@@ -2074,9 +2066,7 @@ std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataVal
 	return MacroErrorCode::Success;
 }
 
-std::error_code stringToClipboardMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code stringToClipboardMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString string;
 
@@ -2091,9 +2081,7 @@ std::error_code stringToClipboardMS(DocumentWidget *document, Arguments argument
 	return MacroErrorCode::Success;
 }
 
-std::error_code clipboardToStringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code clipboardToStringMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// Should have no arguments
 	if (!arguments.empty()) {
@@ -2118,8 +2106,7 @@ std::error_code clipboardToStringMS(DocumentWidget *document, Arguments argument
 ** file as a string in the subroutine return value.  On failure, returns
 ** the empty string "" and an 0 $readStatus.
 */
-std::error_code readFileMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(document)
+std::error_code readFileMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::string name;
 
@@ -2155,9 +2142,7 @@ std::error_code readFileMS(DocumentWidget *document, Arguments arguments, DataVa
 ** to a file named in parameter $2. Returns 1 on successful write, or 0 if
 ** unsuccessful.
 */
-std::error_code writeOrAppendFile(bool append, DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code writeOrAppendFile(bool append, [[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::string name;
 	std::string string;
@@ -2448,9 +2433,7 @@ std::error_code selectRectangleMS(DocumentWidget *document, Arguments arguments,
 /*
 ** Macro subroutine to ring the bell
 */
-std::error_code beepMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code beepMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	if (!arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -2461,9 +2444,7 @@ std::error_code beepMS(DocumentWidget *document, Arguments arguments, DataValue 
 	return MacroErrorCode::Success;
 }
 
-std::error_code tPrintMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code tPrintMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::string string;
 
@@ -2487,9 +2468,7 @@ std::error_code tPrintMS(DocumentWidget *document, Arguments arguments, DataValu
 /*
 ** Built-in macro subroutine for getting the value of an environment variable
 */
-std::error_code getenvMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code getenvMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	std::string name;
 
@@ -2523,9 +2502,7 @@ std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
-std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document);
+std::error_code dialogMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString btnLabel;
 	QString message;
@@ -2594,9 +2571,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	return MacroErrorCode::Success;
 }
 
-std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document);
+std::error_code stringDialogMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString btnLabel;
 	QString message;
@@ -2819,8 +2794,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-std::error_code calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code calltipIDMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(MainWindow::fromDocument(document)->lastFocus()->TextDGetCalltipID());
 	return MacroErrorCode::Success;
@@ -2985,9 +2959,7 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 }
 
 // T Balinski
-std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document);
+std::error_code listDialogMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString btnLabel;
 	QString message;
@@ -3069,9 +3041,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	return MacroErrorCode::Success;
 }
 
-std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
+std::error_code stringCompareMS([[maybe_unused]] DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString leftStr;
 	QString rightStr;
@@ -3294,8 +3264,7 @@ std::error_code setBacklightStringMS(DocumentWidget *document, Arguments argumen
 	return MacroErrorCode::Success;
 }
 
-std::error_code backlightStringMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code backlightStringMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	QString backlightString = document->backlightCharTypes();
 
@@ -3499,80 +3468,69 @@ std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments, DataVa
 	return MacroErrorCode::Success;
 }
 
-std::error_code highlightSyntaxMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code highlightSyntaxMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->highlightSyntax_ ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code makeBackupCopyMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code makeBackupCopyMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->makeBackupCopy() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code incBackupMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->incrementalBackup() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code showMatchingMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	const QLatin1String res = ToString(document->showMatchingStyle());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
-std::error_code matchSyntaxBasedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code matchSyntaxBasedMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->matchSyntaxBased() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code overTypeModeMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code overTypeModeMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->overstrike() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code readOnlyMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code readOnlyMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value((document->lockReasons().isAnyLocked()) ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code lockedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code lockedMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value((document->lockReasons().isUserLocked()) ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
-std::error_code fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code fileFormatMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	const QLatin1String res = ToString(document->fileFormat());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
-std::error_code fontNameMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code fontNameMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->fontName_);
 	return MacroErrorCode::Success;
 }
 
-std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code fontNameItalicMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	qWarning("NEdit: separate italic fonts are not longer supported");
 
@@ -3581,8 +3539,7 @@ std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, 
 	return MacroErrorCode::Success;
 }
 
-std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code fontNameBoldMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	qWarning("NEdit: separate bold fonts are not longer supported");
 
@@ -3591,8 +3548,7 @@ std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, Da
 	return MacroErrorCode::Success;
 }
 
-std::error_code fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code fontNameBoldItalicMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	qWarning("NEdit: separate bold-italic fonts are not longer supported");
 
@@ -3601,100 +3557,78 @@ std::error_code fontNameBoldItalicMV(DocumentWidget *document, Arguments argumen
 	return MacroErrorCode::Success;
 }
 
-std::error_code subscriptSepMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(document)
-	Q_UNUSED(arguments)
+std::error_code subscriptSepMV([[maybe_unused]] DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(std::string_view(ARRAY_DIM_SEP, 1));
 	return MacroErrorCode::Success;
 }
 
-std::error_code minFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code minFontWidthMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	TextArea *area = document->firstPane();
 	*result        = make_value(area->minimumFontWidth());
 	return MacroErrorCode::Success;
 }
 
-std::error_code maxFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code maxFontWidthMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	TextArea *area = document->firstPane();
 	*result        = make_value(area->maximumFontWidth());
 	return MacroErrorCode::Success;
 }
 
-std::error_code topLineMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code topLineMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	TextArea *area = MainWindow::fromDocument(document)->lastFocus();
 	*result        = make_value(area->TextFirstVisibleLine());
 	return MacroErrorCode::Success;
 }
 
-std::error_code numDisplayLinesMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	Q_UNUSED(arguments)
+std::error_code numDisplayLinesMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	TextArea *area = MainWindow::fromDocument(document)->lastFocus();
 	*result        = make_value(area->TextNumVisibleLines());
 	return MacroErrorCode::Success;
 }
 
-std::error_code displayWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code displayWidthMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	TextArea *area = MainWindow::fromDocument(document)->lastFocus();
 	*result        = make_value(area->TextVisibleWidth());
 	return MacroErrorCode::Success;
 }
 
-std::error_code activePaneMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code activePaneMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->widgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus()));
 	return MacroErrorCode::Success;
 }
 
-std::error_code nPanesMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code nPanesMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->textPanesCount());
 	return MacroErrorCode::Success;
 }
 
-std::error_code emptyArrayMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
-	Q_UNUSED(arguments)
+std::error_code emptyArrayMV([[maybe_unused]] DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(std::make_shared<Array>());
 	return MacroErrorCode::Success;
 }
 
-std::error_code serverNameMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(document)
-	Q_UNUSED(arguments)
+std::error_code serverNameMV([[maybe_unused]] DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(Preferences::GetPrefServerName());
 	return MacroErrorCode::Success;
 }
 
-std::error_code tabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code tabDistMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->buffer()->BufGetTabDistance());
 	return MacroErrorCode::Success;
 }
 
-std::error_code emTabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code emTabDistMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	const int dist = document->firstPane()->getEmulateTabs();
 
@@ -3702,25 +3636,19 @@ std::error_code emTabDistMV(DocumentWidget *document, Arguments arguments, DataV
 	return MacroErrorCode::Success;
 }
 
-std::error_code useTabsMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code useTabsMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->buffer()->BufGetUseTabs());
 	return MacroErrorCode::Success;
 }
 
-std::error_code modifiedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code modifiedMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(document->fileChanged());
 	return MacroErrorCode::Success;
 }
 
-std::error_code languageModeMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code languageModeMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 
@@ -3737,9 +3665,7 @@ std::error_code languageModeMV(DocumentWidget *document, Arguments arguments, Da
 /*
 ** Range set macro variables and functions
 */
-std::error_code rangesetListMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
+std::error_code rangesetListMV(DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	DataValue element;
@@ -3774,10 +3700,7 @@ std::error_code rangesetListMV(DocumentWidget *document, Arguments arguments, Da
 **  different point revisions. This is done because the macro interface
 **  does not change for the same version.
 */
-std::error_code versionMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
-	Q_UNUSED(document)
+std::error_code versionMV([[maybe_unused]] DocumentWidget *document, [[maybe_unused]] Arguments arguments, DataValue *result) {
 
 	*result = make_value(NEDIT_VERSION);
 	return MacroErrorCode::Success;
@@ -5077,19 +5000,21 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_auto_indent", setAutoIndentMS},
 	{"set_em_tab_dist", setEmTabDistMS},
 	{"set_fonts", setFontsMS},
-	{"set_highlight_syntax", MenuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
-	{"set_incremental_backup", MenuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
-	{"set_incremental_search_line", MenuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_language_mode", setLanguageModeMS},
-	{"set_locked", MenuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
-	{"set_make_backup_copy", MenuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
-	{"set_overtype_mode", MenuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
-	{"set_show_line_numbers", MenuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
+
+	{"set_highlight_syntax", menuEventUToggle<&MainWindow::action_Highlight_Syntax, &MainWindow::action_Highlight_Syntax>},
+	{"set_locked", menuEventUToggle<&MainWindow::action_Read_Only, &MainWindow::action_Read_Only>},
+	{"set_incremental_backup", menuEventUToggle<&MainWindow::action_Incremental_Backup, &MainWindow::action_Incremental_Backup>},
+	{"set_statistics_line", menuEventUToggle<&MainWindow::action_Statistics_Line, &MainWindow::action_Statistics_Line>},
+	{"set_incremental_search_line", menuEventUToggle<&MainWindow::action_Incremental_Search_Line, &MainWindow::action_Incremental_Search_Line>},
+	{"set_make_backup_copy", menuEventUToggle<&MainWindow::action_Make_Backup_Copy, &MainWindow::action_Make_Backup_Copy>},
+	{"set_overtype_mode", menuEventUToggle<&MainWindow::action_Overtype, &MainWindow::action_Overtype>},
+	{"set_show_line_numbers", menuEventUToggle<&MainWindow::action_Show_Line_Numbers, &MainWindow::action_Show_Line_Numbers>},
+	{"set_match_syntax_based", menuEventUToggle<&MainWindow::action_Matching_Syntax, &MainWindow::action_Matching_Syntax>},
+	{"set_use_tabs", menuEventUToggle<&MainWindow::action_Use_Tabs, &MainWindow::action_Use_Tabs>},
+
 	{"set_show_matching", setShowMatchingMS},
-	{"set_match_syntax_based", MenuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
-	{"set_statistics_line", MenuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine>},
 	{"set_tab_dist", setTabDistMS},
-	{"set_use_tabs", MenuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
 	{"set_wrap_margin", setWrapMarginMS},
 	{"set_wrap_text", setWrapTextMS},
 

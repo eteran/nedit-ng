@@ -23,9 +23,7 @@ namespace {
  * @param context The context of the message, including file, function, and line number.
  * @param msg The message to log.
  */
-void MessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-
-	Q_UNUSED(context);
+void MessageHandler(QtMsgType type, [[maybe_unused]] const QMessageLogContext &context, const QString &msg) {
 
 	switch (type) {
 	case QtDebugMsg:

@@ -38,8 +38,7 @@ QModelIndex HighlightPatternModel::index(int row, int column, const QModelIndex 
  * @param index The index for which to retrieve the parent index. If the index has no parent, this should be an invalid index.
  * @return The parent index of the specified index, or an invalid index if the index has no parent.
  */
-QModelIndex HighlightPatternModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index)
+QModelIndex HighlightPatternModel::parent([[maybe_unused]] const QModelIndex &index) const {
 	return {};
 }
 
@@ -97,8 +96,7 @@ QVariant HighlightPatternModel::headerData(int section, Qt::Orientation orientat
  * @param parent The parent index for which to retrieve the column count. This is typically an invalid index for top-level models.
  * @return The number of columns in the model, which is always 1 for this model.
  */
-int HighlightPatternModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent)
+int HighlightPatternModel::columnCount([[maybe_unused]] const QModelIndex &parent) const {
 	return 1;
 }
 
@@ -108,8 +106,7 @@ int HighlightPatternModel::columnCount(const QModelIndex &parent) const {
  * @param parent The parent index for which to retrieve the row count. This is typically an invalid index for top-level models.
  * @return The number of rows in the model.
  */
-int HighlightPatternModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent)
+int HighlightPatternModel::rowCount([[maybe_unused]] const QModelIndex &parent) const {
 	return items_.size();
 }
 
