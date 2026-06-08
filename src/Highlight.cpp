@@ -176,16 +176,12 @@ bool PatternIsParsable(HighlightData *pattern) {
  * @param style The style to fill the segment with.
  */
 void FillStyleString(const char *string_ptr, uint8_t *style_ptr, const char *to_ptr, uint8_t style) {
-
-	const ptrdiff_t len = to_ptr - string_ptr;
-
 	if (string_ptr >= to_ptr) {
 		return;
 	}
 
-	for (ptrdiff_t i = 0; i < len; i++) {
-		*style_ptr++ = style;
-	}
+	const size_t len = static_cast<size_t>(to_ptr - string_ptr);
+	std::fill_n(style_ptr, len, style);
 }
 
 /**
@@ -201,16 +197,13 @@ void FillStyleString(const char *string_ptr, uint8_t *style_ptr, const char *to_
  * @param ctx The parse context, which contains the previous character pointer.
  */
 void FillStyleString(const char *&string_ptr, uint8_t *&style_ptr, const char *to_ptr, uint8_t style, const ParseContext *ctx) {
-
-	const ptrdiff_t len = to_ptr - string_ptr;
-
 	if (string_ptr >= to_ptr) {
 		return;
 	}
 
-	for (ptrdiff_t i = 0; i < len; i++) {
-		*style_ptr++ = style;
-	}
+	const size_t len = static_cast<size_t>(to_ptr - string_ptr);
+	std::fill_n(style_ptr, len, style);
+	style_ptr += len;
 
 	if (ctx->prev_char) {
 		*ctx->prev_char = static_cast<unsigned char>(*(to_ptr - 1));
