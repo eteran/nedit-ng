@@ -55,11 +55,7 @@ int maxWidth(const QFontMetrics &fm) {
  * @return The width of the specified character in the font.
  */
 int characterWidth(const QFontMetrics &fm, QChar ch) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
 	return fm.horizontalAdvance(ch);
-#else
-	return fm.width(ch);
-#endif
 }
 
 /**
@@ -70,11 +66,7 @@ int characterWidth(const QFontMetrics &fm, QChar ch) {
  * @return The width of the specified string in the font.
  */
 int stringWidth(const QFontMetrics &fm, const QString &s) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
 	return fm.horizontalAdvance(s);
-#else
-	return fm.width(s);
-#endif
 }
 
 /**

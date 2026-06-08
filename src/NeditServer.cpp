@@ -26,33 +26,9 @@ namespace {
  *
  * @param pos The position to check.
  * @return The screen at the given position, or nullptr if no screen contains that position.
- * @note This function is a workaround for Qt versions before 5.10, which do not have
- *       QGuiApplication::screenAt(). It iterates through all screens and their virtual siblings
- *       to find the one that contains the given position.
- *       In Qt 5.10 and later, it uses QApplication::screenAt() directly.
  */
 QScreen *ScreenAt(QPoint pos) {
-#if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
-	QVarLengthArray<const QScreen *, 8> visitedScreens;
-	for (const QScreen *screen : QGuiApplication::screens()) {
-		if (visitedScreens.contains(screen)) {
-			continue;
-		}
-
-		// The virtual siblings include the screen itself, so iterate directly
-		for (QScreen *sibling : screen->virtualSiblings()) {
-			if (sibling->geometry().contains(pos)) {
-				return sibling;
-			}
-
-			visitedScreens.append(sibling);
-		}
-	}
-
-	return nullptr;
-#else
 	return QApplication::screenAt(pos);
-#endif
 }
 
 /**

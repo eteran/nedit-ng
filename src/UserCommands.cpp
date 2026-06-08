@@ -708,11 +708,7 @@ void ParseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 			info->umiIsDefault = true;
 			return;
 		}
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 		const QStringList languages = languageString.split(QLatin1Char('@'), Qt::SkipEmptyParts);
-#else
-		const QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
-#endif
 		std::vector<size_t> languageModes;
 
 		// setup a list of all language modes related to given menu item

@@ -2445,9 +2445,9 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Left action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Left(DocumentWidget *document) {
 
@@ -2473,9 +2473,9 @@ void MainWindow::action_Shift_Left_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Right action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Right(DocumentWidget *document) {
 
@@ -2501,9 +2501,9 @@ void MainWindow::action_Shift_Right_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Left_Tabs action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 
@@ -2528,9 +2528,9 @@ void MainWindow::action_Shift_Left_Tabs() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Right_Tabs action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 
@@ -2555,9 +2555,9 @@ void MainWindow::action_Shift_Right_Tabs() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Lower_case action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Lower_case(DocumentWidget *document) {
 
@@ -2583,9 +2583,9 @@ void MainWindow::action_Lower_case_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Upper_case action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Upper_case(DocumentWidget *document) {
 
@@ -2611,9 +2611,9 @@ void MainWindow::action_Upper_case_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Fill_Paragraph action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 
@@ -2668,9 +2668,9 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 }
 
 /**
- * @brief
+ * @brief Handler for the Insert_Ctrl_Code action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
 	if (document->checkReadOnly()) {
@@ -2728,9 +2728,9 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 }
 
 /**
- * @brief
+ * @brief Handler for the Goto_Line_Number action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
 
@@ -2760,9 +2760,9 @@ void MainWindow::action_Goto_Line_Number_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Goto_Selected action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 
@@ -2823,9 +2823,9 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Find action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Find(DocumentWidget *document) {
 	action_Find_Dialog(
@@ -3979,9 +3979,9 @@ void MainWindow::action_Goto_Mark_Shortcut() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Goto_Matching action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
@@ -4001,9 +4001,9 @@ void MainWindow::action_Goto_Matching_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Goto_Matching action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
@@ -4122,9 +4122,9 @@ void MainWindow::action_Load_Tips_File([[maybe_unused]] DocumentWidget *document
 }
 
 /**
- * @brief
+ * @brief Handler for the Load_Calltips_File action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
 	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Calltips File"), QFileDialog::ExistingFile);
@@ -4165,9 +4165,9 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
 }
 
 /**
- * @brief
+ * @brief Handler for the Load_Tags_File action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
 	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Tags File"), QFileDialog::ExistingFile);
@@ -4202,9 +4202,9 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString 
 }
 
 /**
- * @brief
+ * @brief Handler for the Load_Macro_File action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
 	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Macro File"), QFileDialog::ExistingFile);
@@ -4225,9 +4225,9 @@ void MainWindow::action_Load_Macro_File_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Print action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Print(DocumentWidget *document) {
 
@@ -4248,9 +4248,9 @@ void MainWindow::action_Print_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Print_Selection action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
@@ -5508,9 +5508,9 @@ void MainWindow::allDocumentsUnbusy() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Save action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Save(DocumentWidget *document) {
 
@@ -5720,9 +5720,9 @@ void MainWindow::action_Save_As(DocumentWidget *document, const QString &filenam
 }
 
 /**
- * @brief
+ * @brief Handler for the Save_As action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Save_As(DocumentWidget *document) {
 	bool addWrap           = false;
@@ -5792,9 +5792,9 @@ void MainWindow::action_Revert_to_Saved_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the New_Window action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
 	EmitEvent("new_window");
@@ -6403,9 +6403,9 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
 }
 
 /**
- * @brief
+ * @brief Handler for the Shift_Replace action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Shift_Replace(DocumentWidget *document) {
 	action_Replace_Dialog(
@@ -6497,9 +6497,9 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
 }
 
 /**
- * @brief
+ * @brief Handler for the Find_Definition action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Find_Definition(DocumentWidget *document) {
 	action_Find_Definition(document, QString());
@@ -6515,9 +6515,9 @@ void MainWindow::action_Find_Definition_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Show_Calltip action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Show_Calltip(DocumentWidget *document) {
 	action_Show_Tip(document, QString());
@@ -6615,9 +6615,9 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
 }
 
 /**
- * @brief
+ * @brief Handler for the Execute_Command action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Execute_Command(DocumentWidget *document) {
 
@@ -6745,9 +6745,9 @@ void MainWindow::action_Detach_Tab_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handler for the Detach_Document action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
@@ -6779,9 +6779,9 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Handler for the Detach_Document_Dialog action.
  *
- * @param document
+ * @param document The document that the handler should be applied to.
  */
 void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
 
