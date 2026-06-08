@@ -176,16 +176,12 @@ bool PatternIsParsable(HighlightData *pattern) {
  * @param style The style to fill the segment with.
  */
 void FillStyleString(const char *string_ptr, uint8_t *style_ptr, const char *to_ptr, uint8_t style) {
-
-	const ptrdiff_t len = to_ptr - string_ptr;
-
 	if (string_ptr >= to_ptr) {
 		return;
 	}
 
-	for (ptrdiff_t i = 0; i < len; i++) {
-		*style_ptr++ = style;
-	}
+	const size_t len = static_cast<size_t>(to_ptr - string_ptr);
+	std::fill_n(style_ptr, len, style);
 }
 
 /**
@@ -201,16 +197,13 @@ void FillStyleString(const char *string_ptr, uint8_t *style_ptr, const char *to_
  * @param ctx The parse context, which contains the previous character pointer.
  */
 void FillStyleString(const char *&string_ptr, uint8_t *&style_ptr, const char *to_ptr, uint8_t style, const ParseContext *ctx) {
-
-	const ptrdiff_t len = to_ptr - string_ptr;
-
 	if (string_ptr >= to_ptr) {
 		return;
 	}
 
-	for (ptrdiff_t i = 0; i < len; i++) {
-		*style_ptr++ = style;
-	}
+	const size_t len = static_cast<size_t>(to_ptr - string_ptr);
+	std::fill_n(style_ptr, len, style);
+	style_ptr += len;
 
 	if (ctx->prev_char) {
 		*ctx->prev_char = static_cast<unsigned char>(*(to_ptr - 1));
@@ -405,7 +398,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	const uint8_t beginStyle = pass1Patterns->style;
 	if (CanCrossLineBoundaries(contextRequirements)) {
 		beginSafety = BackwardOneContext(buf, contextRequirements, beginParse);
-		for (p = beginParse; p >= beginSafety; --p) {
+		for (p = beginParse; p > beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
 			if (!EquivalentStyle(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
@@ -1575,11 +1568,22 @@ size_t IndexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const 
  */
 size_t FindTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index) {
 
+	if (index >= patterns.size()) {
+		return PATTERN_NOT_FOUND;
+	}
+
 	size_t topIndex = index;
+	std::vector<bool> visited(patterns.size(), false);
 	while (!patterns[topIndex].subPatternOf.isNull()) {
-		topIndex = IndexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
-		if (index == topIndex) {
+		if (visited[topIndex]) {
 			return PATTERN_NOT_FOUND; // amai: circular dependency ?!
+		}
+
+		visited[topIndex] = true;
+
+		topIndex = IndexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
+		if (topIndex == PATTERN_NOT_FOUND || topIndex >= patterns.size()) {
+			return PATTERN_NOT_FOUND;
 		}
 	}
 	return topIndex;

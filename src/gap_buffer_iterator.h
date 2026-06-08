@@ -20,8 +20,8 @@ class gap_buffer_iterator {
 public:
 	using difference_type   = std::ptrdiff_t;
 	using iterator_category = std::random_access_iterator_tag;
-	using pointer           = Ch *;
-	using reference         = Ch &;
+	using pointer           = typename std::conditional<IsConst, const Ch *, Ch *>::type;
+	using reference         = typename std::conditional<IsConst, const Ch &, Ch &>::type;
 	using value_type        = Ch;
 
 public:
@@ -77,21 +77,21 @@ public:
 	}
 
 public:
-	gap_buffer_iterator operator+(difference_type rhs) const { return gap_buffer_iterator(pos_ + rhs); }
-	gap_buffer_iterator operator-(difference_type rhs) const { return gap_buffer_iterator(pos_ - rhs); }
+	gap_buffer_iterator operator+(difference_type rhs) const { return gap_buffer_iterator(buf_, pos_ + rhs); }
+	gap_buffer_iterator operator-(difference_type rhs) const { return gap_buffer_iterator(buf_, pos_ - rhs); }
 
 public:
 	difference_type operator-(const gap_buffer_iterator &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ - rhs.pos_;
 	}
-	friend gap_buffer_iterator operator+(difference_type lhs, const gap_buffer_iterator &rhs) { return gap_buffer_iterator(lhs + rhs.pos_); }
-	friend gap_buffer_iterator operator-(difference_type lhs, const gap_buffer_iterator &rhs) { return gap_buffer_iterator(lhs - rhs.pos_); }
+	friend gap_buffer_iterator operator+(difference_type lhs, const gap_buffer_iterator &rhs) { return gap_buffer_iterator(rhs.buf_, lhs + rhs.pos_); }
+	friend gap_buffer_iterator operator-(difference_type lhs, const gap_buffer_iterator &rhs) { return gap_buffer_iterator(rhs.buf_, lhs - rhs.pos_); }
 
 public:
-	reference operator*() const { return buf_[pos_]; }
-	reference operator[](difference_type offset) const { return buf_[pos_ + offset]; }
-	pointer operator->() const { return &buf_[pos_]; }
+	reference operator*() const { return (*buf_)[pos_]; }
+	reference operator[](difference_type offset) const { return (*buf_)[pos_ + offset]; }
+	pointer operator->() const { return &((*buf_)[pos_]); }
 
 public:
 	void swap(gap_buffer_iterator &other) {

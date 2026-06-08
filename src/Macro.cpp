@@ -2713,25 +2713,25 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 
 		switch (txtArg[0]) {
 		case 'c':
-			if (txtArg == "center") {
+			if (txtArg != "center") {
 				return MacroErrorCode::UnrecognizedArgument;
 			}
 			hAlign = TipHAlignMode::Center;
 			break;
 		case 'r':
-			if (txtArg == "right") {
+			if (txtArg != "right") {
 				return MacroErrorCode::UnrecognizedArgument;
 			}
 			hAlign = TipHAlignMode::Right;
 			break;
 		case 'a':
-			if (txtArg == "above") {
+			if (txtArg != "above") {
 				return MacroErrorCode::UnrecognizedArgument;
 			}
 			vAlign = TipVAlignMode::Above;
 			break;
 		case 's':
-			if (txtArg == "strict") {
+			if (txtArg != "strict") {
 				return MacroErrorCode::UnrecognizedArgument;
 			}
 			alignMode = TipAlignMode::Strict;
