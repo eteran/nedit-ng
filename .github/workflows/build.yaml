@@ -45,7 +45,7 @@ jobs:
           version: ${{matrix.QT_VERSION}}
 
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -69,7 +69,7 @@ jobs:
           windeployqt --release nedit-ng.exe
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nedit-ng-win64-qt${{matrix.QT_VERSION}}
           path: nedit-ng-win64-qt${{matrix.QT_VERSION}}/
@@ -105,7 +105,7 @@ jobs:
           macdeployqt nedit-ng.app
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nedit-ng-macos-arm-qt${{matrix.QT_VERSION}}
           path: nedit-ng-macos-arm-qt${{matrix.QT_VERSION}}/
