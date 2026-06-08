@@ -78,15 +78,13 @@ int main(int argc, char *argv[]) {
 
 	qInstallMessageHandler(MessageHandler);
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 #ifdef Q_OS_MACOS
 	QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
 	QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
-#endif
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
 	// NOTE(eteran): for issue #38, grab -geometry <arg> before Qt consumes it!

@@ -23,7 +23,6 @@ QByteArray LoadResource(const QString &resource) {
 	// don't copy the data, if it's uncompressed, we can deal with it in place :-)
 	auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), gsl::narrow<int>(res.size()));
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
 	switch (res.compressionAlgorithm()) {
 	case QResource::NoCompression:
 		break;
@@ -37,11 +36,6 @@ QByteArray LoadResource(const QString &resource) {
 		qFatal("Resources compiled with an unsupported compression algorithm.");
 		break;
 	}
-#else
-	if (res.isCompressed()) {
-		defaults = qUncompress(defaults);
-	}
-#endif
 
 	return defaults;
 }

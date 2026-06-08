@@ -420,11 +420,7 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		   etags or ctags file.
 		 */
 		if (tagFileType == TagFileUnknown) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 			if (line.startsWith(QChar::FormFeed)) { // <np>
-#else
-			if (line.startsWith(QChar(0x000c))) { // <np>
-#endif
 				tagFileType = TagFileETags;
 			} else {
 				tagFileType = TagFileCTags;

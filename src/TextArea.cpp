@@ -37,10 +37,6 @@
 #include <QtDebug>
 #include <QtGlobal>
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-#include <QWindow>
-#endif
-
 #include <algorithm>
 #include <memory>
 
@@ -3673,19 +3669,11 @@ void TextArea::setupBGClasses(const QString &str) {
 	   character background color to #f0f0f0; it is then set to red by the
 	   clause 1-31,127:red). */
 
-	size_t class_no = 1;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+	size_t class_no           = 1;
 	const QStringList formats = str.split(QLatin1Char(';'), Qt::SkipEmptyParts);
-#else
-	const QStringList formats = str.split(QLatin1Char(';'), QString::SkipEmptyParts);
-#endif
 
 	for (const QString &format : formats) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 		const QStringList s1 = format.split(QLatin1Char(':'), Qt::SkipEmptyParts);
-#else
-		const QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
-#endif
 		if (s1.size() == 2) {
 			const QString &ranges = s1[0];
 			const QString &color  = s1[1];
@@ -3704,11 +3692,7 @@ void TextArea::setupBGClasses(const QString &str) {
 			const QColor pix         = X11Colors::FromString(color);
 			bgClassColors[nextClass] = pix;
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 			const QStringList rangeList = ranges.split(QLatin1Char(','), Qt::SkipEmptyParts);
-#else
-			const QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
-#endif
 			static const QRegularExpression regex(QRegularExpression::anchoredPattern(QStringLiteral("([0-9]+)(?:-([0-9]+))?")));
 
 			for (const QString &range : rangeList) {

@@ -31,15 +31,9 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	connectSlots();
 
 	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	ui.editInit->setTabStopDistance(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
 	ui.editNewline->setTabStopDistance(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
 	ui.editModMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
-#else
-	ui.editInit->setTabStopWidth(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
-	ui.editNewline->setTabStopWidth(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
-	ui.editModMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
-#endif
 
 	const QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 
