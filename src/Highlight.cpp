@@ -405,7 +405,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	const uint8_t beginStyle = pass1Patterns->style;
 	if (CanCrossLineBoundaries(contextRequirements)) {
 		beginSafety = BackwardOneContext(buf, contextRequirements, beginParse);
-		for (p = beginParse; p >= beginSafety; --p) {
+		for (p = beginParse; p > beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
 			if (!EquivalentStyle(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
@@ -1575,11 +1575,22 @@ size_t IndexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const 
  */
 size_t FindTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index) {
 
+	if (index >= patterns.size()) {
+		return PATTERN_NOT_FOUND;
+	}
+
 	size_t topIndex = index;
+	std::vector<bool> visited(patterns.size(), false);
 	while (!patterns[topIndex].subPatternOf.isNull()) {
-		topIndex = IndexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
-		if (index == topIndex) {
+		if (visited[topIndex]) {
 			return PATTERN_NOT_FOUND; // amai: circular dependency ?!
+		}
+
+		visited[topIndex] = true;
+
+		topIndex = IndexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
+		if (topIndex == PATTERN_NOT_FOUND || topIndex >= patterns.size()) {
+			return PATTERN_NOT_FOUND;
 		}
 	}
 	return topIndex;
