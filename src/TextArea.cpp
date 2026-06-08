@@ -6300,9 +6300,6 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 			anchor = sel.start();
 		}
 		buffer_->BufSecondarySelect(anchor, pos);
-	} else {
-		const TextCursor anchor = pos;
-		Q_UNUSED(anchor)
 	}
 
 	/* Record the site of the initial button press and the initial character
