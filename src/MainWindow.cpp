@@ -84,6 +84,12 @@ void UpdateMenuCheckedState(DocumentWidget *document, QAction *action, bool stat
 	}
 }
 
+/**
+ * @brief Updates the checked state of the same UI action in every open window.
+ *
+ * @param action Pointer-to-member identifying the QAction on Ui::MainWindow.
+ * @param state The checked state to apply to all windows.
+ */
 void UpdateMenuCheckedStateAllWindows(QAction *Ui::MainWindow::*action, bool state) {
 	for (MainWindow *window : MainWindow::allWindows()) {
 		no_signals(window->ui.*action)->setChecked(state);
@@ -91,12 +97,12 @@ void UpdateMenuCheckedStateAllWindows(QAction *Ui::MainWindow::*action, bool sta
 }
 
 /**
- * @brief Create a shortcut object.
+ * @brief Creates a QShortcut and wires its activation signal.
  *
  * @param seq The key sequence for the shortcut.
  * @param parent The parent widget for the shortcut.
- * @param func The function to connect to the shortcut activation signal.
- * @return The created shortcut object.
+ * @param func The slot/lambda invoked when the shortcut is activated.
+ * @return The created shortcut object owned by @p parent.
  */
 template <class Func>
 QShortcut *CreateShortcut(const QKeySequence &seq, QWidget *parent, Func func) {
@@ -106,10 +112,13 @@ QShortcut *CreateShortcut(const QKeySequence &seq, QWidget *parent, Func func) {
 }
 
 /**
- * @brief Converts a string representation of a line and column number into a Location object.
+ * @brief Parses a line/column text entry into a Location.
  *
- * @param text The string containing the line and column information, formatted as "line:column" or "line,column".
- * @return A Location object containing the line and column numbers, or an empty optional if the string is invalid.
+ * Accepts optional whitespace and separators ':' or ','. Either field may be
+ * omitted; if both are missing or invalid, parsing fails.
+ *
+ * @param text Text formatted like "line:column" or "line,column".
+ * @return Parsed location or std::nullopt when no usable coordinates exist.
  */
 std::optional<Location> StringToLineAndCol(const QString &text) {
 
@@ -156,10 +165,10 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 }
 
 /**
- * @brief Recursively adds all actions from a QMenu to a QActionGroup.
+ * @brief Recursively adds a menu's actions (including submenus) to a group.
  *
- * @param group The QActionGroup to which the actions will be added.
- * @param menu The QMenu from which actions will be added.
+ * @param group Target QActionGroup.
+ * @param menu Source menu whose actions are collected.
  */
 void AddToGroup(QActionGroup *group, QMenu *menu) {
 	Q_FOREACH (QAction *action, menu->actions()) {
@@ -171,9 +180,11 @@ void AddToGroup(QActionGroup *group, QMenu *menu) {
 }
 
 /**
- * @brief Change the case of the selection in a document widget.
- * This function applies a transformation function `F` to each character in the
- * selection or to the character before the cursor if there is no selection.
+ * @brief Applies a character-case transform to the selection or previous character.
+ *
+ * If a selection exists, the transform is applied to selected text and the
+ * selection is restored (including rectangular selection geometry). If there is
+ * no selection, the character before the cursor is transformed in place.
  *
  * @param document The document widget containing the text area.
  * @param area The text area where the selection is made.
@@ -307,6 +318,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
 /**
  * @brief Destructor for MainWindow.
+ *
+ * Explicitly disconnects from QApplication focus notifications to avoid
+ * teardown-order issues during global application shutdown.
  */
 MainWindow::~MainWindow() {
 	// disconnect this signal explicitly or we set off the UBSAN during qApp
@@ -315,7 +329,10 @@ MainWindow::~MainWindow() {
 }
 
 /**
- * @brief Initializes the incremental search bar settings and connects the necessary signals.
+ * @brief Initializes incremental-search UI state and local event handling.
+ *
+ * Applies persisted preference values, toggles optional search UI visibility,
+ * and installs event filters used by the incremental-search widgets.
  */
 void MainWindow::setupISearchBar() {
 	// determine the strings and button settings to use
@@ -337,7 +354,10 @@ void MainWindow::setupISearchBar() {
 }
 
 /**
- * @brief Connects the slots for the dialog's buttons and other UI elements.
+ * @brief Connects MainWindow actions and widgets to their slot handlers.
+ *
+ * This centralizes signal-slot wiring for menus, toolbar controls, and
+ * incremental-search widgets.
  */
 void MainWindow::connectSlots() {
 	connect(ui.buttonIFind, &QPushButton::clicked, this, &MainWindow::buttonIFind_clicked);
@@ -2206,9 +2226,9 @@ void MainWindow::tabWidget_customContextMenuRequested(const QPoint &pos) {
 }
 
 /**
- * @brief
+ * @brief Opens the file path currently selected in the active document.
  *
- * @param document
+ * @param document The document supplying the current selection text.
  */
 void MainWindow::action_Open_Selected(DocumentWidget *document) {
 
@@ -2226,7 +2246,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Open Selected on the current document.
  */
 void MainWindow::action_Open_Selected_triggered() {
 
@@ -2236,7 +2256,7 @@ void MainWindow::action_Open_Selected_triggered() {
 }
 
 /**
- * @brief
+ * @brief Opens a file path from the clipboard in the current document context.
  */
 void MainWindow::action_Shift_Open_Selected() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -2245,9 +2265,9 @@ void MainWindow::action_Shift_Open_Selected() {
 }
 
 /**
- * @brief
+ * @brief Opens a file path from clipboard text.
  *
- * @param document
+ * @param document The document used for path context and target window.
  */
 void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
 
@@ -4241,7 +4261,7 @@ void MainWindow::action_Print_Selection(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Prints only the current selection in the active document.
  */
 void MainWindow::action_Print_Selection_triggered() {
 
@@ -4251,9 +4271,9 @@ void MainWindow::action_Print_Selection_triggered() {
 }
 
 /**
- * @brief
+ * @brief Splits the current document view into multiple panes.
  *
- * @param document
+ * @param document The document whose pane layout is updated.
  */
 void MainWindow::action_Split_Pane(DocumentWidget *document) {
 
@@ -4263,7 +4283,7 @@ void MainWindow::action_Split_Pane(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Split Pane for the current document.
  */
 void MainWindow::action_Split_Pane_triggered() {
 
@@ -4273,9 +4293,9 @@ void MainWindow::action_Split_Pane_triggered() {
 }
 
 /**
- * @brief
+ * @brief Closes the active pane in a split document view.
  *
- * @param document
+ * @param document The document whose active pane should be removed.
  */
 void MainWindow::action_Close_Pane(DocumentWidget *document) {
 
@@ -4285,7 +4305,7 @@ void MainWindow::action_Close_Pane(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Close Pane for the current document.
  */
 void MainWindow::action_Close_Pane_triggered() {
 
@@ -4295,9 +4315,9 @@ void MainWindow::action_Close_Pane_triggered() {
 }
 
 /**
- * @brief
+ * @brief Opens the Move Tab dialog for the specified document.
  *
- * @param document
+ * @param document The document tab to move to another window.
  */
 void MainWindow::action_Move_Tab_To(DocumentWidget *document) {
 
@@ -4306,7 +4326,7 @@ void MainWindow::action_Move_Tab_To(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Move Tab To for the current document.
  */
 void MainWindow::action_Move_Tab_To_triggered() {
 
@@ -4316,26 +4336,26 @@ void MainWindow::action_Move_Tab_To_triggered() {
 }
 
 /**
- * @brief
+ * @brief Shows Qt's standard About dialog.
  */
 void MainWindow::action_About_Qt_triggered() {
 	QMessageBox::aboutQt(this);
 }
 
 /**
- * @brief
+ * @brief Returns the document in the currently selected tab.
  *
- * @return
+ * @return The active DocumentWidget, or nullptr when no tab is active.
  */
 DocumentWidget *MainWindow::currentDocument() const {
 	return qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget());
 }
 
 /**
- * @brief
+ * @brief Returns the document at a tab index.
  *
- * @param index
- * @return
+ * @param index The tab index to query.
+ * @return The document at @p index, or nullptr for non-document tabs.
  */
 DocumentWidget *MainWindow::documentAt(int index) const {
 	return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index));
@@ -4367,9 +4387,9 @@ void MainWindow::action_Incremental_Search_Line_toggled([[maybe_unused]] bool st
 }
 
 /**
- * @brief
+ * @brief Handles toggling of line-number visibility from the menu.
  *
- * @param state
+ * @param state Requested checked state from the action.
  */
 void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
@@ -4378,10 +4398,10 @@ void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
 }
 
 /**
- * @brief
+ * @brief Applies a per-document auto-indent mode.
  *
- * @param document
- * @param state
+ * @param document The target document.
+ * @param state New indentation mode.
  */
 void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state) {
 	EmitEvent("set_auto_indent", ToString(state));
@@ -4389,9 +4409,9 @@ void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle st
 }
 
 /**
- * @brief
+ * @brief Maps indent menu actions to the corresponding indent style.
  *
- * @param action
+ * @param action Triggered action from the indent action group.
  */
 void MainWindow::indentGroupTriggered(QAction *action) {
 	if (DocumentWidget *document = currentDocument()) {
@@ -4408,10 +4428,10 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief
+ * @brief Applies a per-document auto-wrap mode.
  *
- * @param document
- * @param state
+ * @param document The target document.
+ * @param state New wrap behavior.
  */
 void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state) {
 	EmitEvent("set_wrap_text", ToString(state));
@@ -4419,9 +4439,9 @@ void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state)
 }
 
 /**
- * @brief
+ * @brief Maps wrap menu actions to the corresponding wrap style.
  *
- * @param action
+ * @param action Triggered action from the wrap action group.
  */
 void MainWindow::wrapGroupTriggered(QAction *action) {
 	if (DocumentWidget *document = currentDocument()) {
@@ -4438,7 +4458,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief
+ * @brief Opens the Wrap Margin dialog for the current document.
  */
 void MainWindow::action_Wrap_Margin_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -4448,7 +4468,7 @@ void MainWindow::action_Wrap_Margin_triggered() {
 }
 
 /**
- * @brief
+ * @brief Opens the Tab Stops dialog for the current document.
  */
 void MainWindow::action_Tab_Stops_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -4458,7 +4478,7 @@ void MainWindow::action_Tab_Stops_triggered() {
 }
 
 /**
- * @brief
+ * @brief Shows (or creates) the shared Text Fonts dialog.
  */
 void MainWindow::action_Text_Fonts_triggered() {
 	if (!dialogFonts_) {
@@ -5984,9 +6004,9 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Executes the command text on the current cursor line.
  *
- * @param document
+ * @param document Target document containing the command line.
  */
 void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 
@@ -6002,7 +6022,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Execute Command Line for the current document.
  */
 void MainWindow::action_Execute_Command_Line_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6011,7 +6031,7 @@ void MainWindow::action_Execute_Command_Line_triggered() {
 }
 
 /**
- * @brief
+ * @brief Cancels an in-progress shell command in the current document.
  */
 void MainWindow::action_Cancel_Shell_Command_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6020,7 +6040,7 @@ void MainWindow::action_Cancel_Shell_Command_triggered() {
 }
 
 /**
- * @brief
+ * @brief Starts recording user keystrokes for later replay.
  */
 void MainWindow::action_Learn_Keystrokes_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6029,7 +6049,7 @@ void MainWindow::action_Learn_Keystrokes_triggered() {
 }
 
 /**
- * @brief
+ * @brief Stops keystroke recording and saves the learned macro.
  */
 void MainWindow::action_Finish_Learn_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6038,7 +6058,7 @@ void MainWindow::action_Finish_Learn_triggered() {
 }
 
 /**
- * @brief
+ * @brief Replays the most recently learned keystroke sequence.
  */
 void MainWindow::action_Replay_Keystrokes_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6047,7 +6067,7 @@ void MainWindow::action_Replay_Keystrokes_triggered() {
 }
 
 /**
- * @brief
+ * @brief Cancels the current learn or macro playback operation.
  */
 void MainWindow::action_Cancel_Learn_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -6072,9 +6092,9 @@ bool MainWindow::closeAllFilesAndWindows() {
 }
 
 /**
- * @brief
+ * @brief Opens the Repeat dialog for the last recorded command sequence.
  *
- * @param document
+ * @param document Target document used by the repeat operation.
  */
 void MainWindow::action_Repeat(DocumentWidget *document) {
 	const QString lastCommand = CommandRecorder::instance()->lastCommand();
@@ -6095,7 +6115,7 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Invokes Repeat for the current document.
  */
 void MainWindow::action_Repeat_triggered() {
 
@@ -7382,14 +7402,14 @@ bool MainWindow::replaceSame(DocumentWidget *document, TextArea *area, Direction
 }
 
 /**
- * @brief
+ * @brief Replaces the current match (if applicable) and continues searching.
  *
- * @param document
- * @param searchString
- * @param replaceString
- * @param direction
- * @param searchType
- * @param searchWraps
+ * @param document Document that owns the active text buffer.
+ * @param searchString Search pattern used to identify matches.
+ * @param replaceString Replacement text (or regex replacement template).
+ * @param direction Search direction after replacement.
+ * @param searchType Search mode (literal, case-sensitive, regex, etc.).
+ * @param searchWraps Whether the subsequent search may wrap.
  */
 void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
@@ -7410,13 +7430,16 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
 }
 
 /**
- * @brief
+ * @brief Searches for the current selection using the requested search options.
  *
- * @param document
- * @param area
- * @param direction
- * @param searchType
- * @param SearchWrap
+ * Regex search modes are converted to literal equivalents because this action
+ * always treats selected text as plain text.
+ *
+ * @param document Source document used to obtain the selection.
+ * @param area Active text area used for cursor/selection updates.
+ * @param direction Search direction.
+ * @param searchType Requested search mode.
+ * @param SearchWrap Wrap mode for the search operation.
  */
 void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode SearchWrap) {
 
@@ -7454,12 +7477,12 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
 }
 
 /**
- * @brief
+ * @brief Replaces all matches within the current primary selection.
  *
- * @param document
- * @param searchString
- * @param replaceString
- * @param type
+ * @param document Target document.
+ * @param searchString Pattern to match.
+ * @param replaceString Replacement text.
+ * @param type Search mode used for matching.
  */
 void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
 
