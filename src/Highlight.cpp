@@ -534,6 +534,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
 			prev_char = GetPrevChar(buf, beginSafety);
+			ctx.prev_char = &prev_char;
 			PassTwoParseString(
 				&pass2Patterns[0],
 				string,
@@ -546,6 +547,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			startPass2Safety = std::max(beginSafety, BackwardOneContext(buf, contextRequirements, modEnd));
 
 			prev_char = GetPrevChar(buf, startPass2Safety);
+			ctx.prev_char = &prev_char;
 			PassTwoParseString(
 				&pass2Patterns[0],
 				&string[startPass2Safety - beginSafety],
@@ -767,13 +769,14 @@ void IncrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			startPattern = &pass1Patterns[0];
 		}
 
-		const TextCursor endAt = ParseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse);
+		const TextCursor endAt        = ParseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse);
+		const TextCursor lastModInBuf = LastModified(styleBuf);
 
 		/* If parse completed at this level, move one style up in the
 		   hierarchy and start again from where the previous parse left off. */
 		if (endAt < endParse) {
 			beginParse = endAt;
-			endParse   = ForwardOneContext(buf, context, std::max(endAt, std::max(LastModified(styleBuf), lastMod)));
+			endParse   = ForwardOneContext(buf, context, std::max(endAt, std::max(lastModInBuf, lastMod)));
 			if (IsPlain(parseInStyle)) {
 				qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
@@ -781,14 +784,14 @@ void IncrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			parseInStyle = ParentStyleOf(parentStyles, parseInStyle);
 
 			// One context distance beyond last style changed means we're done
-		} else if (LastModified(styleBuf) <= lastMod) {
+		} else if (lastModInBuf <= lastMod) {
 			return;
 
 			/* Styles are changing beyond the modification, continue extending
 			   the end of the parse range by powers of 2 * ReparseChunkSize and
 			   reparse until nothing changes */
 		} else {
-			lastMod  = LastModified(styleBuf);
+			lastMod  = lastModInBuf;
 			endParse = std::min(buf->BufEndOfBuffer(), ForwardOneContext(buf, context, lastMod) + (ReparseChunkSize << nPasses));
 		}
 	}
