@@ -253,9 +253,9 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 	lm.name = name;
 
 	// read the extension list field
-	const QString extStr = ui.editExtensions->text().simplified();
+	const QString extStr      = ui.editExtensions->text().simplified();
 	const QStringList extList = extStr.split(QLatin1Char(' '), Qt::SkipEmptyParts);
-	lm.extensions = extList;
+	lm.extensions             = extList;
 
 	// read recognition expression
 	const QString recognitionExpr = ui.editRegex->text();

@@ -533,7 +533,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	   to ensure that parsing at modEnd is correct. */
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
-			prev_char = GetPrevChar(buf, beginSafety);
+			prev_char     = GetPrevChar(buf, beginSafety);
 			ctx.prev_char = &prev_char;
 			PassTwoParseString(
 				&pass2Patterns[0],
@@ -546,7 +546,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		} else {
 			startPass2Safety = std::max(beginSafety, BackwardOneContext(buf, contextRequirements, modEnd));
 
-			prev_char = GetPrevChar(buf, startPass2Safety);
+			prev_char     = GetPrevChar(buf, startPass2Safety);
 			ctx.prev_char = &prev_char;
 			PassTwoParseString(
 				&pass2Patterns[0],
@@ -1179,7 +1179,7 @@ std::vector<PatternSet> ReadDefaultPatternSets() {
  * @note This function must be kept efficient, as it is called for every
  * character typed in the text buffer.
  */
-void SyntaxHighlightModifyCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, [[maybe_unused]] int64_t nRestyled, [[maybe_unused]] std::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t /*nRestyled */, std::string_view /*deletedText*/, void *user) {
 
 	Q_ASSERT(user);
 

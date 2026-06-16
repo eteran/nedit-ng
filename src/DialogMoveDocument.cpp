@@ -12,7 +12,7 @@ DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 	ui.setupUi(this);
 
-	connect(ui.listWindows, &QListWidget::itemDoubleClicked, this, [this]([[maybe_unused]] QListWidgetItem *item) {
+	connect(ui.listWindows, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem * /*item*/) {
 		accept();
 	});
 }

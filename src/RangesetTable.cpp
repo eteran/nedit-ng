@@ -30,7 +30,7 @@ constexpr std::array<uint8_t, N_RANGESETS> RangesetLabels = {
  * @param deletedText
  * @param user
  */
-void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, [[maybe_unused]] int64_t nRestyled, std::string_view deletedText, void *user) {
+void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t /*nRestyled */, std::string_view deletedText, void *user) {
 
 	if (auto *table = static_cast<RangesetTable *>(user)) {
 		if ((nInserted != nDeleted) || table->buffer_->compare(pos, deletedText) != 0) {

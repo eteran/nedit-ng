@@ -1002,7 +1002,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
  *
  * @param area The text area where the drag operation started.
  */
-void DocumentWidget::dragStartCallback([[maybe_unused]] TextArea *area) {
+void DocumentWidget::dragStartCallback(TextArea * /*area */) {
 	// don't record all of the intermediate drag steps for undo
 	I_(ignoreModify) = true;
 }
@@ -1143,7 +1143,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) 
  * @param area The text area where the smart indentation event occurred.
  * @param data The smart indentation event containing information about the event.
  */
-void DocumentWidget::smartIndentCallback([[maybe_unused]] TextArea *area, [[maybe_unused]] SmartIndentEvent *event) {
+void DocumentWidget::smartIndentCallback(TextArea * /*area */, SmartIndentEvent *event) {
 
 	if (!I_(smartIndentData)) {
 		return;

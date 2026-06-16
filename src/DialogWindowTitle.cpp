@@ -152,7 +152,7 @@ void DialogWindowTitle::setToggleButtons() {
  *
  * @param text The new text in the format edit field.
  */
-void DialogWindowTitle::editFormat_textChanged([[maybe_unused]] const QString &text) {
+void DialogWindowTitle::editFormat_textChanged(const QString & /*text*/) {
 	formatChangedCB();
 }
 
@@ -518,7 +518,7 @@ void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
  *
  * @param checked Indicates whether the directory present checkbox is checked.
  */
-void DialogWindowTitle::checkDirectoryPresent_toggled([[maybe_unused]] bool checked) {
+void DialogWindowTitle::checkDirectoryPresent_toggled(bool /*checked*/) {
 	formatChangedCB();
 }
 

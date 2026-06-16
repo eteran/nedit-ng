@@ -38,7 +38,7 @@ QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &p
  * @param index The index for which to retrieve the parent.
  * @return An invalid index if the item has no parent, or the parent index of the item.
  */
-QModelIndex HighlightStyleModel::parent([[maybe_unused]] const QModelIndex &index) const {
+QModelIndex HighlightStyleModel::parent(const QModelIndex & /*index*/) const {
 	return {};
 }
 
@@ -96,7 +96,7 @@ QVariant HighlightStyleModel::headerData(int section, Qt::Orientation orientatio
  * @param parent The parent index for which to retrieve the column count.
  * @return The number of columns in the model, which is always 1 in this case.
  */
-int HighlightStyleModel::columnCount([[maybe_unused]] const QModelIndex &parent) const {
+int HighlightStyleModel::columnCount(const QModelIndex & /*parent*/) const {
 	return 1;
 }
 
@@ -106,7 +106,7 @@ int HighlightStyleModel::columnCount([[maybe_unused]] const QModelIndex &parent)
  * @param parent The parent index for which to retrieve the row count.
  * @return The number of rows in the model.
  */
-int HighlightStyleModel::rowCount([[maybe_unused]] const QModelIndex &parent) const {
+int HighlightStyleModel::rowCount(const QModelIndex & /*parent*/) const {
 	return items_.size();
 }
 

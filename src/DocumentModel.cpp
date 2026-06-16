@@ -38,7 +38,7 @@ QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent)
  * @param index The index for which to get the parent.
  * @return The parent of the given index.
  */
-QModelIndex DocumentModel::parent([[maybe_unused]] const QModelIndex &index) const {
+QModelIndex DocumentModel::parent(const QModelIndex & /*index*/) const {
 	return {};
 }
 
@@ -96,7 +96,7 @@ QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int
  * @param parent The parent index, defaults to an invalid index.
  * @return The number of columns in the model.
  */
-int DocumentModel::columnCount([[maybe_unused]] const QModelIndex &parent) const {
+int DocumentModel::columnCount(const QModelIndex & /*parent*/) const {
 	return 1;
 }
 
@@ -106,7 +106,7 @@ int DocumentModel::columnCount([[maybe_unused]] const QModelIndex &parent) const
  * @param parent The parent index, defaults to an invalid index.
  * @return The number of rows in the model.
  */
-int DocumentModel::rowCount([[maybe_unused]] const QModelIndex &parent) const {
+int DocumentModel::rowCount(const QModelIndex & /*parent*/) const {
 	return items_.size();
 }
 
