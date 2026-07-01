@@ -787,26 +787,26 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), this, [this]() { action_Shift_Find(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), this, [this]() { action_Shift_Replace(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+9")), this, [this]() { action_Shift_Left_Tabs(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+0")), this, [this]() { action_Shift_Right_Tabs(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+F")), this, [this]() { action_Shift_Find(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+G")), this, [this]() { action_Shift_Find_Again(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+H")), this, [this]() { action_Shift_Find_Selection(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+I")), this, [this]() { action_Shift_Find_Incremental(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+R")), this, [this]() { action_Shift_Replace(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+M")), this, [this]() { action_Shift_Goto_Matching(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+Shift+Y")), this, [this]() { action_Shift_Open_Selected(); });
 
 	// This is an annoying solution... we can probably do better...
-	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
-		CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
-		CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
-		CreateShortcut(QKeySequence(Qt::SHIFT | Qt::ALT | Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
+	for (int key = 'A'; key <= 'Z'; ++key) {
+		CreateShortcut(QKeySequence(tr("Alt+M, %1").arg(QChar(key))), this, [this]() { action_Mark_Shortcut(); });
+		CreateShortcut(QKeySequence(tr("Alt+G, %1").arg(QChar(key))), this, [this]() { action_Goto_Mark_Shortcut(); });
+		CreateShortcut(QKeySequence(tr("Shift+Alt+G, %1").arg(QChar(key))), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
 	}
 
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
-	CreateShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
-	CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_Home), this, [this]() { action_Last_Document(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+PgDown")), this, [this]() { action_Next_Document(); });
+	CreateShortcut(QKeySequence(tr("Ctrl+PgUp")), this, [this]() { action_Prev_Document(); });
+	CreateShortcut(QKeySequence(tr("Alt+Home")), this, [this]() { action_Last_Document(); });
 }
 
 /**
@@ -3850,9 +3850,8 @@ void MainWindow::action_Mark_triggered() {
 void MainWindow::action_Mark_Shortcut() {
 
 	if (auto shortcut = qobject_cast<QShortcut *>(sender())) {
-		const QKeySequence sequence = shortcut->key();
-
 		if (DocumentWidget *document = currentDocument()) {
+			const QKeySequence sequence = shortcut->key();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			const auto key = static_cast<int>(sequence[1].key());
 #else
@@ -3945,10 +3944,8 @@ void MainWindow::action_Goto_Mark_triggered() {
  */
 void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 	if (auto shortcut = qobject_cast<QShortcut *>(sender())) {
-		const QKeySequence sequence = shortcut->key();
-
 		if (DocumentWidget *document = currentDocument()) {
-
+			const QKeySequence sequence = shortcut->key();
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 			const auto key = static_cast<int>(sequence[1].key());
 #else
