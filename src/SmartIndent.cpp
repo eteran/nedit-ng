@@ -368,7 +368,7 @@ void LoadSmartIndentString(const QString &string) {
  */
 void LoadSmartIndentCommonString(const QString &string) {
 
-	if (string != QStringLiteral("*")) {
+	if (string == QStringLiteral("*")) {
 		return;
 	}
 

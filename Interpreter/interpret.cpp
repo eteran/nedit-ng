@@ -602,7 +602,7 @@ static void AddLoopAddress(Inst *addr) {
  */
 void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 
-	while (LoopStack.empty()) {
+	while (!LoopStack.empty()) {
 
 		Inst *loopPtr = LoopStack.top();
 		LoopStack.pop();
